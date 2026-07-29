@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="CourseRegistrationManagmentSystem.Data/CourseRegistrationManagmentSystem.Data.csproj" Id="f0089564-19b6-4a89-b171-19cfcb506a8b" />
+  <Project Path="CourseRegistrationManagmentSystem.Models/CourseRegistrationManagmentSystem.Models.csproj" Id="3c081474-1f47-41cd-9885-186e2db8ea8f" />
+  <Project Path="CourseRegistrationManagmentSystem/CourseRegistrationManagmentSystem.View.csproj" Id="26d6512c-7296-455c-a3d0-50d853475462" />
+</Solution>
