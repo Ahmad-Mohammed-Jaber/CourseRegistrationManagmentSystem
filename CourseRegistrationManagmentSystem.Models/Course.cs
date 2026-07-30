@@ -1,18 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace CourseRegistrationManagmentSystem.Models;
 
-namespace CourseRegistrationManagmentSystem.Models;
-
-public class Registrations
+public class Course
 {
     public Guid Id { get; set; }
 
-    public Guid StudentId { get; set; }
+    public string CourseCode { get; set; }
 
-    public Guid ClassId { get; set; }
+    public string CourseName { get; set; }
 
-    public DateTime RegsitrationDate { get; set; }
+    public double CreditHours { get; set; }
 
-    public string Status { get; set; }
+    public string Description { get; set; }
+
+    public bool IsActive { get; set; }
 }

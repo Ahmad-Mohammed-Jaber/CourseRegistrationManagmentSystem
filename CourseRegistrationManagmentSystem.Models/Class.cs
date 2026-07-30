@@ -32,5 +32,6 @@ public class Class
     public DateTime EndDate { get; set; }
 
     public DaysOfWeek Schedule { get; set; }
+
     public bool IsActive { get; set; }
 }
