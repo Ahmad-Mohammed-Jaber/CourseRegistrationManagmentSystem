@@ -5,183 +5,183 @@ using System.Data;
 
 namespace CourseRegistrationManagmentSystem.Data.Repository;
 
-public class UserRepository : IGenericRepository<User>
+public class StudentRepository : IGenericRepository<Student>
 {
-    public User? GetById(Guid id)
+    public Student? GetById(Guid id)
     {
         using var connection = DBConnectionFactory.CreateConnection();
         connection.Open();
 
-        string sql = "SELECT Id, UserName, PasswordHash, FullName, Role, IsActive FROM [User] WHERE Id = @Id";
+        string sql = "SELECT Id, UserId, StudentNumber, FullName, Email, Phone FROM Student WHERE Id = @Id";
         using var command = new SqlCommand(sql, connection);
         command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
 
         using var reader = command.ExecuteReader();
         if (reader.Read())
         {
-            return new User
+            return new Student
             {
                 Id = reader.GetGuid(0),
-                UserName = reader.GetString(1),
-                PasswordHash = reader.GetString(2),
+                UserId = reader.GetGuid(1),
+                StudentNumber = reader.GetInt32(2),
                 FullName = reader.GetString(3),
-                Role = (User.UserRoles)reader.GetInt32(4),
-                IsActive = reader.GetBoolean(5)
+                Email = reader.GetString(4),
+                Phone = reader.GetString(5)
             };
         }
         return null;
     }
 
-    public async Task<User?> GetByIdAsync(Guid id)
+    public async Task<Student?> GetByIdAsync(Guid id)
     {
         using var connection = DBConnectionFactory.CreateConnection();
         await connection.OpenAsync();
 
-        string sql = "SELECT Id, UserName, PasswordHash, FullName, Role, IsActive FROM [User] WHERE Id = @Id";
+        string sql = "SELECT Id, UserId, StudentNumber, FullName, Email, Phone FROM Student WHERE Id = @Id";
         using var command = new SqlCommand(sql, connection);
         command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
 
         using var reader = await command.ExecuteReaderAsync();
         if (await reader.ReadAsync())
         {
-            return new User
+            return new Student
             {
                 Id = reader.GetGuid(0),
-                UserName = reader.GetString(1),
-                PasswordHash = reader.GetString(2),
+                UserId = reader.GetGuid(1),
+                StudentNumber = reader.GetInt32(2),
                 FullName = reader.GetString(3),
-                Role = (User.UserRoles)reader.GetInt32(4),
-                IsActive = reader.GetBoolean(5)
+                Email = reader.GetString(4),
+                Phone = reader.GetString(5)
             };
         }
         return null;
     }
 
-    public List<User> GetAll()
+    public List<Student> GetAll()
     {
         using var connection = DBConnectionFactory.CreateConnection();
         connection.Open();
 
-        string sql = "SELECT Id, UserName, PasswordHash, FullName, Role, IsActive FROM [User]";
+        string sql = "SELECT Id, UserId, StudentNumber, FullName, Email, Phone FROM Student";
         using var command = new SqlCommand(sql, connection);
         using var reader = command.ExecuteReader();
 
-        var users = new List<User>();
+        var students = new List<Student>();
         while (reader.Read())
         {
-            users.Add(new User
+            students.Add(new Student
             {
                 Id = reader.GetGuid(0),
-                UserName = reader.GetString(1),
-                PasswordHash = reader.GetString(2),
+                UserId = reader.GetGuid(1),
+                StudentNumber = reader.GetInt32(2),
                 FullName = reader.GetString(3),
-                Role = (User.UserRoles)reader.GetInt32(4),
-                IsActive = reader.GetBoolean(5)
+                Email = reader.GetString(4),
+                Phone = reader.GetString(5)
             });
         }
-        return users;
+        return students;
     }
 
-    public async Task<List<User>> GetAllAsync()
+    public async Task<List<Student>> GetAllAsync()
     {
         using var connection = DBConnectionFactory.CreateConnection();
         await connection.OpenAsync();
 
-        string sql = "SELECT Id, UserName, PasswordHash, FullName, Role, IsActive FROM [User]";
+        string sql = "SELECT Id, UserId, StudentNumber, FullName, Email, Phone FROM Student";
         using var command = new SqlCommand(sql, connection);
         using var reader = await command.ExecuteReaderAsync();
 
-        var users = new List<User>();
+        var students = new List<Student>();
         while (await reader.ReadAsync())
         {
-            users.Add(new User
+            students.Add(new Student
             {
                 Id = reader.GetGuid(0),
-                UserName = reader.GetString(1),
-                PasswordHash = reader.GetString(2),
+                UserId = reader.GetGuid(1),
+                StudentNumber = reader.GetInt32(2),
                 FullName = reader.GetString(3),
-                Role = (User.UserRoles)reader.GetInt32(4),
-                IsActive = reader.GetBoolean(5)
+                Email = reader.GetString(4),
+                Phone = reader.GetString(5)
             });
         }
-        return users;
+        return students;
     }
 
 
-    public void Add(User entity)
+    public void Add(Student entity)
     {
         using var connection = DBConnectionFactory.CreateConnection();
         connection.Open();
 
-        string sql = "INSERT INTO [User] (Id, UserName, PasswordHash, FullName, Role, IsActive) " +
-                     "VALUES (@Id, @UserName, @PasswordHash, @FullName, @Role, @IsActive)";
+        string sql = "INSERT INTO Student (Id, UserId, StudentNumber, FullName, Email, Phone) " +
+                     "VALUES (@Id, @UserId, @StudentNumber, @FullName, @Email, @Phone)";
 
         using var insertCommand = new SqlCommand(sql, connection);
         insertCommand.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = entity.Id;
-        insertCommand.Parameters.Add("@UserName", SqlDbType.NVarChar, 100).Value = entity.UserName;
-        insertCommand.Parameters.Add("@PasswordHash", SqlDbType.NVarChar, 255).Value = entity.PasswordHash;
+        insertCommand.Parameters.Add("@UserId", SqlDbType.UniqueIdentifier).Value = entity.UserId;
+        insertCommand.Parameters.Add("@StudentNumber", SqlDbType.Int).Value = entity.StudentNumber;
         insertCommand.Parameters.Add("@FullName", SqlDbType.NVarChar, 100).Value = entity.FullName;
-        insertCommand.Parameters.Add("@Role", SqlDbType.Int).Value = (int)entity.Role;
-        insertCommand.Parameters.Add("@IsActive", SqlDbType.Bit).Value = entity.IsActive;
+        insertCommand.Parameters.Add("@Email", SqlDbType.NVarChar, 100).Value = entity.Email;
+        insertCommand.Parameters.Add("@Phone", SqlDbType.NVarChar, 15).Value = entity.Phone;
 
         insertCommand.ExecuteNonQuery();
     }
 
-    public async Task AddAsync(User entity)
+    public async Task AddAsync(Student entity)
     {
         using var connection = DBConnectionFactory.CreateConnection();
         await connection.OpenAsync();
 
-        string sql = "INSERT INTO [User] (Id, UserName, PasswordHash, FullName, Role, IsActive) " +
-                     "VALUES (@Id, @UserName, @PasswordHash, @FullName, @Role, @IsActive)";
+        string sql = "INSERT INTO Student (Id, UserId, StudentNumber, FullName, Email, Phone) " +
+                     "VALUES (@Id, @UserId, @StudentNumber, @FullName, @Email, @Phone)";
 
         using var insertCommand = new SqlCommand(sql, connection);
         insertCommand.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = entity.Id;
-        insertCommand.Parameters.Add("@UserName", SqlDbType.NVarChar, 100).Value = entity.UserName;
-        insertCommand.Parameters.Add("@PasswordHash", SqlDbType.NVarChar, 255).Value = entity.PasswordHash;
+        insertCommand.Parameters.Add("@UserId", SqlDbType.UniqueIdentifier).Value = entity.UserId;
+        insertCommand.Parameters.Add("@StudentNumber", SqlDbType.Int).Value = entity.StudentNumber;
         insertCommand.Parameters.Add("@FullName", SqlDbType.NVarChar, 100).Value = entity.FullName;
-        insertCommand.Parameters.Add("@Role", SqlDbType.Int).Value = (int)entity.Role;
-        insertCommand.Parameters.Add("@IsActive", SqlDbType.Bit).Value = entity.IsActive;
+        insertCommand.Parameters.Add("@Email", SqlDbType.NVarChar, 100).Value = entity.Email;
+        insertCommand.Parameters.Add("@Phone", SqlDbType.NVarChar, 15).Value = entity.Phone;
 
         await insertCommand.ExecuteNonQueryAsync();
     }
 
-    public void Update(Guid id, User entity)
+    public void Update(Guid id, Student entity)
     {
         using var connection = DBConnectionFactory.CreateConnection();
         connection.Open();
 
-        string sql = "UPDATE [User] SET UserName = @UserName, PasswordHash = @PasswordHash, " +
-                     "FullName = @FullName, Role = @Role, IsActive = @IsActive " +
+        string sql = "UPDATE Student SET UserId = @UserId, StudentNumber = @StudentNumber, " +
+                     "FullName = @FullName, Email = @Email, Phone = @Phone " +
                      "WHERE Id = @Id";
 
         using var updateCommand = new SqlCommand(sql, connection);
         updateCommand.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
-        updateCommand.Parameters.Add("@UserName", SqlDbType.NVarChar, 100).Value = entity.UserName;
-        updateCommand.Parameters.Add("@PasswordHash", SqlDbType.NVarChar, 255).Value = entity.PasswordHash;
+        updateCommand.Parameters.Add("@UserId", SqlDbType.UniqueIdentifier).Value = entity.UserId;
+        updateCommand.Parameters.Add("@StudentNumber", SqlDbType.Int).Value = entity.StudentNumber;
         updateCommand.Parameters.Add("@FullName", SqlDbType.NVarChar, 100).Value = entity.FullName;
-        updateCommand.Parameters.Add("@Role", SqlDbType.Int).Value = (int)entity.Role;
-        updateCommand.Parameters.Add("@IsActive", SqlDbType.Bit).Value = entity.IsActive;
+        updateCommand.Parameters.Add("@Email", SqlDbType.NVarChar, 100).Value = entity.Email;
+        updateCommand.Parameters.Add("@Phone", SqlDbType.NVarChar, 15).Value = entity.Phone;
 
         updateCommand.ExecuteNonQuery();
     }
 
-    public async Task UpdateAsync(Guid id, User entity)
+    public async Task UpdateAsync(Guid id, Student entity)
     {
         using var connection = DBConnectionFactory.CreateConnection();
         await connection.OpenAsync();
 
-        string sql = "UPDATE [User] SET UserName = @UserName, PasswordHash = @PasswordHash, " +
-                     "FullName = @FullName, Role = @Role, IsActive = @IsActive " +
+        string sql = "UPDATE Student SET UserId = @UserId, StudentNumber = @StudentNumber, " +
+                     "FullName = @FullName, Email = @Email, Phone = @Phone " +
                      "WHERE Id = @Id";
 
         using var updateCommand = new SqlCommand(sql, connection);
         updateCommand.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
-        updateCommand.Parameters.Add("@UserName", SqlDbType.NVarChar, 100).Value = entity.UserName;
-        updateCommand.Parameters.Add("@PasswordHash", SqlDbType.NVarChar, 255).Value = entity.PasswordHash;
+        updateCommand.Parameters.Add("@UserId", SqlDbType.UniqueIdentifier).Value = entity.UserId;
+        updateCommand.Parameters.Add("@StudentNumber", SqlDbType.Int).Value = entity.StudentNumber;
         updateCommand.Parameters.Add("@FullName", SqlDbType.NVarChar, 100).Value = entity.FullName;
-        updateCommand.Parameters.Add("@Role", SqlDbType.Int).Value = (int)entity.Role;
-        updateCommand.Parameters.Add("@IsActive", SqlDbType.Bit).Value = entity.IsActive;
+        updateCommand.Parameters.Add("@Email", SqlDbType.NVarChar, 100).Value = entity.Email;
+        updateCommand.Parameters.Add("@Phone", SqlDbType.NVarChar, 15).Value = entity.Phone;
 
         await updateCommand.ExecuteNonQueryAsync();
     }
@@ -191,7 +191,7 @@ public class UserRepository : IGenericRepository<User>
         using var connection = DBConnectionFactory.CreateConnection();
         connection.Open();
 
-        string sql = "DELETE FROM [User] WHERE Id = @Id";
+        string sql = "DELETE FROM Student WHERE Id = @Id";
         using var deleteCommand = new SqlCommand(sql, connection);
         deleteCommand.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
 
@@ -203,7 +203,7 @@ public class UserRepository : IGenericRepository<User>
         using var connection = DBConnectionFactory.CreateConnection();
         await connection.OpenAsync();
 
-        string sql = "DELETE FROM [User] WHERE Id = @Id";
+        string sql = "DELETE FROM Student WHERE Id = @Id";
         using var deleteCommand = new SqlCommand(sql, connection);
         deleteCommand.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
 
