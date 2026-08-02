@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-
+﻿namespace CourseRegistrationManagmentSystem.Shared.Models;
 public class User
 {
     public enum UserRoles

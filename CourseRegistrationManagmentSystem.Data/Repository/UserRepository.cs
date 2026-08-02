@@ -1,5 +1,6 @@
 using CourseRegistrationManagmentSystem.Data.Database;
 using CourseRegistrationManagmentSystem.Models;
+using CourseRegistrationManagmentSystem.Shared.Models;
 using Microsoft.Data.SqlClient;
 using System.Data;
 
@@ -7,6 +8,32 @@ namespace CourseRegistrationManagmentSystem.Data.Repository;
 
 public class UserRepository : IGenericRepository<User>
 {
+    public async Task<User?> GetByUserNameAsync(string userName, string password)
+    {
+        using var connection = DBConnectionFactory.CreateConnection();
+        await connection.OpenAsync();
+
+        string sql = "SELECT Id, UserName, PasswordHash, FullName, Role, IsActive FROM [User] WHERE UserName = @UserName;";
+        using var command = new SqlCommand(sql, connection);
+        command.Parameters.Add("@UserName", SqlDbType.NVarChar, 100).Value = userName;
+
+        using var reader = command.ExecuteReader();
+        if (reader.Read())
+        {
+            return new User
+            {
+                Id = reader.GetGuid(0),
+                UserName = reader.GetString(1),
+                PasswordHash = reader.GetString(2),
+                FullName = reader.GetString(3),
+                Role = (User.UserRoles)reader.GetInt32(4),
+                IsActive = reader.GetBoolean(5)
+            };
+        }
+        return null;
+
+    }
+
     public User? GetById(Guid id)
     {
         using var connection = DBConnectionFactory.CreateConnection();

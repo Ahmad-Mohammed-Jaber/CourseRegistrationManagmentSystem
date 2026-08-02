@@ -1,4 +1,4 @@
-﻿namespace CourseRegistrationManagmentSystem.Models;
+﻿namespace CourseRegistrationManagmentSystem.Shared.Models;
 
 public class Student
 {

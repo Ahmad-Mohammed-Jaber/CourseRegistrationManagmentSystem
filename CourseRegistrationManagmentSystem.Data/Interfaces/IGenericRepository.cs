@@ -3,7 +3,7 @@
 public interface IGenericRepository<T>
 {
     T? GetById(Guid id);
-    
+
     Task<T?> GetByIdAsync(Guid id);
 
     List<T> GetAll();
@@ -13,7 +13,7 @@ public interface IGenericRepository<T>
     void Add(T entity);
 
     Task AddAsync(T entity);
-    
+
     void Update(Guid id, T entity);
 
     Task UpdateAsync(Guid id, T entity);

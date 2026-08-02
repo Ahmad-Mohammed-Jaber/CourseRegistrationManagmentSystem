@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-public class Class
+﻿public class Class
 {
     [Flags]
     public enum DaysOfWeek

@@ -1,5 +1,6 @@
 using CourseRegistrationManagmentSystem.Data.Database;
 using CourseRegistrationManagmentSystem.Models;
+using CourseRegistrationManagmentSystem.Models.Models;
 using Microsoft.Data.SqlClient;
 using System.Data;
 

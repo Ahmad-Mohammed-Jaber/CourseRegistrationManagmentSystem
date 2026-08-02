@@ -1,4 +1,5 @@
 ﻿namespace CourseRegistrationManagmentSystem.Data.Database;
+
 using Microsoft.Data.SqlClient;
 public static class DBConnectionFactory
 {

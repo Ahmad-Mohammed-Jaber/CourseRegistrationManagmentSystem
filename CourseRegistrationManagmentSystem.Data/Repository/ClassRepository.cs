@@ -1,7 +1,7 @@
-using System.Data;
 using CourseRegistrationManagmentSystem.Data.Database;
 using CourseRegistrationManagmentSystem.Models;
 using Microsoft.Data.SqlClient;
+using System.Data;
 
 namespace CourseRegistrationManagmentSystem.Data.Repository;
 
