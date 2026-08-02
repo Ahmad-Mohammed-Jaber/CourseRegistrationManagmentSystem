@@ -146,8 +146,6 @@ public class CourseRepository : IGenericRepository<Course>
         await insertCommand.ExecuteNonQueryAsync();
     }
 
-
-
     public void Update(Guid id, Course entity)
     {
         using var connection = DBConnectionFactory.CreateConnection();

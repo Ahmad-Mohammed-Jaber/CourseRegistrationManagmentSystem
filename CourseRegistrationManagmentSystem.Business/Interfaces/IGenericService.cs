@@ -1,22 +1,22 @@
 ﻿namespace CourseRegistrationManagmentSystem.Business.Interfaces;
 
-public interface IGenericService<T>
+public interface IGenericService<TEntity, TDto>
 {
-    T? GetById(Guid id);
+    TDto? GetById(Guid id);
 
-    T? GetByIdAsync(Guid id);
+    TDto? GetByIdAsync(Guid id);
 
-    List<T> GetAll();
+    List<TDto> GetAll();
 
-    List<T> GetAllAsync();
+    List<TDto> GetAllAsync();
 
-    Task Add(T entity);
+    Task Add(TDto dto);
 
-    Task AddAsync(T entity);
+    Task AddAsync(TDto dto);
 
-    Task Update(Guid id, T entity);
+    Task Update(Guid id, TDto dto);
 
-    Task UpdateAsync(Guid id, T entity);
+    Task UpdateAsync(Guid id, TDto dto);
 
     Task Delete(Guid id);
 

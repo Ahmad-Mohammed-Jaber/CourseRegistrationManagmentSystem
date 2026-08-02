@@ -134,7 +134,6 @@ public class UserRepository : IGenericRepository<User>
         return users;
     }
 
-
     public void Add(User entity)
     {
         using var connection = DBConnectionFactory.CreateConnection();

@@ -7,7 +7,7 @@ public class User
         Student
     }
 
-    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid Id { get; init; } = Guid.NewGuid();
 
     public string UserName { get; set; }
 

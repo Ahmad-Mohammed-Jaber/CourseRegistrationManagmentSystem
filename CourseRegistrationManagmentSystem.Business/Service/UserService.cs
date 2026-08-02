@@ -1,43 +1,47 @@
 ﻿using CourseRegistrationManagmentSystem.Business.Interfaces;
 using CourseRegistrationManagmentSystem.Models;
-public class UserService : IGenericService<User>
+using CourseRegistrationManagmentSystem.Shared.Models;
+using CourseRegistrationManagmentSystem.Shared.Dtos;
+
+public class UserService : IGenericService<User, UserDto>
 {
-    public User? GetById(Guid id)
+    public UserDto? GetById(Guid id)
     {
-
+        // Implementation would call repository and use .ToDto()
+        throw new NotImplementedException();
     }
 
-    public User? GetByIdAsync(Guid id)
+    public UserDto? GetByIdAsync(Guid id)
     {
         throw new NotImplementedException();
     }
 
-    public List<User> GetAll()
+    public List<UserDto> GetAll()
     {
         throw new NotImplementedException();
     }
 
-    public List<User> GetAllAsync()
+    public List<UserDto> GetAllAsync()
     {
         throw new NotImplementedException();
     }
 
-    public Task Add(User entity)
+    public Task Add(UserDto dto)
     {
         throw new NotImplementedException();
     }
 
-    public Task AddAsync(User entity)
+    public Task AddAsync(UserDto dto)
     {
         throw new NotImplementedException();
     }
 
-    public Task Update(Guid id, User entity)
+    public Task Update(Guid id, UserDto dto)
     {
         throw new NotImplementedException();
     }
 
-    public Task UpdateAsync(Guid id, User entity)
+    public Task UpdateAsync(Guid id, UserDto dto)
     {
         throw new NotImplementedException();
     }

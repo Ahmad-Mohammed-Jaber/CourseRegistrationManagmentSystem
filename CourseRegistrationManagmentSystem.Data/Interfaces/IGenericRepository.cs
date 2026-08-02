@@ -1,4 +1,4 @@
-﻿namespace CourseRegistrationManagmentSystem.Models;
+namespace CourseRegistrationManagmentSystem.Models;
 
 public interface IGenericRepository<T>
 {

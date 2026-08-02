@@ -1,4 +1,6 @@
-﻿public class Class
+﻿namespace CourseRegistrationManagmentSystem.Shared.Models;
+
+public class Class
 {
     [Flags]
     public enum DaysOfWeek

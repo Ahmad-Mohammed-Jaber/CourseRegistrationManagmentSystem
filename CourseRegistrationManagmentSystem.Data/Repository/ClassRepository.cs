@@ -1,5 +1,6 @@
 using CourseRegistrationManagmentSystem.Data.Database;
 using CourseRegistrationManagmentSystem.Models;
+using CourseRegistrationManagmentSystem.Shared.Models;
 using Microsoft.Data.SqlClient;
 using System.Data;
 
@@ -90,7 +91,6 @@ public class ClassRepository : IGenericRepository<Class>
         }
         return classes;
     }
-
 
     public async Task<List<Class>> GetAllAsync()
     {
