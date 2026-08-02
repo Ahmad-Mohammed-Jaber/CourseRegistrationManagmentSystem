@@ -8,7 +8,7 @@ namespace CourseRegistrationManagmentSystem.Data.Repository;
 
 public class UserRepository : IGenericRepository<User>
 {
-    public async Task<User?> GetByUserNameAsync(string userName, string password)
+    public async Task<User?> GetByUserNameAsync(string userName)
     {
         using var connection = DBConnectionFactory.CreateConnection();
         await connection.OpenAsync();

@@ -2,7 +2,7 @@
 
 public static class SessionManager
 {
-    public static UserSession? UserSession { get; private set; };
+    public static UserSession? UserSession { get; private set; }
 
     public static StudentSession? StudentSession { get; set; }
 

@@ -7,7 +7,7 @@ public class User
         Student
     }
 
-    public Guid Id { get; set; }
+    public Guid Id { get; set; } = Guid.NewGuid();
 
     public string UserName { get; set; }
 
@@ -15,7 +15,7 @@ public class User
 
     public string FullName { get; set; }
 
-    public UserRoles Role { get; set; }
+    public UserRoles Role { get; set; } = UserRoles.Admin;
 
     public bool IsActive { get; set; }
 }

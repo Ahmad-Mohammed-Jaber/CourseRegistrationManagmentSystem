@@ -58,6 +58,10 @@ public class StudentRepository : IGenericRepository<Student>
         return null;
     }
 
+    public Student? GetByUserIdAsync(Guid userId)
+    {
+
+    }
     public List<Student> GetAll()
     {
         using var connection = DBConnectionFactory.CreateConnection();
