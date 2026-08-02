@@ -1,4 +1,6 @@
-﻿UserRepository userRepo = new UserRepository();
+﻿using CourseRegistrationManagmentSystem.Data.Repository;
+
+UserRepository userRepo = new UserRepository();
 
 await userRepo.AddAsync(new User
 {

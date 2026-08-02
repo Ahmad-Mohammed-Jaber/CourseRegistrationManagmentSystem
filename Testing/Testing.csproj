@@ -10,7 +10,6 @@
   <ItemGroup>
     <ProjectReference Include="..\CourseRegistrationManagmentSystem.Data\CourseRegistrationManagmentSystem.Data.csproj" />
     <ProjectReference Include="..\CourseRegistrationManagmentSystem.Models\CourseRegistrationManagmentSystem.Models.csproj" />
-    <ProjectReference Include="..\CourseRegistrationManagmentSystem\CourseRegistrationManagmentSystem.View.csproj" />
   </ItemGroup>
 
 </Project>
