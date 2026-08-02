@@ -1,0 +1,9 @@
+<Project>
+  <PropertyGroup>
+    <!-- Suppress specific warning codes (e.g., CS1591, NU1605) -->
+    <NoWarn>$(NoWarn);CS1591;NU1605</NoWarn>
+    
+    <!-- Optional: Prevent specific warnings from breaking the build if TreatWarningsAsErrors is on -->
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);CS0618</WarningsNotAsErrors>
+  </PropertyGroup>
+</Project>   

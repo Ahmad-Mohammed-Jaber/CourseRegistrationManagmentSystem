@@ -21,4 +21,8 @@ public interface IGenericService<TDto>
     void Delete(Guid id);
 
     Task DeleteAsync(Guid id);
+
+    List<TDto> Search(string regex);
+
+    Task<List<TDto>> SearchAsync(string regex);
 }

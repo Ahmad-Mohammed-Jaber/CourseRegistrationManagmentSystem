@@ -68,17 +68,86 @@ public static class MappingExtensions
         };
     }
 
-    public static RegistrationDto? ToDto(this Registrations reg)
+    public static User ToEntity(this UserDto dto)
     {
-        if (reg == null) return null;
+        return new User
+        {
+            Id = dto.Id,
+            UserName = dto.UserName,
+            FullName = dto.FullName,
+            Role = dto.Role,
+            IsActive = dto.IsActive
+        };
+    }
+
+    public static Student ToEntity(this StudentDto dto)
+    {
+        return new Student
+        {
+            Id = dto.Id,
+            UserId = dto.Id, // In Student model, UserId is often the primary link to User table
+            UserName = dto.UserName,
+            FullName = dto.FullName,
+            Role = dto.Role,
+            IsActive = dto.IsActive,
+            StudentNumber = dto.StudentNumber,
+            Email = dto.Email,
+            Phone = dto.Phone
+        };
+    }
+
+    public static Class ToEntity(this ClassDto dto)
+    {
+        return new Class
+        {
+            Id = dto.Id,
+            CourseId = dto.CourseId,
+            ClassName = dto.ClassName,
+            Instructor = dto.Instructor,
+            Capacity = dto.Capacity,
+            StartDate = dto.StartDate,
+            EndDate = dto.EndDate,
+            Schedule = dto.Schedule,
+            IsActive = dto.IsActive
+        };
+    }
+
+    public static Course ToEntity(this CourseDto dto)
+    {
+        return new Course
+        {
+            Id = dto.Id,
+            CourseCode = dto.CourseCode,
+            CourseName = dto.CourseName,
+            CreditHours = dto.CreditHours,
+            Description = dto.Description,
+            IsActive = dto.IsActive
+        };
+    }
+
+    public static RegistrationDto? ToDto(this Registrations registration)
+    {
+        if (registration == null) return null;
 
         return new RegistrationDto
         {
-            Id = reg.Id,
-            StudentId = reg.StudentId,
-            ClassId = reg.ClassId,
-            RegistrationDate = reg.RegsitrationDate,
-            Status = reg.Status
+            Id = registration.Id,
+            StudentId = registration.StudentId,
+            ClassId = registration.ClassId,
+            RegistrationDate = registration.RegsitrationDate,
+            Status = registration.Status
+        };
+    }
+
+    public static Registrations ToEntity(this RegistrationDto registrationDto)
+    {
+        return new Registrations
+        {
+            Id = registrationDto.Id,
+            StudentId = registrationDto.StudentId,
+            ClassId = registrationDto.ClassId,
+            RegsitrationDate = registrationDto.RegistrationDate,
+            Status = registrationDto.Status
         };
     }
 }
