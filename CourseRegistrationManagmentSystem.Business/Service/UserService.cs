@@ -1,17 +1,14 @@
 ﻿using CourseRegistrationManagmentSystem.Business.Interfaces;
-using CourseRegistrationManagmentSystem.Models;
-using CourseRegistrationManagmentSystem.Shared.Models;
 using CourseRegistrationManagmentSystem.Shared.Dtos;
 
-public class UserService : IGenericService<User, UserDto>
+public class UserService : IGenericService<UserDto>
 {
     public UserDto? GetById(Guid id)
     {
-        // Implementation would call repository and use .ToDto()
         throw new NotImplementedException();
     }
 
-    public UserDto? GetByIdAsync(Guid id)
+    public Task<UserDto?> GetByIdAsync(Guid id)
     {
         throw new NotImplementedException();
     }
@@ -21,12 +18,12 @@ public class UserService : IGenericService<User, UserDto>
         throw new NotImplementedException();
     }
 
-    public List<UserDto> GetAllAsync()
+    public Task<List<UserDto>> GetAllAsync()
     {
         throw new NotImplementedException();
     }
 
-    public Task Add(UserDto dto)
+    public void Add(UserDto dto)
     {
         throw new NotImplementedException();
     }
@@ -36,7 +33,7 @@ public class UserService : IGenericService<User, UserDto>
         throw new NotImplementedException();
     }
 
-    public Task Update(Guid id, UserDto dto)
+    public void Update(Guid id, UserDto dto)
     {
         throw new NotImplementedException();
     }
@@ -46,7 +43,7 @@ public class UserService : IGenericService<User, UserDto>
         throw new NotImplementedException();
     }
 
-    public Task Delete(Guid id)
+    public void Delete(Guid id)
     {
         throw new NotImplementedException();
     }

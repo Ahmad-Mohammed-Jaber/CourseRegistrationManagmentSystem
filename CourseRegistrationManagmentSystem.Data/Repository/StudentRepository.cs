@@ -58,8 +58,28 @@ public class StudentRepository : IGenericRepository<Student>
         return null;
     }
 
-    public Student? GetByUserIdAsync(Guid userId)
+    public async Task<Student?> GetByUserIdAsync(Guid userId)
     {
+        using var connection = DBConnectionFactory.CreateConnection();
+        await connection.OpenAsync();
+
+        string sql = "SELECT Id, UserId, StudentNumber, FullName, Email, Phone FROM Student WHERE UserId = @UserId";
+        using var command = new SqlCommand(sql, connection);
+        command.Parameters.Add("@UserId", SqlDbType.UniqueIdentifier).Value = userId;
+
+        using var reader = await command.ExecuteReaderAsync();
+        if (await reader.ReadAsync())
+        {
+            return new Student
+            {
+                Id = reader.GetGuid(0),
+                UserId = reader.GetGuid(1),
+                StudentNumber = reader.GetInt32(2),
+                FullName = reader.GetString(3),
+                Email = reader.GetString(4),
+                Phone = reader.GetString(5)
+            };
+        }
         return null;
     }
 

@@ -11,26 +11,26 @@ public class AuthService
     {
         UserRepository userRepository = new UserRepository();
 
-        User? res = await userRepository.GetByUserNameAsync(userName);
+        User? userRes = await userRepository.GetByUserNameAsync(userName);
 
         // Verify Hash
-        bool validPassword = Verify(password, res.PasswordHash);
+        bool validPassword = Verify(password, userRes.PasswordHash);
 
         if (!validPassword) return (null, null);
 
-        UserSession? userSession = new UserSession(res.Id, res.UserName, res.FullName, res.IsActive)
+        UserSession? userSession = new UserSession(userRes.Id, userRes.UserName, userRes.FullName, userRes.IsActive)
         {
-            Role = res.Role,
+            Role = userRes.Role,
         };
 
-        if (res.Role == User.UserRoles.Admin)
+        if (userRes.Role == User.UserRoles.Admin)
         {
             return (userSession, null);
         }
 
         StudentRepository studentRepository = new StudentRepository();
 
-        studentRepository.GetById
+        Student? student = await studentRepository.GetByUserIdAsync(userRes.Id);
     }
 
     public async Task RegisterAdmin(string userName, string fullName, bool isActive, string password)
