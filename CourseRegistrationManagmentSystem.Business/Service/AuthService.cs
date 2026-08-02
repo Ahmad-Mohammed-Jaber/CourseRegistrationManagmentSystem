@@ -7,16 +7,20 @@ using static BCrypt.Net.BCrypt;
 
 public class AuthService
 {
-    public async Task<(UserSession?, StudentSession?)> Login(string userName, string password)
-    {
-        UserRepository userRepository = new UserRepository();
+    private readonly UserRepository _userRepository = new UserRepository();
+    private readonly StudentRepository _studentRepository = new StudentRepository();
 
-        User? userRes = await userRepository.GetByUserNameAsync(userName);
+    public async Task<(UserSession?, StudentSession?)> LoginAsync(string userName, string password)
+    {
+        User? userRes = await _userRepository.GetByUserNameAsync(userName);
 
         // Verify Hash
         bool validPassword = Verify(password, userRes.PasswordHash);
 
-        if (!validPassword) return (null, null);
+        if (!validPassword)
+        {
+            throw new InvalidOperationException("Incorrect password!");
+        }
 
         UserSession? userSession = new UserSession(userRes.Id, userRes.UserName, userRes.FullName, userRes.IsActive)
         {
@@ -30,11 +34,20 @@ public class AuthService
 
         StudentRepository studentRepository = new StudentRepository();
 
-        Student? student = await studentRepository.GetByUserIdAsync(userRes.Id);
+        Student? studentRes = await studentRepository.GetByUserIdAsync(userRes.Id);
+
+        StudentSession? studentSession = new StudentSession(studentRes.Id, studentRes.UserId, studentRes.FullName, studentRes.StudentNumber, studentRes.Email, studentRes.Phone);
+
+        return (userSession, studentSession);
     }
 
-    public async Task RegisterAdmin(string userName, string fullName, bool isActive, string password)
+    public async Task RegisterAdminAsync(string userName, string fullName, bool isActive, string password)
     {
+        if (SessionManager.UserSession!.IsAdmin)
+        {
+            throw new InvalidOperationException("Only admins can register new users");
+        }
+
         UserRepository userRepository = new UserRepository();
 
         string passwordHash = HashPassword(password);
@@ -48,11 +61,38 @@ public class AuthService
         });
     }
 
-    public async RegisterStudent(string userName, string fullName, bool isActive, , string password)
+    public async Task RegisterStudentAsync(string userName, int studentNumber, string fullName, bool isActive, string email, string phone, string password)
     {
-        UserRepository userRepository = new UserRepository();
-        StudentRepository studentRepository = new StudentRepository();
 
-         
+        string passwordHash = HashPassword(password);
+
+        User user = new User
+        {
+            Id = Guid.NewGuid(),
+            UserName = userName,
+            FullName = fullName,
+            IsActive = isActive,
+            PasswordHash = passwordHash,
+            Role = User.UserRoles.Student,
+        };
+
+        await _userRepository.AddAsync(user);
+
+        Student student = new Student
+        {
+            Id = Guid.NewGuid() ,
+            UserId = user.Id,
+            UserName = userName,
+            FullName = fullName,
+            Email = email,
+            IsActive = isActive,
+            Role = User.UserRoles.Student,
+            Phone = phone,
+            StudentNumber = studentNumber,
+            PasswordHash = passwordHash
+            
+        };
+
+        await _studentRepository.AddAsync(student);
     }
 }
