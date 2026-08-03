@@ -1,4 +1,5 @@
 namespace CourseRegistrationManagmentSystem.Shared.Dtos;
+using CourseRegistrationManagmentSystem.Shared.Helpers;
 
 public class ClassDto
 {
@@ -11,5 +12,6 @@ public class ClassDto
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
     public CourseRegistrationManagmentSystem.Shared.Models.Class.DaysOfWeek Schedule { get; set; }
+    public string ScheduleString => ScheduleHelper.GetScheduleString(Schedule);
     public bool IsActive { get; set; }
 }

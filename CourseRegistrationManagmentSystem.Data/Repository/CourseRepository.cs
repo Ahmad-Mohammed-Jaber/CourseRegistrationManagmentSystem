@@ -118,8 +118,8 @@ public class CourseRepository : IGenericRepository<Course>
 
         using var insertCommand = new SqlCommand(sql, connection);
         insertCommand.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = entity.Id;
-        insertCommand.Parameters.Add("@CourseCode", SqlDbType.NVarChar, 3).Value = entity.CourseCode;
-        insertCommand.Parameters.Add("@CourseName", SqlDbType.NChar, 10).Value = entity.CourseName;
+        insertCommand.Parameters.Add("@CourseCode", SqlDbType.NVarChar, 6).Value = entity.CourseCode;
+        insertCommand.Parameters.Add("@CourseName", SqlDbType.NVarChar, 100).Value = entity.CourseName;
         insertCommand.Parameters.Add("@CreditHours", SqlDbType.Decimal).Value = entity.CreditHours;
         insertCommand.Parameters.Add("@Description", SqlDbType.NVarChar).Value = entity.Description;
         insertCommand.Parameters.Add("@IsActive", SqlDbType.Bit).Value = entity.IsActive;
@@ -137,8 +137,8 @@ public class CourseRepository : IGenericRepository<Course>
 
         using var insertCommand = new SqlCommand(sql, connection);
         insertCommand.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = entity.Id;
-        insertCommand.Parameters.Add("@CourseCode", SqlDbType.NVarChar, 3).Value = entity.CourseCode;
-        insertCommand.Parameters.Add("@CourseName", SqlDbType.NChar, 10).Value = entity.CourseName;
+        insertCommand.Parameters.Add("@CourseCode", SqlDbType.NVarChar, 6).Value = entity.CourseCode;
+        insertCommand.Parameters.Add("@CourseName", SqlDbType.NVarChar, 100).Value = entity.CourseName;
         insertCommand.Parameters.Add("@CreditHours", SqlDbType.Decimal).Value = entity.CreditHours;
         insertCommand.Parameters.Add("@Description", SqlDbType.NVarChar).Value = entity.Description;
         insertCommand.Parameters.Add("@IsActive", SqlDbType.Bit).Value = entity.IsActive;
@@ -157,8 +157,8 @@ public class CourseRepository : IGenericRepository<Course>
 
         using var updateCommand = new SqlCommand(sql, connection);
         updateCommand.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
-        updateCommand.Parameters.Add("@CourseCode", SqlDbType.NVarChar, 3).Value = entity.CourseCode;
-        updateCommand.Parameters.Add("@CourseName", SqlDbType.NChar, 10).Value = entity.CourseName;
+        updateCommand.Parameters.Add("@CourseCode", SqlDbType.NVarChar, 6).Value = entity.CourseCode;
+        updateCommand.Parameters.Add("@CourseName", SqlDbType.NVarChar, 100).Value = entity.CourseName;
         updateCommand.Parameters.Add("@CreditHours", SqlDbType.Decimal).Value = entity.CreditHours;
         updateCommand.Parameters.Add("@Description", SqlDbType.NVarChar).Value = entity.Description;
         updateCommand.Parameters.Add("@IsActive", SqlDbType.Bit).Value = entity.IsActive;
@@ -177,8 +177,8 @@ public class CourseRepository : IGenericRepository<Course>
 
         using var updateCommand = new SqlCommand(sql, connection);
         updateCommand.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
-        updateCommand.Parameters.Add("@CourseCode", SqlDbType.NVarChar, 3).Value = entity.CourseCode;
-        updateCommand.Parameters.Add("@CourseName", SqlDbType.NChar, 10).Value = entity.CourseName;
+        updateCommand.Parameters.Add("@CourseCode", SqlDbType.NVarChar, 6).Value = entity.CourseCode;
+        updateCommand.Parameters.Add("@CourseName", SqlDbType.NChar, 100).Value = entity.CourseName;
         updateCommand.Parameters.Add("@CreditHours", SqlDbType.Decimal).Value = entity.CreditHours;
         updateCommand.Parameters.Add("@Description", SqlDbType.NVarChar).Value = entity.Description;
         updateCommand.Parameters.Add("@IsActive", SqlDbType.Bit).Value = entity.IsActive;

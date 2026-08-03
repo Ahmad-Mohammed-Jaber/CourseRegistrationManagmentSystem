@@ -4,6 +4,7 @@ using CourseRegistrationManagmentSystem.Shared.Dtos;
 using CourseRegistrationManagmentSystem.Data.Repository;
 using System.Text.RegularExpressions;
 
+namespace CourseRegistrationManagmentSystem.Business.Services.AdminServices;
 public class StudentService : ICrudService<StudentDto>
 {
     private readonly StudentRepository _studentRepository = new StudentRepository();

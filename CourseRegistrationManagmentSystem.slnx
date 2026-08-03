@@ -1,6 +1,7 @@
 <Solution>
   <Project Path="CourseRegistrationManagmentSystem.Business/CourseRegistrationManagmentSystem.Business.csproj" Id="856b44d8-17ac-431b-8271-aba6130fc19d" />
+  <Project Path="CourseRegistrationManagmentSystem.Console/CourseRegistrationManagmentSystem.Console.csproj" Id="cc72ea80-c69f-46d0-b19c-77fdcfab296a" />
   <Project Path="CourseRegistrationManagmentSystem.Data/CourseRegistrationManagmentSystem.Data.csproj" Id="f0089564-19b6-4a89-b171-19cfcb506a8b" />
   <Project Path="CourseRegistrationManagmentSystem.Shared/CourseRegistrationManagmentSystem.Shared.csproj" Id="3c081474-1f47-41cd-9885-186e2db8ea8f" />
-  <Project Path="Testing/Testing.csproj" Id="7e30adb8-3e0a-45b1-8848-4864fff969c7" />
+  <Project Path="CourseRegistrationManagmentSystem.View/CourseRegistrationManagmentSystem.View.csproj" Id="b40ed3f6-1900-4156-96d7-50514a1bb980" />
 </Solution>

@@ -10,7 +10,7 @@ public class RegistrationService
 
     public async Task RegisterClass(Guid classId)
     {
-        AccessValidator.RequireLogin();
+        AccessValidator.RequireRole(User.UserRoles.Student);
         Guid studentId = SessionManager.StudentSession!.Id;
 
         Class? @class = await _classRepository.GetByIdAsync(classId);
@@ -51,7 +51,7 @@ public class RegistrationService
 
     public async Task DropRegistration(Guid registrationId)
     {
-        AccessValidator.RequireLogin();
+        AccessValidator.RequireRole(User.UserRoles.Student);
         Guid studentId = SessionManager.StudentSession!.Id;
 
         Registration? registration = await _registrationRepository.GetByIdAsync(registrationId);
