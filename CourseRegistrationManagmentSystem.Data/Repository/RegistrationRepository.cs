@@ -6,9 +6,9 @@ using System.Data;
 
 namespace CourseRegistrationManagmentSystem.Data.Repository;
 
-public class RegistrationRepository : IGenericRepository<Registrations>
+public class RegistrationRepository : IGenericRepository<Registration>
 {
-    public Registrations? GetById(Guid id)
+    public Registration? GetById(Guid id)
     {
         using var connection = DBConnectionFactory.CreateConnection();
         connection.Open();
@@ -20,7 +20,7 @@ public class RegistrationRepository : IGenericRepository<Registrations>
         using var reader = command.ExecuteReader();
         if (reader.Read())
         {
-            return new Registrations
+            return new Registration
             {
                 Id = reader.GetGuid(0),
                 StudentId = reader.GetGuid(1),
@@ -32,7 +32,7 @@ public class RegistrationRepository : IGenericRepository<Registrations>
         return null;
     }
 
-    public async Task<Registrations?> GetByIdAsync(Guid id)
+    public async Task<Registration?> GetByIdAsync(Guid id)
     {
         using var connection = DBConnectionFactory.CreateConnection();
         await connection.OpenAsync();
@@ -44,7 +44,7 @@ public class RegistrationRepository : IGenericRepository<Registrations>
         using var reader = await command.ExecuteReaderAsync();
         if (await reader.ReadAsync())
         {
-            return new Registrations
+            return new Registration
             {
                 Id = reader.GetGuid(0),
                 StudentId = reader.GetGuid(1),
@@ -56,7 +56,22 @@ public class RegistrationRepository : IGenericRepository<Registrations>
         return null;
     }
 
-    public List<Registrations> GetAll()
+    public async Task<bool> ExistsAsync(Guid studentId, Guid classId)
+    {
+        using var connection = DBConnectionFactory.CreateConnection();
+        await connection.OpenAsync();
+
+        string sql = "SELECT 1 FROM Registrations WHERE StudentId = @StudentId AND ClassId = @ClassId;";
+
+        using var command = new SqlCommand(sql, connection);
+
+        command.Parameters.Add("@StudentId", SqlDbType.UniqueIdentifier).Value = studentId;
+        command.Parameters.Add("@ClassId", SqlDbType.UniqueIdentifier).Value = classId;
+
+        return await command.ExecuteScalarAsync() is not null;
+    }
+
+    public List<Registration> GetAll()
     {
         using var connection = DBConnectionFactory.CreateConnection();
         connection.Open();
@@ -65,10 +80,10 @@ public class RegistrationRepository : IGenericRepository<Registrations>
         using var command = new SqlCommand(sql, connection);
         using var reader = command.ExecuteReader();
 
-        var registrations = new List<Registrations>();
+        var registrations = new List<Registration>();
         while (reader.Read())
         {
-            registrations.Add(new Registrations
+            registrations.Add(new Registration
             {
                 Id = reader.GetGuid(0),
                 StudentId = reader.GetGuid(1),
@@ -80,7 +95,7 @@ public class RegistrationRepository : IGenericRepository<Registrations>
         return registrations;
     }
 
-    public async Task<List<Registrations>> GetAllAsync()
+    public async Task<List<Registration>> GetAllAsync()
     {
         using var connection = DBConnectionFactory.CreateConnection();
         await connection.OpenAsync();
@@ -89,10 +104,10 @@ public class RegistrationRepository : IGenericRepository<Registrations>
         using var command = new SqlCommand(sql, connection);
         using var reader = await command.ExecuteReaderAsync();
 
-        var registrations = new List<Registrations>();
+        var registrations = new List<Registration>();
         while (await reader.ReadAsync())
         {
-            registrations.Add(new Registrations
+            registrations.Add(new Registration
             {
                 Id = reader.GetGuid(0),
                 StudentId = reader.GetGuid(1),
@@ -104,7 +119,7 @@ public class RegistrationRepository : IGenericRepository<Registrations>
         return registrations;
     }
 
-    public void Add(Registrations entity)
+    public void Add(Registration entity)
     {
         using var connection = DBConnectionFactory.CreateConnection();
         connection.Open();
@@ -122,7 +137,7 @@ public class RegistrationRepository : IGenericRepository<Registrations>
         insertCommand.ExecuteNonQuery();
     }
 
-    public async Task AddAsync(Registrations entity)
+    public async Task AddAsync(Registration entity)
     {
         using var connection = DBConnectionFactory.CreateConnection();
         await connection.OpenAsync();
@@ -140,7 +155,7 @@ public class RegistrationRepository : IGenericRepository<Registrations>
         await insertCommand.ExecuteNonQueryAsync();
     }
 
-    public void Update(Guid id, Registrations entity)
+    public void Update(Guid id, Registration entity)
     {
         using var connection = DBConnectionFactory.CreateConnection();
         connection.Open();
@@ -159,7 +174,7 @@ public class RegistrationRepository : IGenericRepository<Registrations>
         updateCommand.ExecuteNonQuery();
     }
 
-    public async Task UpdateAsync(Guid id, Registrations entity)
+    public async Task UpdateAsync(Guid id, Registration entity)
     {
         using var connection = DBConnectionFactory.CreateConnection();
         await connection.OpenAsync();
@@ -200,5 +215,55 @@ public class RegistrationRepository : IGenericRepository<Registrations>
         deleteCommand.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
 
         await deleteCommand.ExecuteNonQueryAsync();
+    }
+
+    public List<Registration> Search(string regex)
+    {
+        using var connection = DBConnectionFactory.CreateConnection();
+        connection.Open();
+
+        string sql = "SELECT Id, StudentId, ClassId, RegistrationDate, Status FROM Registrations WHERE Status LIKE @regex";
+        using var command = new SqlCommand(sql, connection);
+        command.Parameters.Add("@regex", SqlDbType.NVarChar).Value = $"%{regex}%";
+
+        using var reader = command.ExecuteReader();
+        var registrations = new List<Registration>();
+        while (reader.Read())
+        {
+            registrations.Add(new Registration
+            {
+                Id = reader.GetGuid(0),
+                StudentId = reader.GetGuid(1),
+                ClassId = reader.GetGuid(2),
+                RegsitrationDate = reader.GetDateTime(3),
+                Status = reader.GetString(4)
+            });
+        }
+        return registrations;
+    }
+
+    public async Task<List<Registration>> SearchAsync(string regex)
+    {
+        using var connection = DBConnectionFactory.CreateConnection();
+        await connection.OpenAsync();
+
+        string sql = "SELECT Id, StudentId, ClassId, RegistrationDate, Status FROM Registrations WHERE Status LIKE @regex";
+        using var command = new SqlCommand(sql, connection);
+        command.Parameters.Add("@regex", SqlDbType.NVarChar).Value = $"%{regex}%";
+
+        using var reader = await command.ExecuteReaderAsync();
+        var registrations = new List<Registration>();
+        while (await reader.ReadAsync())
+        {
+            registrations.Add(new Registration
+            {
+                Id = reader.GetGuid(0),
+                StudentId = reader.GetGuid(1),
+                ClassId = reader.GetGuid(2),
+                RegsitrationDate = reader.GetDateTime(3),
+                Status = reader.GetString(4)
+            });
+        }
+        return registrations;
     }
 }

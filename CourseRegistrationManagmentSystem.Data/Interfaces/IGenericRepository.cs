@@ -21,4 +21,8 @@ public interface IGenericRepository<T>
     void Delete(Guid id);
 
     Task DeleteAsync(Guid id);
+
+    List<T> Search(string regex);
+
+    Task<List<T>> SearchAsync(string regex);
 }

@@ -1,6 +1,6 @@
 ﻿namespace CourseRegistrationManagmentSystem.Business.Interfaces;
 
-public interface IGenericService<TDto>
+public interface ICrudService<TDto>
 {
     TDto? GetById(Guid id);
 

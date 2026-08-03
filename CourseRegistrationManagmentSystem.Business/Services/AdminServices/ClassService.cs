@@ -1,12 +1,10 @@
 using CourseRegistrationManagmentSystem.Business.Interfaces;
 using CourseRegistrationManagmentSystem.Business.Validation;
 using CourseRegistrationManagmentSystem.Shared.Dtos;
-using CourseRegistrationManagmentSystem.Shared.Models;
 using CourseRegistrationManagmentSystem.Data.Repository;
-using System.Linq;
 using System.Text.RegularExpressions;
 
-public class ClassService : IGenericService<ClassDto>
+public class ClassService : ICrudService<ClassDto>
 {
     private readonly ClassRepository _classRepository = new ClassRepository();
 
@@ -60,7 +58,8 @@ public class ClassService : IGenericService<ClassDto>
         classEntity.CourseId = classDto.CourseId;
         classEntity.ClassName = classDto.ClassName;
         classEntity.Instructor = classDto.Instructor;
-        classEntity.Capacity = classDto.Capacity;
+        classEntity.MaxCapacity = classDto.MaxCapacity;
+        classEntity.CurrentCapacity = classDto.CurrentCapacity;
         classEntity.StartDate = classDto.StartDate;
         classEntity.EndDate = classDto.EndDate;
         classEntity.Schedule = classDto.Schedule;
@@ -78,7 +77,8 @@ public class ClassService : IGenericService<ClassDto>
         classEntity.CourseId = classDto.CourseId;
         classEntity.ClassName = classDto.ClassName;
         classEntity.Instructor = classDto.Instructor;
-        classEntity.Capacity = classDto.Capacity;
+        classEntity.MaxCapacity = classDto.MaxCapacity;
+        classEntity.CurrentCapacity = classDto.CurrentCapacity;
         classEntity.StartDate = classDto.StartDate;
         classEntity.EndDate = classDto.EndDate;
         classEntity.Schedule = classDto.Schedule;

@@ -234,4 +234,56 @@ public class StudentRepository : IGenericRepository<Student>
 
         await deleteCommand.ExecuteNonQueryAsync();
     }
+
+    public List<Student> Search(string regex)
+    {
+        using var connection = DBConnectionFactory.CreateConnection();
+        connection.Open();
+
+        string sql = "SELECT Id, UserId, StudentNumber, FullName, Email, Phone FROM Student WHERE FullName LIKE @regex OR Email LIKE @regex";
+        using var command = new SqlCommand(sql, connection);
+        command.Parameters.Add("@regex", SqlDbType.NVarChar).Value = $"%{regex}%";
+
+        using var reader = command.ExecuteReader();
+        var students = new List<Student>();
+        while (reader.Read())
+        {
+            students.Add(new Student
+            {
+                Id = reader.GetGuid(0),
+                UserId = reader.GetGuid(1),
+                StudentNumber = reader.GetInt32(2),
+                FullName = reader.GetString(3),
+                Email = reader.GetString(4),
+                Phone = reader.GetString(5)
+            });
+        }
+        return students;
+    }
+
+    public async Task<List<Student>> SearchAsync(string regex)
+    {
+        using var connection = DBConnectionFactory.CreateConnection();
+        await connection.OpenAsync();
+
+        string sql = "SELECT Id, UserId, StudentNumber, FullName, Email, Phone FROM Student WHERE FullName LIKE @regex OR Email LIKE @regex";
+        using var command = new SqlCommand(sql, connection);
+        command.Parameters.Add("@regex", SqlDbType.NVarChar).Value = $"%{regex}%";
+
+        using var reader = await command.ExecuteReaderAsync();
+        var students = new List<Student>();
+        while (await reader.ReadAsync())
+        {
+            students.Add(new Student
+            {
+                Id = reader.GetGuid(0),
+                UserId = reader.GetGuid(1),
+                StudentNumber = reader.GetInt32(2),
+                FullName = reader.GetString(3),
+                Email = reader.GetString(4),
+                Phone = reader.GetString(5)
+            });
+        }
+        return students;
+    }
 }

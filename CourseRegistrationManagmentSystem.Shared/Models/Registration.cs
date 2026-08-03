@@ -1,6 +1,6 @@
 ﻿namespace CourseRegistrationManagmentSystem.Shared.Models;
 
-public class Registrations
+public class Registration
 {
     public Guid Id { get; set; }
 

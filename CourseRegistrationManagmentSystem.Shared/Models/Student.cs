@@ -14,7 +14,6 @@ public class Student : User
 
     public Student()
     {
-        UserId = base.Id;
         Role = UserRoles.Student;
     }
 }

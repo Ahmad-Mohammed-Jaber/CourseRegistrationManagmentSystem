@@ -60,7 +60,8 @@ public static class MappingExtensions
             CourseId = cls.CourseId,
             ClassName = cls.ClassName,
             Instructor = cls.Instructor,
-            Capacity = cls.Capacity,
+            MaxCapacity = cls.MaxCapacity,
+            CurrentCapacity = cls.CurrentCapacity,
             StartDate = cls.StartDate,
             EndDate = cls.EndDate,
             Schedule = cls.Schedule,
@@ -104,7 +105,8 @@ public static class MappingExtensions
             CourseId = dto.CourseId,
             ClassName = dto.ClassName,
             Instructor = dto.Instructor,
-            Capacity = dto.Capacity,
+            MaxCapacity = dto.MaxCapacity,
+            CurrentCapacity = dto.CurrentCapacity,
             StartDate = dto.StartDate,
             EndDate = dto.EndDate,
             Schedule = dto.Schedule,
@@ -125,7 +127,7 @@ public static class MappingExtensions
         };
     }
 
-    public static RegistrationDto? ToDto(this Registrations registration)
+    public static RegistrationDto? ToDto(this Registration registration)
     {
         if (registration == null) return null;
 
@@ -139,9 +141,9 @@ public static class MappingExtensions
         };
     }
 
-    public static Registrations ToEntity(this RegistrationDto registrationDto)
+    public static Registration ToEntity(this RegistrationDto registrationDto)
     {
-        return new Registrations
+        return new Registration
         {
             Id = registrationDto.Id,
             StudentId = registrationDto.StudentId,

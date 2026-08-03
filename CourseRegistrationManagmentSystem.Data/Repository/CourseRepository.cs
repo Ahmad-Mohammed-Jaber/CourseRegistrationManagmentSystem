@@ -209,4 +209,56 @@ public class CourseRepository : IGenericRepository<Course>
 
         await deleteCommand.ExecuteNonQueryAsync();
     }
+
+    public List<Course> Search(string regex)
+    {
+        using var connection = DBConnectionFactory.CreateConnection();
+        connection.Open();
+
+        string sql = "SELECT Id, CourseCode, CourseName, CreditHours, Description, IsActive FROM Course WHERE CourseCode LIKE @regex OR CourseName LIKE @regex";
+        using var command = new SqlCommand(sql, connection);
+        command.Parameters.Add("@regex", SqlDbType.NVarChar).Value = $"%{regex}%";
+
+        using var reader = command.ExecuteReader();
+        var courses = new List<Course>();
+        while (reader.Read())
+        {
+            courses.Add(new Course
+            {
+                Id = reader.GetGuid(0),
+                CourseCode = reader.GetString(1),
+                CourseName = reader.GetString(2),
+                CreditHours = (double)reader.GetDecimal(3),
+                Description = reader.GetString(4),
+                IsActive = reader.GetBoolean(5)
+            });
+        }
+        return courses;
+    }
+
+    public async Task<List<Course>> SearchAsync(string regex)
+    {
+        using var connection = DBConnectionFactory.CreateConnection();
+        await connection.OpenAsync();
+
+        string sql = "SELECT Id, CourseCode, CourseName, CreditHours, Description, IsActive FROM Course WHERE CourseCode LIKE @regex OR CourseName LIKE @regex";
+        using var command = new SqlCommand(sql, connection);
+        command.Parameters.Add("@regex", SqlDbType.NVarChar).Value = $"%{regex}%";
+
+        using var reader = await command.ExecuteReaderAsync();
+        var courses = new List<Course>();
+        while (await reader.ReadAsync())
+        {
+            courses.Add(new Course
+            {
+                Id = reader.GetGuid(0),
+                CourseCode = reader.GetString(1),
+                CourseName = reader.GetString(2),
+                CreditHours = (double)reader.GetDecimal(3),
+                Description = reader.GetString(4),
+                IsActive = reader.GetBoolean(5)
+            });
+        }
+        return courses;
+    }
 }

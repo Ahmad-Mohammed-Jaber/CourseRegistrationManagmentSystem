@@ -31,7 +31,6 @@ public class UserRepository : IGenericRepository<User>
             };
         }
         return null;
-
     }
 
     public User? GetById(Guid id)
@@ -234,5 +233,57 @@ public class UserRepository : IGenericRepository<User>
         deleteCommand.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
 
         await deleteCommand.ExecuteNonQueryAsync();
+    }
+
+    public List<User> Search(string regex)
+    {
+        using var connection = DBConnectionFactory.CreateConnection();
+        connection.Open();
+
+        string sql = "SELECT Id, UserName, PasswordHash, FullName, Role, IsActive FROM [User] WHERE UserName LIKE @regex OR FullName LIKE @regex";
+        using var command = new SqlCommand(sql, connection);
+        command.Parameters.Add("@regex", SqlDbType.NVarChar).Value = $"%{regex}%";
+
+        using var reader = command.ExecuteReader();
+        var users = new List<User>();
+        while (reader.Read())
+        {
+            users.Add(new User
+            {
+                Id = reader.GetGuid(0),
+                UserName = reader.GetString(1),
+                PasswordHash = reader.GetString(2),
+                FullName = reader.GetString(3),
+                Role = (User.UserRoles)reader.GetInt32(4),
+                IsActive = reader.GetBoolean(5)
+            });
+        }
+        return users;
+    }
+
+    public async Task<List<User>> SearchAsync(string regex)
+    {
+        using var connection = DBConnectionFactory.CreateConnection();
+        await connection.OpenAsync();
+
+        string sql = "SELECT Id, UserName, PasswordHash, FullName, Role, IsActive FROM [User] WHERE UserName LIKE @regex OR FullName LIKE @regex";
+        using var command = new SqlCommand(sql, connection);
+        command.Parameters.Add("@regex", SqlDbType.NVarChar).Value = $"%{regex}%";
+
+        using var reader = await command.ExecuteReaderAsync();
+        var users = new List<User>();
+        while (await reader.ReadAsync())
+        {
+            users.Add(new User
+            {
+                Id = reader.GetGuid(0),
+                UserName = reader.GetString(1),
+                PasswordHash = reader.GetString(2),
+                FullName = reader.GetString(3),
+                Role = (User.UserRoles)reader.GetInt32(4),
+                IsActive = reader.GetBoolean(5)
+            });
+        }
+        return users;
     }
 }

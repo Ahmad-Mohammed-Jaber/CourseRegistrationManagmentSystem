@@ -1,12 +1,10 @@
 using CourseRegistrationManagmentSystem.Business.Interfaces;
 using CourseRegistrationManagmentSystem.Business.Validation;
 using CourseRegistrationManagmentSystem.Shared.Dtos;
-using CourseRegistrationManagmentSystem.Shared.Models;
 using CourseRegistrationManagmentSystem.Data.Repository;
-using System.Linq;
 using System.Text.RegularExpressions;
 
-public class UserService : IGenericService<UserDto>
+public class UserService : ICrudService<UserDto>
 {
     private readonly UserRepository _userRepository = new UserRepository();
 
