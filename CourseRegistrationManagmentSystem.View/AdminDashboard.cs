@@ -1,3 +1,4 @@
+using System;
 using System.Windows.Forms;
 using CourseRegistrationManagmentSystem.Shared.Session;
 
@@ -8,7 +9,41 @@ namespace CourseRegistrationManagmentSystem.View
         public AdminDashboard()
         {
             InitializeComponent();
-            lblWelcome.Text = $"Welcome, {SessionManager.UserSession?.FullName} (Admin)";
+
+            Load += AdminDashboard_Load;
+        }
+
+        private void AdminDashboard_Load(object? sender, EventArgs e)
+        {
+            LoadWelcomeText();
+
+            // Fix welcome label overlapping with logout button
+            lblWelcome.AutoSize = false;
+            lblWelcome.Left = 20;
+            lblWelcome.Top = 20;
+
+            // Keep space for logout button
+            lblWelcome.Width = this.ClientSize.Width - btnLogout.Width - 60;
+            lblWelcome.Height = 35;
+
+            lblWelcome.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            btnLogout.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+
+            lblWelcome.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            lblWelcome.BringToFront();
+        }
+
+        private void LoadWelcomeText()
+        {
+            var session = SessionManager.UserSession;
+
+            if (session == null || string.IsNullOrWhiteSpace(session.FullName))
+            {
+                lblWelcome.Text = "Welcome, Admin";
+                return;
+            }
+
+            lblWelcome.Text = $"Welcome, {session.FullName} (Admin)";
         }
 
         private void btnUserManagement_Click(object sender, EventArgs e)
@@ -54,7 +89,7 @@ namespace CourseRegistrationManagmentSystem.View
         private void btnLogout_Click(object sender, EventArgs e)
         {
             SessionManager.Logout();
-            this.Close();
+            Close();
         }
     }
 }

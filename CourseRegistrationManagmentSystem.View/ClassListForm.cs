@@ -1,4 +1,4 @@
-using CourseRegistrationManagmentSystem.Business.Services.AdminServices;
+using CourseRegistrationManagmentSystem.Business.Services;
 using CourseRegistrationManagmentSystem.Shared.Dtos;
 using System.Drawing;
 using System.Windows.Forms;
@@ -21,7 +21,7 @@ namespace CourseRegistrationManagmentSystem.View
         public ClassListForm()
         {
             InitializeComponent();
-            LoadClasses();
+            _ = LoadClassesAsync();
         }
 
         private void InitializeComponent()
@@ -92,7 +92,7 @@ namespace CourseRegistrationManagmentSystem.View
             dgvClasses.MultiSelect = false;
             dgvClasses.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
 
-            // ClassListForm
+            // Form
             ClientSize = new Size(900, 500);
             Controls.Add(dgvClasses);
             Controls.Add(topPanel);
@@ -103,21 +103,24 @@ namespace CourseRegistrationManagmentSystem.View
             ResumeLayout(false);
         }
 
-        private async void LoadClasses()
+        private async Task LoadClassesAsync()
         {
             dgvClasses.DataSource = null;
             dgvClasses.DataSource = await _classService.GetAllAsync();
+            if (dgvClasses.Columns["Schedule"] != null) dgvClasses.Columns["Schedule"].Visible = false;
         }
 
         private async void btnSearch_Click(object sender, EventArgs e)
         {
             if (!string.IsNullOrWhiteSpace(txtSearch.Text))
             {
+                dgvClasses.DataSource = null;
                 dgvClasses.DataSource = await _classService.SearchAsync(txtSearch.Text);
+                if (dgvClasses.Columns["Schedule"] != null) dgvClasses.Columns["Schedule"].Visible = false;
             }
             else
             {
-                LoadClasses();
+                await LoadClassesAsync();
             }
         }
 
@@ -127,7 +130,7 @@ namespace CourseRegistrationManagmentSystem.View
 
             if (form.ShowDialog() == DialogResult.OK)
             {
-                LoadClasses();
+                _ = LoadClassesAsync();
             }
         }
 
@@ -139,7 +142,7 @@ namespace CourseRegistrationManagmentSystem.View
 
                 if (form.ShowDialog() == DialogResult.OK)
                 {
-                    LoadClasses();
+                    _ = LoadClassesAsync();
                 }
             }
             else
@@ -161,7 +164,7 @@ namespace CourseRegistrationManagmentSystem.View
                 if (result == DialogResult.Yes)
                 {
                     await _classService.DeleteAsync(cls.Id);
-                    LoadClasses();
+                    await LoadClassesAsync();
                 }
             }
             else

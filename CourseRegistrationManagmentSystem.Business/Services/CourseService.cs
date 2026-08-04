@@ -5,7 +5,7 @@ using CourseRegistrationManagmentSystem.Data.Repository;
 using System.Text.RegularExpressions;
 
 
-namespace CourseRegistrationManagmentSystem.Business.Services.AdminServices;
+namespace CourseRegistrationManagmentSystem.Business.Services;
 public class CourseService : ICrudService<CourseDto>
 {
     private readonly CourseRepository _courseRepository = new CourseRepository();

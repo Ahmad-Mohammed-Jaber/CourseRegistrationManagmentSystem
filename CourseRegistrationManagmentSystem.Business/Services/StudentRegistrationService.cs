@@ -1,9 +1,10 @@
 ﻿using CourseRegistrationManagmentSystem.Business.Validation;
 using CourseRegistrationManagmentSystem.Data.Repository;
+using CourseRegistrationManagmentSystem.Shared.Dtos;
 using CourseRegistrationManagmentSystem.Shared.Models;
 
-namespace CourseRegistrationManagmentSystem.Business.Services.StudentServices;
-public class RegistrationService
+namespace CourseRegistrationManagmentSystem.Business.Services;
+public class StudentRegistrationService
 {
     private readonly ClassRepository _classRepository = new ClassRepository();
     private readonly RegistrationRepository _registrationRepository = new RegistrationRepository();
@@ -78,5 +79,18 @@ public class RegistrationService
         @class.CurrentCapacity--;
         if (@class.CurrentCapacity < 0) @class.CurrentCapacity = 0;
         await _classRepository.UpdateAsync(@class.Id, @class);
+    }
+    public async Task<List<RegistrationDetailsDto>> GetRegistrationsAsync()
+    {
+        AccessValidator.RequireRole(User.UserRoles.Student);
+
+        Guid studentId = SessionManager.StudentSession!.Id;
+
+        var registrations = await _registrationRepository
+            .GetStudentRegistrationsWithClassesAsync(studentId);
+
+        return registrations
+            .Select(x => x.Registration.ToDetailsDto(x.Class))
+            .ToList();
     }
 }

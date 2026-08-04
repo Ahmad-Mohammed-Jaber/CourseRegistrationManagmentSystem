@@ -66,7 +66,7 @@ public class AuthService
     {
         // Depending on requirements, student registration might be open or admin-only.
         // If it's admin-only, uncomment the line below:
-        // AccessValidator.RequireAdmin();
+         AccessValidator.RequireAdmin();
 
         string passwordHash = HashPassword(password);
 

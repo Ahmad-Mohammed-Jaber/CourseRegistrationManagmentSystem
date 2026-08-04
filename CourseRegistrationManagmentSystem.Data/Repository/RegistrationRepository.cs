@@ -3,6 +3,7 @@ using CourseRegistrationManagmentSystem.Models;
 using CourseRegistrationManagmentSystem.Shared.Models;
 using Microsoft.Data.SqlClient;
 using System.Data;
+using System.Data.Common;
 
 namespace CourseRegistrationManagmentSystem.Data.Repository;
 
@@ -248,11 +249,14 @@ public class RegistrationRepository : IGenericRepository<Registration>
         await connection.OpenAsync();
 
         string sql = "SELECT Id, StudentId, ClassId, RegistrationDate, Status FROM Registrations WHERE Status LIKE @regex";
+
         using var command = new SqlCommand(sql, connection);
         command.Parameters.Add("@regex", SqlDbType.NVarChar).Value = $"%{regex}%";
 
         using var reader = await command.ExecuteReaderAsync();
+
         var registrations = new List<Registration>();
+
         while (await reader.ReadAsync())
         {
             registrations.Add(new Registration
@@ -264,6 +268,73 @@ public class RegistrationRepository : IGenericRepository<Registration>
                 Status = reader.GetString(4)
             });
         }
+
+        return registrations;
+    }
+
+    public async Task<List<(Registration Registration, Class Class)>> GetStudentRegistrationsWithClassesAsync(Guid studentId)
+    {
+        using var connection = DBConnectionFactory.CreateConnection();
+        await connection.OpenAsync();
+
+        string sql = @"
+        SELECT 
+            r.Id,
+            r.StudentId,
+            r.ClassId,
+            r.RegistrationDate,
+            r.Status,
+
+            c.Id,
+            c.CourseId,
+            c.ClassName,
+            c.Instructor,
+            c.MaxCapacity,
+            c.CurrentCapacity,
+            c.StartDate,
+            c.EndDate,
+            c.Schedule,
+            c.IsActive
+
+        FROM Registrations r
+        INNER JOIN Class c ON r.ClassId = c.Id
+        WHERE r.StudentId = @studentId";
+
+        using var command = new SqlCommand(sql, connection);
+        command.Parameters.Add("@studentId", SqlDbType.UniqueIdentifier).Value = studentId;
+
+        using var reader = await command.ExecuteReaderAsync();
+
+        var registrations = new List<(Registration Registration, Class Class)>();
+
+        while (await reader.ReadAsync())
+        {
+            var registration = new Registration
+            {
+                Id = reader.GetGuid(0),
+                StudentId = reader.GetGuid(1),
+                ClassId = reader.GetGuid(2),
+                RegsitrationDate = reader.GetDateTime(3),
+                Status = reader.GetString(4)
+            };
+
+            var cls = new Class
+            {
+                Id = reader.GetGuid(5),
+                CourseId = reader.GetGuid(6),
+                ClassName = reader.GetString(7),
+                Instructor = reader.GetString(8),
+                MaxCapacity = reader.GetInt32(9),
+                CurrentCapacity = reader.GetInt32(10),
+                StartDate = reader.GetDateTime(11),
+                EndDate = reader.GetDateTime(12),
+                Schedule = (Class.DaysOfWeek)reader.GetInt32(13),
+                IsActive = reader.GetBoolean(14)
+            };
+
+            registrations.Add((registration, cls));
+        }
+
         return registrations;
     }
 }

@@ -178,7 +178,7 @@ public class CourseRepository : IGenericRepository<Course>
         using var updateCommand = new SqlCommand(sql, connection);
         updateCommand.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
         updateCommand.Parameters.Add("@CourseCode", SqlDbType.NVarChar, 6).Value = entity.CourseCode;
-        updateCommand.Parameters.Add("@CourseName", SqlDbType.NChar, 100).Value = entity.CourseName;
+        updateCommand.Parameters.Add("@CourseName", SqlDbType.NVarChar, 100).Value = entity.CourseName;
         updateCommand.Parameters.Add("@CreditHours", SqlDbType.Decimal).Value = entity.CreditHours;
         updateCommand.Parameters.Add("@Description", SqlDbType.NVarChar).Value = entity.Description;
         updateCommand.Parameters.Add("@IsActive", SqlDbType.Bit).Value = entity.IsActive;

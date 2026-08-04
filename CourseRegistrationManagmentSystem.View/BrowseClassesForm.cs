@@ -1,16 +1,18 @@
-using CourseRegistrationManagmentSystem.Business.Services.StudentServices;
-using CourseRegistrationManagmentSystem.Business.Services.AdminServices;
 using CourseRegistrationManagmentSystem.Shared.Dtos;
+using CourseRegistrationManagmentSystem.Business.Services;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace CourseRegistrationManagmentSystem.View
 {
     public partial class BrowseClassesForm : Form
     {
-        private readonly Business.Services.StudentServices.RegistrationService _regService = new ();
-        private readonly ClassService _classService = new ClassService();
+        private readonly StudentRegistrationService _regService = new();
+        private readonly ClassService _classService = new();
+
         private DataGridView dgvClasses;
         private Button btnRegister;
+        private Panel topPanel;
 
         public BrowseClassesForm()
         {
@@ -20,27 +22,69 @@ namespace CourseRegistrationManagmentSystem.View
 
         private void InitializeComponent()
         {
-            this.dgvClasses = new DataGridView();
-            this.btnRegister = new Button();
-            this.SuspendLayout();
+            dgvClasses = new DataGridView();
+            btnRegister = new Button();
+            topPanel = new Panel();
 
-            this.dgvClasses.Location = new Point(12, 12);
-            this.dgvClasses.Size = new Size(560, 300);
-            this.dgvClasses.ReadOnly = true;
-            this.dgvClasses.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            this.dgvClasses.MultiSelect = false;
+            SuspendLayout();
 
-            this.btnRegister.Location = new Point(12, 320);
-            this.btnRegister.Size = new Size(120, 30);
-            this.btnRegister.Text = "Register for Class";
-            this.btnRegister.Click += btnRegister_Click;
+            // topPanel
+            topPanel.Dock = DockStyle.Top;
+            topPanel.Height = 50;
 
-            this.ClientSize = new Size(585, 360);
-            this.Controls.AddRange(new Control[] { dgvClasses, btnRegister });
-            this.Text = "Available Classes";
-            this.StartPosition = FormStartPosition.CenterParent;
-            this.ResumeLayout(false);
-            this.PerformLayout();
+            // btnRegister
+            btnRegister.Location = new Point(10, 10);
+            btnRegister.Size = new Size(140, 30);
+            btnRegister.Text = "Register for Class";
+            btnRegister.Click += btnRegister_Click;
+
+            topPanel.Controls.Add(btnRegister);
+
+            // dgvClasses
+            dgvClasses.Dock = DockStyle.Fill;
+            dgvClasses.ReadOnly = true;
+            dgvClasses.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dgvClasses.MultiSelect = false;
+            dgvClasses.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dgvClasses.ColumnHeadersHeight = 35;
+            dgvClasses.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+
+            dgvClasses.DataBindingComplete += dgvClasses_DataBindingComplete;
+
+            // BrowseClassesForm
+            ClientSize = new Size(850, 500);
+            Controls.Add(dgvClasses);
+            Controls.Add(topPanel);
+            Text = "Available Classes";
+            StartPosition = FormStartPosition.CenterParent;
+
+            ResumeLayout(false);
+        }
+
+        private void dgvClasses_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
+        {
+            if (dgvClasses.Columns.Count == 0)
+                return;
+
+            if (dgvClasses.Columns.Contains("Id"))
+                dgvClasses.Columns["Id"].DisplayIndex = 0;
+
+            if (dgvClasses.Columns.Contains("ClassName"))
+                dgvClasses.Columns["ClassName"].DisplayIndex = 1;
+
+            if (dgvClasses.Columns.Contains("CourseName"))
+                dgvClasses.Columns["CourseName"].DisplayIndex = 2;
+
+            if (dgvClasses.Columns.Contains("InstructorName"))
+                dgvClasses.Columns["InstructorName"].DisplayIndex = 3;
+
+            if (dgvClasses.Columns.Contains("Schedule"))
+                dgvClasses.Columns["Schedule"].DisplayIndex = 4;
+
+            foreach (DataGridViewColumn column in dgvClasses.Columns)
+            {
+                column.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            }
         }
 
         private async void LoadAvailableClasses()
@@ -62,6 +106,10 @@ namespace CourseRegistrationManagmentSystem.View
                 {
                     MessageBox.Show($"Registration failed: {ex.Message}");
                 }
+            }
+            else
+            {
+                MessageBox.Show("Please select a class to register.");
             }
         }
     }

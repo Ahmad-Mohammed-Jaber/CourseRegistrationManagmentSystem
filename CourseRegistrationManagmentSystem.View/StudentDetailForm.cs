@@ -1,6 +1,7 @@
-using CourseRegistrationManagmentSystem.Business.Services.AdminServices;
+using CourseRegistrationManagmentSystem.Business.Services;
 using CourseRegistrationManagmentSystem.Shared.Dtos;
 using CourseRegistrationManagmentSystem.Shared.Models;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace CourseRegistrationManagmentSystem.View
@@ -8,6 +9,8 @@ namespace CourseRegistrationManagmentSystem.View
     public partial class StudentDetailForm : Form
     {
         private readonly StudentService _studentService = new StudentService();
+        private readonly AuthService _authService = new AuthService();
+
         private StudentDto? _student;
         private bool _isEditMode;
 
@@ -16,12 +19,17 @@ namespace CourseRegistrationManagmentSystem.View
         private TextBox txtFullName;
         private TextBox txtEmail;
         private TextBox txtPhone;
+        private TextBox txtPassword;
+
         private CheckBox chkActive;
+
         private Label lblNumber;
         private Label lblUsername;
         private Label lblFullName;
         private Label lblEmail;
         private Label lblPhone;
+        private Label lblPassword;
+
         private Button btnSave;
         private Button btnCancel;
 
@@ -29,121 +37,192 @@ namespace CourseRegistrationManagmentSystem.View
         {
             _student = student;
             _isEditMode = student != null;
+
             InitializeComponent();
-            if (_isEditMode) LoadData();
+
+            if (_isEditMode)
+                LoadData();
         }
 
         private void InitializeComponent()
         {
-            this.txtNumber = new TextBox();
-            this.txtUsername = new TextBox();
-            this.txtFullName = new TextBox();
-            this.txtEmail = new TextBox();
-            this.txtPhone = new TextBox();
-            this.chkActive = new CheckBox();
-            this.lblNumber = new Label();
-            this.lblUsername = new Label();
-            this.lblFullName = new Label();
-            this.lblEmail = new Label();
-            this.lblPhone = new Label();
-            this.btnSave = new Button();
-            this.btnCancel = new Button();
-            this.SuspendLayout();
+            txtNumber = new TextBox();
+            txtUsername = new TextBox();
+            txtFullName = new TextBox();
+            txtEmail = new TextBox();
+            txtPhone = new TextBox();
+            txtPassword = new TextBox();
 
-            this.lblNumber.Text = "Student #:";
-            this.lblNumber.Location = new Point(20, 20);
-            this.lblNumber.AutoSize = true;
-            this.txtNumber.Location = new Point(120, 20);
-            this.txtNumber.Size = new Size(200, 25);
+            chkActive = new CheckBox();
 
-            this.lblUsername.Text = "Username:";
-            this.lblUsername.Location = new Point(20, 60);
-            this.lblUsername.AutoSize = true;
-            this.txtUsername.Location = new Point(120, 60);
-            this.txtUsername.Size = new Size(200, 25);
+            lblNumber = new Label();
+            lblUsername = new Label();
+            lblFullName = new Label();
+            lblEmail = new Label();
+            lblPhone = new Label();
+            lblPassword = new Label();
 
-            this.lblFullName.Text = "Full Name:";
-            this.lblFullName.Location = new Point(20, 100);
-            this.lblFullName.AutoSize = true;
-            this.txtFullName.Location = new Point(120, 100);
-            this.txtFullName.Size = new Size(200, 25);
+            btnSave = new Button();
+            btnCancel = new Button();
 
-            this.lblEmail.Text = "Email:";
-            this.lblEmail.Location = new Point(20, 140);
-            this.lblEmail.AutoSize = true;
-            this.txtEmail.Location = new Point(120, 140);
-            this.txtEmail.Size = new Size(200, 25);
+            SuspendLayout();
 
-            this.lblPhone.Text = "Phone:";
-            this.lblPhone.Location = new Point(20, 180);
-            this.lblPhone.AutoSize = true;
-            this.txtPhone.Location = new Point(120, 180);
-            this.txtPhone.Size = new Size(200, 25);
+            int labelX = 20;
+            int inputX = 130;
+            int y = 20;
+            int spacing = 40;
 
-            this.chkActive.Text = "Is Active";
-            this.chkActive.Location = new Point(120, 220);
-            this.chkActive.AutoSize = true;
+            void SetupLabel(Label label, string text, int top)
+            {
+                label.Text = text;
+                label.Location = new Point(labelX, top);
+                label.AutoSize = true;
+            }
 
-            this.btnSave.Text = "Save";
-            this.btnSave.Location = new Point(120, 260);
-            this.btnSave.Size = new Size(80, 30);
-            this.btnSave.Click += btnSave_Click;
+            void SetupTextBox(TextBox box, int top)
+            {
+                box.Location = new Point(inputX, top);
+                box.Size = new Size(200, 25);
+            }
 
-            this.btnCancel.Text = "Cancel";
-            this.btnCancel.Location = new Point(210, 260);
-            this.btnCancel.Size = new Size(80, 30);
-            this.btnCancel.Click += (s, e) => this.DialogResult = DialogResult.Cancel;
+            SetupLabel(lblNumber, "Student #:", y);
+            SetupTextBox(txtNumber, y);
 
-            this.ClientSize = new Size(380, 320);
-            this.Controls.AddRange(new Control[] { lblNumber, txtNumber, lblUsername, txtUsername, lblFullName, txtFullName, lblEmail, txtEmail, lblPhone, txtPhone, chkActive, btnSave, btnCancel });
-            this.Text = _isEditMode ? "Edit Student" : "Add Student";
-            this.StartPosition = FormStartPosition.CenterParent;
-            this.ResumeLayout(false);
-            this.PerformLayout();
+            y += spacing;
+            SetupLabel(lblUsername, "Username:", y);
+            SetupTextBox(txtUsername, y);
+
+            y += spacing;
+            SetupLabel(lblFullName, "Full Name:", y);
+            SetupTextBox(txtFullName, y);
+
+            y += spacing;
+            SetupLabel(lblEmail, "Email:", y);
+            SetupTextBox(txtEmail, y);
+
+            y += spacing;
+            SetupLabel(lblPhone, "Phone:", y);
+            SetupTextBox(txtPhone, y);
+
+            y += spacing;
+            SetupLabel(lblPassword, "Password:", y);
+            SetupTextBox(txtPassword, y);
+
+            txtPassword.PasswordChar = '*';
+
+            y += spacing;
+
+            chkActive.Text = "Is Active";
+            chkActive.Location = new Point(inputX, y);
+            chkActive.AutoSize = true;
+
+            y += 40;
+
+            btnSave.Text = "Save";
+            btnSave.Location = new Point(inputX, y);
+            btnSave.Size = new Size(80, 30);
+            btnSave.Click += btnSave_Click;
+
+            btnCancel.Text = "Cancel";
+            btnCancel.Location = new Point(inputX + 90, y);
+            btnCancel.Size = new Size(80, 30);
+            btnCancel.Click += (s, e) => DialogResult = DialogResult.Cancel;
+
+
+            Controls.AddRange(new Control[]
+            {
+                lblNumber, txtNumber,
+                lblUsername, txtUsername,
+                lblFullName, txtFullName,
+                lblEmail, txtEmail,
+                lblPhone, txtPhone,
+                lblPassword, txtPassword,
+                chkActive,
+                btnSave, btnCancel
+            });
+
+            ClientSize = new Size(380, y + 70);
+            Text = _isEditMode ? "Edit Student" : "Add Student";
+            StartPosition = FormStartPosition.CenterParent;
+
+            ResumeLayout(false);
+            PerformLayout();
         }
+
 
         private void LoadData()
         {
-            if (_student == null) return;
+            if (_student == null)
+                return;
+
             txtNumber.Text = _student.StudentNumber.ToString();
             txtUsername.Text = _student.UserName;
             txtFullName.Text = _student.FullName;
             txtEmail.Text = _student.Email;
             txtPhone.Text = _student.Phone;
             chkActive.Checked = _student.IsActive;
+
+            // Password is intentionally not loaded
+            txtPassword.Text = "";
         }
+
 
         private async void btnSave_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(txtNumber.Text) || string.IsNullOrWhiteSpace(txtFullName.Text) || string.IsNullOrWhiteSpace(txtUsername.Text))
+            if (string.IsNullOrWhiteSpace(txtNumber.Text) ||
+                string.IsNullOrWhiteSpace(txtUsername.Text) ||
+                string.IsNullOrWhiteSpace(txtFullName.Text))
             {
                 MessageBox.Show("Student Number, Username and Full Name are required.");
                 return;
             }
 
+
             if (!int.TryParse(txtNumber.Text, out int studentNumber))
             {
-                MessageBox.Show("Please enter a valid integer for the Student Number.");
+                MessageBox.Show("Invalid student number.");
                 return;
             }
 
-            var dto = new StudentDto
-            {
-                Id = _isEditMode ? _student!.Id : Guid.NewGuid(),
-                StudentNumber = studentNumber,
-                UserName = txtUsername.Text,
-                FullName = txtFullName.Text,
-                Email = txtEmail.Text,
-                Phone = txtPhone.Text,
-                IsActive = chkActive.Checked,
-                Role = User.UserRoles.Student
-            };
 
             try
             {
-                if (_isEditMode) await _studentService.UpdateAsync(dto.Id, dto);
-                else await _studentService.AddAsync(dto);
-                this.DialogResult = DialogResult.OK;
+                if (_isEditMode)
+                {
+                    var dto = new StudentDto
+                    {
+                        Id = _student!.Id,
+                        StudentNumber = studentNumber,
+                        UserName = txtUsername.Text,
+                        FullName = txtFullName.Text,
+                        Email = txtEmail.Text,
+                        Phone = txtPhone.Text,
+                        IsActive = chkActive.Checked,
+                        Role = User.UserRoles.Student
+                    };
+
+                    await _studentService.UpdateAsync(dto.Id, dto);
+                }
+                else
+                {
+                    if (string.IsNullOrWhiteSpace(txtPassword.Text))
+                    {
+                        MessageBox.Show("Password is required.");
+                        return;
+                    }
+
+                    await _authService.RegisterStudentAsync(
+                        txtUsername.Text,
+                        studentNumber,
+                        txtFullName.Text,
+                        chkActive.Checked,
+                        txtEmail.Text,
+                        txtPhone.Text,
+                        txtPassword.Text
+                    );
+                }
+
+                DialogResult = DialogResult.OK;
             }
             catch (Exception ex)
             {

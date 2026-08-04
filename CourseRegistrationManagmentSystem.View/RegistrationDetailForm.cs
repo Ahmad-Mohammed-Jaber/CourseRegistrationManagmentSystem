@@ -1,4 +1,4 @@
-using CourseRegistrationManagmentSystem.Business.Services.AdminServices;
+using CourseRegistrationManagmentSystem.Business.Services;
 using CourseRegistrationManagmentSystem.Shared.Dtos;
 using System.Windows.Forms;
 

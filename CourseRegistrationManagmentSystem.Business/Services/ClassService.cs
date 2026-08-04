@@ -4,34 +4,34 @@ using CourseRegistrationManagmentSystem.Shared.Dtos;
 using CourseRegistrationManagmentSystem.Data.Repository;
 using System.Text.RegularExpressions;
 
-namespace CourseRegistrationManagmentSystem.Business.Services.AdminServices;
+namespace CourseRegistrationManagmentSystem.Business.Services;
 public class ClassService : ICrudService<ClassDto>
 {
     private readonly ClassRepository _classRepository = new ClassRepository();
 
     public ClassDto? GetById(Guid id)
     {
-        AccessValidator.RequireAdmin();
+        AccessValidator.RequireLogin();
         var classEntity = _classRepository.GetById(id);
         return classEntity.ToDto();
     }
 
     public async Task<ClassDto?> GetByIdAsync(Guid id)
     {
-        AccessValidator.RequireAdmin();
+        AccessValidator.RequireLogin();
         var classEntity = await _classRepository.GetByIdAsync(id);
         return classEntity.ToDto();
     }
 
     public List<ClassDto> GetAll()
     {
-        AccessValidator.RequireAdmin();
+        AccessValidator.RequireLogin();
         return _classRepository.GetAll().Select(classEntity => classEntity.ToDto()!).ToList();
     }
 
     public async Task<List<ClassDto>> GetAllAsync()
     {
-        AccessValidator.RequireAdmin();
+        AccessValidator.RequireLogin();
         var classes = await _classRepository.GetAllAsync();
         return classes.Select(classEntity => classEntity.ToDto()!).ToList();
     }
@@ -102,7 +102,7 @@ public class ClassService : ICrudService<ClassDto>
 
     public List<ClassDto> Search(string regex)
     {
-        AccessValidator.RequireAdmin();
+        AccessValidator.RequireLogin();
         var classes = _classRepository.GetAll();
         return classes
             .Where(classEntity => Regex.IsMatch(classEntity.ClassName, regex, RegexOptions.IgnoreCase) ||
@@ -113,7 +113,7 @@ public class ClassService : ICrudService<ClassDto>
 
     public async Task<List<ClassDto>> SearchAsync(string regex)
     {
-        AccessValidator.RequireAdmin();
+        AccessValidator.RequireLogin();
         var classes = await _classRepository.GetAllAsync();
         return classes
             .Where(classEntity => Regex.IsMatch(classEntity.ClassName, regex, RegexOptions.IgnoreCase) ||

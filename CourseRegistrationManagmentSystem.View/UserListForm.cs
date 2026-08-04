@@ -1,13 +1,14 @@
-using CourseRegistrationManagmentSystem.Business.Services.AdminServices;
 using CourseRegistrationManagmentSystem.Shared.Dtos;
 using System.Windows.Forms;
 using System.Windows;
+using CourseRegistrationManagmentSystem.Business.Services;
 
 namespace CourseRegistrationManagmentSystem.View
 {
     public partial class UserListForm : Form
     {
         private readonly UserService _userService = new UserService();
+        private readonly AuthService _authService = new AuthService();
         private DataGridView dgvUsers;
         private Button btnAdd;
         private Button btnEdit;

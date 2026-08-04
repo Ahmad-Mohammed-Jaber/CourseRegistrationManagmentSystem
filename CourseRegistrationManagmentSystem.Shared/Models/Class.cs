@@ -5,7 +5,7 @@ public class Class
     [Flags]
     public enum DaysOfWeek
     {
-        None = 1,
+        None = 0,
         Sunday = 2,
         Monday = 4,
         Tuesday = 8,

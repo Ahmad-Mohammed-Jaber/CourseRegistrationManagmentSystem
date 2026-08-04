@@ -152,4 +152,22 @@ public static class MappingExtensions
             Status = registrationDto.Status
         };
     }
+
+
+    public static RegistrationDetailsDto ToDetailsDto(
+         this Registration registration,
+         Class cls)
+    {
+        return new RegistrationDetailsDto
+        {
+            RegistrationId = registration.Id,
+            ClassName = cls.ClassName,
+            Instructor = cls.Instructor,
+            Schedule = cls.Schedule.ToString(),
+            StartDate = cls.StartDate,
+            EndDate = cls.EndDate,
+            RegistrationDate = registration.RegsitrationDate,
+            Status = registration.Status
+        };
+    }
 }

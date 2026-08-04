@@ -1,4 +1,4 @@
-using CourseRegistrationManagmentSystem.Business.Services.AdminServices;
+using CourseRegistrationManagmentSystem.Business.Services;
 using CourseRegistrationManagmentSystem.Shared.Dtos;
 using CourseRegistrationManagmentSystem.Shared.Helpers;
 using System.Windows.Forms;
@@ -16,7 +16,8 @@ namespace CourseRegistrationManagmentSystem.View
         private TextBox txtName;
         private TextBox txtInstructor;
         private NumericUpDown numCapacity;
-        private TextBox txtSchedule;
+        private FlowLayoutPanel pnlSchedule;
+        private Dictionary<CourseRegistrationManagmentSystem.Shared.Models.Class.DaysOfWeek, CheckBox> chkDays = new();
         private DateTimePicker dtStart;
         private DateTimePicker dtEnd;
         private CheckBox chkActive;
@@ -45,7 +46,6 @@ namespace CourseRegistrationManagmentSystem.View
             this.txtName = new TextBox();
             this.txtInstructor = new TextBox();
             this.numCapacity = new NumericUpDown();
-            this.txtSchedule = new TextBox();
             this.dtStart = new DateTimePicker();
             this.dtEnd = new DateTimePicker();
             this.chkActive = new CheckBox();
@@ -88,37 +88,48 @@ namespace CourseRegistrationManagmentSystem.View
             this.lblSchedule.Text = "Schedule:";
             this.lblSchedule.Location = new Point(20, 180);
             this.lblSchedule.AutoSize = true;
-            this.txtSchedule.Location = new Point(120, 180);
-            this.txtSchedule.Size = new Size(200, 25);
+            this.pnlSchedule = new FlowLayoutPanel();
+            this.pnlSchedule.Location = new Point(120, 180);
+            this.pnlSchedule.Size = new Size(250, 60);
+            this.pnlSchedule.FlowDirection = FlowDirection.LeftToRight;
+            this.pnlSchedule.WrapContents = true;
+
+            foreach (CourseRegistrationManagmentSystem.Shared.Models.Class.DaysOfWeek day in Enum.GetValues(typeof(CourseRegistrationManagmentSystem.Shared.Models.Class.DaysOfWeek)))
+            {
+                if (day == CourseRegistrationManagmentSystem.Shared.Models.Class.DaysOfWeek.None) continue;
+                var chk = new CheckBox { Text = day.ToString(), AutoSize = true };
+                chkDays[day] = chk;
+                this.pnlSchedule.Controls.Add(chk);
+            }
 
             this.lblStart.Text = "Start Date:";
-            this.lblStart.Location = new Point(20, 220);
+            this.lblStart.Location = new Point(20, 240);
             this.lblStart.AutoSize = true;
-            this.dtStart.Location = new Point(120, 220);
+            this.dtStart.Location = new Point(120, 240);
             this.dtStart.Size = new Size(200, 25);
 
             this.lblEnd.Text = "End Date:";
-            this.lblEnd.Location = new Point(20, 260);
+            this.lblEnd.Location = new Point(20, 280);
             this.lblEnd.AutoSize = true;
-            this.dtEnd.Location = new Point(120, 260);
+            this.dtEnd.Location = new Point(120, 280);
             this.dtEnd.Size = new Size(200, 25);
 
             this.chkActive.Text = "Is Active";
-            this.chkActive.Location = new Point(120, 300);
+            this.chkActive.Location = new Point(120, 320);
             this.chkActive.AutoSize = true;
 
             this.btnSave.Text = "Save";
-            this.btnSave.Location = new Point(120, 340);
+            this.btnSave.Location = new Point(120, 360);
             this.btnSave.Size = new Size(80, 30);
             this.btnSave.Click += btnSave_Click;
 
             this.btnCancel.Text = "Cancel";
-            this.btnCancel.Location = new Point(210, 340);
+            this.btnCancel.Location = new Point(210, 360);
             this.btnCancel.Size = new Size(80, 30);
             this.btnCancel.Click += (s, e) => this.DialogResult = DialogResult.Cancel;
 
-            this.ClientSize = new Size(380, 400);
-            this.Controls.AddRange(new Control[] { cmbCourse, txtName, txtInstructor, numCapacity, txtSchedule, dtStart, dtEnd, chkActive, lblCourse, lblName, lblInstructor, lblCapacity, lblSchedule, lblStart, lblEnd, btnSave, btnCancel });
+            this.ClientSize = new Size(380, 450);
+            this.Controls.AddRange(new Control[] { cmbCourse, txtName, txtInstructor, numCapacity, pnlSchedule, dtStart, dtEnd, chkActive, lblCourse, lblName, lblInstructor, lblCapacity, lblSchedule, lblStart, lblEnd, btnSave, btnCancel });
             this.Text = _isEditMode ? "Edit Class" : "Add Class";
             this.StartPosition = FormStartPosition.CenterParent;
             this.ResumeLayout(false);
@@ -140,7 +151,10 @@ namespace CourseRegistrationManagmentSystem.View
             txtName.Text = _class.ClassName;
             txtInstructor.Text = _class.Instructor;
             numCapacity.Value = _class.MaxCapacity;
-            txtSchedule.Text = ScheduleHelper.GetScheduleString(_class.Schedule);
+            foreach (var entry in chkDays)
+            {
+                entry.Value.Checked = (_class.Schedule & entry.Key) == entry.Key;
+            }
             dtStart.Value = _class.StartDate;
             dtEnd.Value = _class.EndDate;
             chkActive.Checked = _class.IsActive;
@@ -161,7 +175,8 @@ namespace CourseRegistrationManagmentSystem.View
                 ClassName = txtName.Text,
                 Instructor = txtInstructor.Text,
                 MaxCapacity = (int)numCapacity.Value,
-                Schedule = ScheduleHelper.ParseScheduleString(txtSchedule.Text),
+                Schedule = chkDays.Where(kvp => kvp.Value.Checked)
+                                  .Aggregate(CourseRegistrationManagmentSystem.Shared.Models.Class.DaysOfWeek.None, (acc, kvp) => acc | kvp.Key),
                 StartDate = dtStart.Value,
                 EndDate = dtEnd.Value,
                 IsActive = chkActive.Checked

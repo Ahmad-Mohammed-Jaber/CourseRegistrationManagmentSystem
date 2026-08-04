@@ -3,11 +3,14 @@ using CourseRegistrationManagmentSystem.Business.Validation;
 using CourseRegistrationManagmentSystem.Shared.Dtos;
 using CourseRegistrationManagmentSystem.Data.Repository;
 using System.Text.RegularExpressions;
+using CourseRegistrationManagmentSystem.Shared.Models;
 
-namespace CourseRegistrationManagmentSystem.Business.Services.AdminServices;
+namespace CourseRegistrationManagmentSystem.Business.Services;
+
 public class StudentService : ICrudService<StudentDto>
 {
     private readonly StudentRepository _studentRepository = new StudentRepository();
+    private readonly UserRepository _userRepository = new UserRepository();
 
     public StudentDto? GetById(Guid id)
     {
@@ -40,6 +43,22 @@ public class StudentService : ICrudService<StudentDto>
     {
         AccessValidator.RequireAdmin();
         var student = studentDto.ToEntity();
+
+        Guid userId = Guid.NewGuid();
+
+        var user = new User
+        {
+            Id = userId,
+            FullName = studentDto.FullName,
+            UserName = studentDto.UserName,
+            IsActive = studentDto.IsActive,
+            Role = User.UserRoles.Student,
+            PasswordHash = "Fix this lol",
+        };
+
+        student.UserId = userId;
+
+        _userRepository.Add(user);
         _studentRepository.Add(student);
     }
 
@@ -47,49 +66,97 @@ public class StudentService : ICrudService<StudentDto>
     {
         AccessValidator.RequireAdmin();
         var student = studentDto.ToEntity();
+
+        Guid userId = Guid.NewGuid();
+
+        var user = new User
+        {
+            Id = userId,
+            FullName = studentDto.FullName,
+            UserName = studentDto.UserName,
+            IsActive = studentDto.IsActive,
+            Role = User.UserRoles.Student,
+            PasswordHash = "Fix this lol",
+        };
+
+        student.UserId = userId;
+
+        await _userRepository.AddAsync(user);
         await _studentRepository.AddAsync(student);
     }
 
     public void Update(Guid id, StudentDto studentDto)
     {
         AccessValidator.RequireAdmin();
-        var student = _studentRepository.GetById(id);
-        if (student == null) throw new KeyNotFoundException($"Student with id {id} not found.");
 
-        student.UserId = studentDto.Id;
+        var student = _studentRepository.GetById(id);
+        if (student == null)
+            throw new KeyNotFoundException($"Student with id {id} not found.");
+
+        var user = _userRepository.GetById(student.UserId);
+        if (user == null)
+            throw new KeyNotFoundException($"User with id {student.UserId} not found.");
+
         student.StudentNumber = studentDto.StudentNumber;
         student.FullName = studentDto.FullName;
         student.Email = studentDto.Email;
         student.Phone = studentDto.Phone;
 
-        _studentRepository.Update(id, student);
+        user.FullName = studentDto.FullName;
+        user.UserName = studentDto.UserName;
+        user.IsActive = studentDto.IsActive;
+
+        _studentRepository.Update(student.Id, student);
+        _userRepository.Update(user.Id, user);
     }
 
     public async Task UpdateAsync(Guid id, StudentDto studentDto)
     {
         AccessValidator.RequireAdmin();
-        var student = await _studentRepository.GetByIdAsync(id);
-        if (student == null) throw new KeyNotFoundException($"Student with id {id} not found.");
 
-        student.UserId = studentDto.Id;
+        var student = await _studentRepository.GetByIdAsync(id);
+        if (student == null)
+            throw new KeyNotFoundException($"Student with id {id} not found.");
+
+        var user = await _userRepository.GetByIdAsync(student.UserId);
+        if (user == null)
+            throw new KeyNotFoundException($"User with id {student.UserId} not found.");
+
         student.StudentNumber = studentDto.StudentNumber;
         student.FullName = studentDto.FullName;
         student.Email = studentDto.Email;
         student.Phone = studentDto.Phone;
 
-        await _studentRepository.UpdateAsync(id, student);
+        user.FullName = studentDto.FullName;
+        user.UserName = studentDto.UserName;
+        user.IsActive = studentDto.IsActive;
+
+        await _studentRepository.UpdateAsync(student.Id, student);
+        await _userRepository.UpdateAsync(user.Id, user);
     }
 
     public void Delete(Guid id)
     {
         AccessValidator.RequireAdmin();
+
+        var student = _studentRepository.GetById(id);
+        if (student == null)
+            throw new KeyNotFoundException($"Student with id {id} not found.");
+
         _studentRepository.Delete(id);
+        _userRepository.Delete(student.UserId);
     }
 
     public async Task DeleteAsync(Guid id)
     {
         AccessValidator.RequireAdmin();
+
+        var student = await _studentRepository.GetByIdAsync(id);
+        if (student == null)
+            throw new KeyNotFoundException($"Student with id {id} not found.");
+
         await _studentRepository.DeleteAsync(id);
+        await _userRepository.DeleteAsync(student.UserId);
     }
 
     public List<StudentDto> Search(string regex)
