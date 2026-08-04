@@ -106,19 +106,53 @@ namespace CourseRegistrationManagmentSystem.View
         private async void LoadRegistrations()
         {
             dgvRegs.DataSource = null;
-            dgvRegs.DataSource = await _regService.GetAllAsync();
+
+            dgvRegs.DataSource = await _regService.GetAllDetailedAsync();
+
+            ConfigureColumns();
         }
 
         private async void btnSearch_Click(object sender, EventArgs e)
         {
             if (!string.IsNullOrWhiteSpace(txtSearch.Text))
             {
-                dgvRegs.DataSource = await _regService.SearchAsync(txtSearch.Text);
+                dgvRegs.DataSource = null;
+
+                dgvRegs.DataSource = await _regService.SearchDetailedAsync(txtSearch.Text);
+
+                ConfigureColumns();
             }
             else
             {
                 LoadRegistrations();
             }
+        }
+
+        private void ConfigureColumns()
+        {
+            if (dgvRegs.Columns["Id"] != null)
+                dgvRegs.Columns["Id"].Visible = true;
+
+            if (dgvRegs.Columns["StudentId"] != null)
+                dgvRegs.Columns["StudentId"].Visible = true;
+
+            if (dgvRegs.Columns["ClassId"] != null)
+                dgvRegs.Columns["ClassId"].Visible = true;
+
+            if (dgvRegs.Columns["StudentName"] != null)
+                dgvRegs.Columns["StudentName"].HeaderText = "Student";
+
+            if (dgvRegs.Columns["ClassName"] != null)
+                dgvRegs.Columns["ClassName"].HeaderText = "Class";
+
+            if (dgvRegs.Columns["CourseName"] != null)
+                dgvRegs.Columns["CourseName"].HeaderText = "Course";
+
+            if (dgvRegs.Columns["RegistrationDate"] != null)
+                dgvRegs.Columns["RegistrationDate"].HeaderText = "Registered Date";
+
+            if (dgvRegs.Columns["Status"] != null)
+                dgvRegs.Columns["Status"].HeaderText = "Status";
         }
 
         private void btnAdd_Click(object sender, EventArgs e)

@@ -45,47 +45,25 @@ namespace CourseRegistrationManagmentSystem.View
             dgvRegs.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgvRegs.MultiSelect = false;
             dgvRegs.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+
             dgvRegs.ColumnHeadersHeight = 35;
-            dgvRegs.ColumnHeadersDefaultCellStyle.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dgvRegs.ColumnHeadersDefaultCellStyle.Alignment =
+                DataGridViewContentAlignment.MiddleLeft;
 
             dgvRegs.DataBindingComplete += dgvRegs_DataBindingComplete;
 
-            // MyRegistrationsForm
-            ClientSize = new Size(850, 500);
+            // Form
+            ClientSize = new Size(1500, 1000);
             Controls.Add(dgvRegs);
             Controls.Add(topPanel);
+
+            Name = "MyRegistrationsForm";
             Text = "My Registrations";
             StartPosition = FormStartPosition.CenterParent;
 
             ResumeLayout(false);
         }
 
-        private void dgvRegs_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
-        {
-            if (dgvRegs.Columns.Count == 0)
-                return;
-
-            // Adjust based on RegistrationDetailsDto properties
-            if (dgvRegs.Columns.Contains("Id"))
-                dgvRegs.Columns["Id"].DisplayIndex = 0;
-
-            if (dgvRegs.Columns.Contains("CourseName"))
-                dgvRegs.Columns["CourseName"].DisplayIndex = 1;
-
-            if (dgvRegs.Columns.Contains("ClassName"))
-                dgvRegs.Columns["ClassName"].DisplayIndex = 2;
-
-            if (dgvRegs.Columns.Contains("InstructorName"))
-                dgvRegs.Columns["InstructorName"].DisplayIndex = 3;
-
-            if (dgvRegs.Columns.Contains("Schedule"))
-                dgvRegs.Columns["Schedule"].DisplayIndex = 4;
-
-            foreach (DataGridViewColumn column in dgvRegs.Columns)
-            {
-                column.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            }
-        }
 
         private async Task LoadMyRegistrationsAsync()
         {
@@ -97,6 +75,77 @@ namespace CourseRegistrationManagmentSystem.View
             dgvRegs.DataSource = registrations;
         }
 
+
+        private void dgvRegs_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
+        {
+            ConfigureColumns();
+        }
+
+
+        private void ConfigureColumns()
+        {
+            if (dgvRegs.Columns.Count == 0)
+                return;
+
+
+            // Headers
+
+            if (dgvRegs.Columns["RegistrationId"] != null)
+                dgvRegs.Columns["RegistrationId"].HeaderText = "Registration ID";
+
+            if (dgvRegs.Columns["CourseName"] != null)
+                dgvRegs.Columns["CourseName"].HeaderText = "Course";
+
+            if (dgvRegs.Columns["ClassName"] != null)
+                dgvRegs.Columns["ClassName"].HeaderText = "Class";
+
+            if (dgvRegs.Columns["InstructorName"] != null)
+                dgvRegs.Columns["InstructorName"].HeaderText = "Instructor";
+
+            if (dgvRegs.Columns["Schedule"] != null)
+                dgvRegs.Columns["Schedule"].HeaderText = "Schedule";
+
+            if (dgvRegs.Columns["RegistrationDate"] != null)
+                dgvRegs.Columns["RegistrationDate"].HeaderText = "Registered Date";
+
+            if (dgvRegs.Columns["Status"] != null)
+                dgvRegs.Columns["Status"].HeaderText = "Status";
+
+
+            // Ordering
+
+            int index = 0;
+
+            if (dgvRegs.Columns["RegistrationId"] != null)
+                dgvRegs.Columns["RegistrationId"].DisplayIndex = index++;
+
+            if (dgvRegs.Columns["CourseName"] != null)
+                dgvRegs.Columns["CourseName"].DisplayIndex = index++;
+
+            if (dgvRegs.Columns["ClassName"] != null)
+                dgvRegs.Columns["ClassName"].DisplayIndex = index++;
+
+            if (dgvRegs.Columns["InstructorName"] != null)
+                dgvRegs.Columns["InstructorName"].DisplayIndex = index++;
+
+            if (dgvRegs.Columns["Schedule"] != null)
+                dgvRegs.Columns["Schedule"].DisplayIndex = index++;
+
+            if (dgvRegs.Columns["RegistrationDate"] != null)
+                dgvRegs.Columns["RegistrationDate"].DisplayIndex = index++;
+
+            if (dgvRegs.Columns["Status"] != null)
+                dgvRegs.Columns["Status"].DisplayIndex = index++;
+
+
+            foreach (DataGridViewColumn column in dgvRegs.Columns)
+            {
+                column.HeaderCell.Style.Alignment =
+                    DataGridViewContentAlignment.MiddleLeft;
+            }
+        }
+
+
         private async void btnDrop_Click(object sender, EventArgs e)
         {
             if (dgvRegs.CurrentRow?.DataBoundItem is RegistrationDetailsDto reg)
@@ -106,6 +155,7 @@ namespace CourseRegistrationManagmentSystem.View
                     "Confirm Drop",
                     MessageBoxButtons.YesNo,
                     MessageBoxIcon.Question);
+
 
                 if (result == DialogResult.Yes)
                 {

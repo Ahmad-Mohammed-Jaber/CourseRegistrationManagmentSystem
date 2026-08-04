@@ -71,7 +71,7 @@ public class ClassRepository : IGenericRepository<Class>
         using var con = DBConnectionFactory.CreateConnection();
         con.Open();
 
-        string sql = "SELECT Id, CourseId, ClassName, Instructor, MaxCapacity, CurrentCapacity, StartDate, EndDate, Schedule, IsActive FROM Class";
+        string sql = "SELECT Id, CourseId, ClassName, Instructor, CurrentCapacity, MaxCapacity , StartDate, EndDate, Schedule, IsActive FROM Class";
         using var command = new SqlCommand(sql, con);
         using var reader = command.ExecuteReader();
 
@@ -100,11 +100,25 @@ public class ClassRepository : IGenericRepository<Class>
         using var con = DBConnectionFactory.CreateConnection();
         await con.OpenAsync();
 
-        string sql = "SELECT Id, CourseId, ClassName, Instructor, MaxCapacity, CurrentCapacity, StartDate, EndDate, Schedule, IsActive FROM Class";
+        string sql = @"
+        SELECT 
+            Id,
+            CourseId,
+            ClassName,
+            Instructor,
+            CurrentCapacity,
+            MaxCapacity,
+            StartDate,
+            EndDate,
+            Schedule,
+            IsActive
+        FROM Class";
+
         using var command = new SqlCommand(sql, con);
         using var reader = await command.ExecuteReaderAsync();
 
         var classes = new List<Class>();
+
         while (await reader.ReadAsync())
         {
             classes.Add(new Class
@@ -113,17 +127,20 @@ public class ClassRepository : IGenericRepository<Class>
                 CourseId = reader.GetGuid(1),
                 ClassName = reader.GetString(2),
                 Instructor = reader.GetString(3),
-                MaxCapacity = reader.GetInt32(4),
-                CurrentCapacity = reader.GetInt32(5),
+
+                // Fixed mapping
+                CurrentCapacity = reader.GetInt32(4),
+                MaxCapacity = reader.GetInt32(5),
+
                 StartDate = reader.GetDateTime(6),
                 EndDate = reader.GetDateTime(7),
                 Schedule = (Class.DaysOfWeek)reader.GetInt32(8),
                 IsActive = reader.GetBoolean(9)
             });
         }
+
         return classes;
     }
-
     public void Add(Class entity)
     {
         using var con = DBConnectionFactory.CreateConnection();

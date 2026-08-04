@@ -7,32 +7,39 @@ namespace CourseRegistrationManagmentSystem.Shared.Helpers
 {
     public static class ScheduleHelper
     {
+        private static readonly Dictionary<Class.DaysOfWeek, string> DayAbbreviations = new()
+        {
+            { Class.DaysOfWeek.Sunday, "Sun" },
+            { Class.DaysOfWeek.Monday, "Mon" },
+            { Class.DaysOfWeek.Tuesday, "Tue" },
+            { Class.DaysOfWeek.Wednesday, "Wed" },
+            { Class.DaysOfWeek.Thursday, "Thu" },
+            { Class.DaysOfWeek.Friday, "Fri" },
+            { Class.DaysOfWeek.Saturday, "Sat" }
+        };
+
         /// <summary>
-        /// Converts the DaysOfWeek flags enum to a human-readable comma-separated string.
+        /// Converts the DaysOfWeek flags enum to a human-readable abbreviated string.
+        /// Example: "Mon, Wed, Fri"
         /// </summary>
-        /// <param name="schedule">The schedule flags.</param>
-        /// <returns>A string representation of the selected days.</returns>
         public static string GetScheduleString(Class.DaysOfWeek schedule)
         {
             if (schedule == Class.DaysOfWeek.None)
             {
-                return "No days selected";
+                return "None";
             }
 
-            // Get all defined names in the enum and filter those that are set in the current flag
-            var days = Enum.GetValues(typeof(Class.DaysOfWeek))
-                           .Cast<Class.DaysOfWeek>()
-                           .Where(d => d != Class.DaysOfWeek.None && (schedule & d) == d)
-                           .Select(d => d.ToString());
+            var days = DayAbbreviations
+                .Where(d => (schedule & d.Key) == d.Key)
+                .Select(d => d.Value);
 
             return string.Join(", ", days);
         }
 
         /// <summary>
-        /// Converts a comma-separated string of days back into DaysOfWeek flags.
+        /// Converts a string of days back into DaysOfWeek flags.
+        /// Accepts both full names ("Monday") and abbreviations ("Mon").
         /// </summary>
-        /// <param name="scheduleString">The string of days (e.g., "Monday, Wednesday").</param>
-        /// <returns>The corresponding DaysOfWeek flags.</returns>
         public static Class.DaysOfWeek ParseScheduleString(string scheduleString)
         {
             if (string.IsNullOrWhiteSpace(scheduleString))
@@ -40,16 +47,25 @@ namespace CourseRegistrationManagmentSystem.Shared.Helpers
                 return Class.DaysOfWeek.None;
             }
 
-            var days = scheduleString.Split(',', StringSplitOptions.RemoveEmptyEntries)
-                                     .Select(d => d.Trim());
-
             Class.DaysOfWeek result = Class.DaysOfWeek.None;
 
-            foreach (var day in days)
+            foreach (var day in scheduleString.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                              .Select(d => d.Trim()))
             {
-                if (Enum.TryParse(typeof(Class.DaysOfWeek), day, true, out var parsedDay))
+                // Full enum name
+                if (Enum.TryParse(day, true, out Class.DaysOfWeek parsed))
                 {
-                    result |= (Class.DaysOfWeek)parsedDay;
+                    result |= parsed;
+                    continue;
+                }
+
+                // Abbreviation
+                var match = DayAbbreviations.FirstOrDefault(x =>
+                    x.Value.Equals(day, StringComparison.OrdinalIgnoreCase));
+
+                if (!match.Equals(default(KeyValuePair<Class.DaysOfWeek, string>)))
+                {
+                    result |= match.Key;
                 }
             }
 

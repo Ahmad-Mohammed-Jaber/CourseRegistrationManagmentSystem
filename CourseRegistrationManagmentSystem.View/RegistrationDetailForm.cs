@@ -9,6 +9,7 @@ namespace CourseRegistrationManagmentSystem.View
         private readonly RegistrationService _regService = new RegistrationService();
         private readonly StudentService _studentService = new StudentService();
         private readonly ClassService _classService = new ClassService();
+
         private RegistrationDto? _reg;
         private bool _isEditMode;
 
@@ -16,134 +17,241 @@ namespace CourseRegistrationManagmentSystem.View
         private ComboBox cmbClass;
         private ComboBox cmbStatus;
         private DateTimePicker dtRegDate;
+
         private Label lblStudent;
         private Label lblClass;
         private Label lblStatus;
         private Label lblDate;
+
         private Button btnSave;
         private Button btnCancel;
+
 
         public RegistrationDetailForm(RegistrationDto? reg = null)
         {
             _reg = reg;
             _isEditMode = reg != null;
+
             InitializeComponent();
-            LoadStudents();
-            LoadClasses();
-            if (_isEditMode) LoadData();
+
+            LoadDataAsync();
         }
+
 
         private void InitializeComponent()
         {
-            this.cmbStudent = new ComboBox();
-            this.cmbClass = new ComboBox();
-            this.cmbStatus = new ComboBox();
-            this.dtRegDate = new DateTimePicker();
-            this.lblStudent = new Label();
-            this.lblClass = new Label();
-            this.lblStatus = new Label();
-            this.lblDate = new Label();
-            this.btnSave = new Button();
-            this.btnCancel = new Button();
-            this.SuspendLayout();
+            cmbStudent = new ComboBox();
+            cmbClass = new ComboBox();
+            cmbStatus = new ComboBox();
+            dtRegDate = new DateTimePicker();
 
-            this.lblStudent.Text = "Student:";
-            this.lblStudent.Location = new Point(20, 20);
-            this.lblStudent.AutoSize = true;
-            this.cmbStudent.Location = new Point(120, 20);
-            this.cmbStudent.Size = new Size(200, 25);
-            this.cmbStudent.DropDownStyle = ComboBoxStyle.DropDownList;
+            lblStudent = new Label();
+            lblClass = new Label();
+            lblStatus = new Label();
+            lblDate = new Label();
 
-            this.lblClass.Text = "Class:";
-            this.lblClass.Location = new Point(20, 60);
-            this.lblClass.AutoSize = true;
-            this.cmbClass.Location = new Point(120, 60);
-            this.cmbClass.Size = new Size(200, 25);
-            this.cmbClass.DropDownStyle = ComboBoxStyle.DropDownList;
+            btnSave = new Button();
+            btnCancel = new Button();
 
-            this.lblStatus.Text = "Status:";
-            this.lblStatus.Location = new Point(20, 100);
-            this.lblStatus.AutoSize = true;
-            this.cmbStatus.Location = new Point(120, 100);
-            this.cmbStatus.Size = new Size(200, 25);
-            this.cmbStatus.DropDownStyle = ComboBoxStyle.DropDownList;
-            this.cmbStatus.Items.AddRange(new string[] { "Pending", "Confirmed", "Cancelled" });
 
-            this.lblDate.Text = "Date:";
-            this.lblDate.Location = new Point(20, 140);
-            this.lblDate.AutoSize = true;
-            this.dtRegDate.Location = new Point(120, 140);
-            this.dtRegDate.Size = new Size(200, 25);
+            SuspendLayout();
 
-            this.btnSave.Text = "Save";
-            this.btnSave.Location = new Point(120, 180);
-            this.btnSave.Size = new Size(80, 30);
-            this.btnSave.Click += btnSave_Click;
 
-            this.btnCancel.Text = "Cancel";
-            this.btnCancel.Location = new Point(210, 180);
-            this.btnCancel.Size = new Size(80, 30);
-            this.btnCancel.Click += (s, e) => this.DialogResult = DialogResult.Cancel;
+            // Student
+            lblStudent.Text = "Student:";
+            lblStudent.Location = new Point(20, 20);
+            lblStudent.AutoSize = true;
 
-            this.ClientSize = new Size(380, 250);
-            this.Controls.AddRange(new Control[] { cmbStudent, cmbClass, cmbStatus, dtRegDate, lblStudent, lblClass, lblStatus, lblDate, btnSave, btnCancel });
-            this.Text = _isEditMode ? "Edit Registration" : "Add Registration";
-            this.StartPosition = FormStartPosition.CenterParent;
-            this.ResumeLayout(false);
-            this.PerformLayout();
+            cmbStudent.Location = new Point(120, 20);
+            cmbStudent.Size = new Size(200, 25);
+            cmbStudent.DropDownStyle = ComboBoxStyle.DropDownList;
+
+
+            // Class
+            lblClass.Text = "Class:";
+            lblClass.Location = new Point(20, 60);
+            lblClass.AutoSize = true;
+
+            cmbClass.Location = new Point(120, 60);
+            cmbClass.Size = new Size(200, 25);
+            cmbClass.DropDownStyle = ComboBoxStyle.DropDownList;
+
+
+            // Status
+            lblStatus.Text = "Status:";
+            lblStatus.Location = new Point(20, 100);
+            lblStatus.AutoSize = true;
+
+
+            cmbStatus.Location = new Point(120, 100);
+            cmbStatus.Size = new Size(200, 25);
+            cmbStatus.DropDownStyle = ComboBoxStyle.DropDownList;
+
+            cmbStatus.Items.AddRange(new string[]
+            {
+                "Registered",
+                "Pending",
+                "Confirmed",
+                "Cancelled"
+            });
+
+            cmbStatus.SelectedItem = "Registered";
+
+
+            // Date
+            lblDate.Text = "Date:";
+            lblDate.Location = new Point(20, 140);
+            lblDate.AutoSize = true;
+
+            dtRegDate.Location = new Point(120, 140);
+            dtRegDate.Size = new Size(200, 25);
+
+
+            // Save
+            btnSave.Text = "Save";
+            btnSave.Location = new Point(120, 180);
+            btnSave.Size = new Size(80, 30);
+            btnSave.Click += btnSave_Click;
+
+
+            // Cancel
+            btnCancel.Text = "Cancel";
+            btnCancel.Location = new Point(210, 180);
+            btnCancel.Size = new Size(80, 30);
+            btnCancel.Click += (s, e) =>
+            {
+                DialogResult = DialogResult.Cancel;
+            };
+
+
+            ClientSize = new Size(380, 250);
+
+            Controls.AddRange(new Control[]
+            {
+                cmbStudent,
+                cmbClass,
+                cmbStatus,
+                dtRegDate,
+
+                lblStudent,
+                lblClass,
+                lblStatus,
+                lblDate,
+
+                btnSave,
+                btnCancel
+            });
+
+
+            Text = _isEditMode
+                ? "Edit Registration"
+                : "Add Registration";
+
+            StartPosition = FormStartPosition.CenterParent;
+
+
+            ResumeLayout(false);
+            PerformLayout();
         }
 
-        private async void LoadStudents()
+
+
+        private async void LoadDataAsync()
         {
             var students = await _studentService.GetAllAsync();
+
             cmbStudent.DataSource = students;
             cmbStudent.DisplayMember = "FullName";
             cmbStudent.ValueMember = "Id";
-        }
 
-        private async void LoadClasses()
-        {
+
             var classes = await _classService.GetAllAsync();
+
             cmbClass.DataSource = classes;
             cmbClass.DisplayMember = "ClassName";
             cmbClass.ValueMember = "Id";
+
+
+            if (_isEditMode)
+            {
+                LoadExistingRegistration();
+            }
         }
 
-        private void LoadData()
+
+
+        private void LoadExistingRegistration()
         {
-            if (_reg == null) return;
+            if (_reg == null)
+                return;
+
+
             cmbStudent.SelectedValue = _reg.StudentId;
+
             cmbClass.SelectedValue = _reg.ClassId;
-            cmbStatus.SelectedItem = _reg.Status.ToString();
+
+
+            if (!string.IsNullOrWhiteSpace(_reg.Status))
+            {
+                cmbStatus.SelectedItem = _reg.Status;
+            }
+            else
+            {
+                cmbStatus.SelectedItem = "Registered";
+            }
+
+
             dtRegDate.Value = _reg.RegistrationDate;
         }
 
+
+
         private async void btnSave_Click(object sender, EventArgs e)
         {
-            if (cmbStudent.SelectedValue == null || cmbClass.SelectedValue == null)
+            if (cmbStudent.SelectedValue == null ||
+                cmbClass.SelectedValue == null)
             {
-                MessageBox.Show("Student and Class are required.");
+                MessageBox.Show(
+                    "Student and Class are required.");
                 return;
             }
 
+
             var dto = new RegistrationDto
             {
-                Id = _isEditMode ? _reg!.Id : Guid.NewGuid(),
-                StudentId = (Guid)cmbStudent.SelectedValue!,
-                ClassId = (Guid)cmbClass.SelectedValue!,
-                Status = _reg?.Status ?? "", // Simplified
+                Id = _isEditMode
+                    ? _reg!.Id
+                    : Guid.NewGuid(),
+
+                StudentId = (Guid)cmbStudent.SelectedValue,
+
+                ClassId = (Guid)cmbClass.SelectedValue,
+
+                Status = cmbStatus.SelectedItem?.ToString()
+                         ?? "Registered",
+
                 RegistrationDate = dtRegDate.Value
             };
 
+
             try
             {
-                if (_isEditMode) await _regService.UpdateAsync(dto.Id, dto);
-                else await _regService.AddAsync(dto);
-                this.DialogResult = DialogResult.OK;
+                if (_isEditMode)
+                {
+                    await _regService.UpdateAsync(dto.Id, dto);
+                }
+                else
+                {
+                    await _regService.AddAsync(dto);
+                }
+
+
+                DialogResult = DialogResult.OK;
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error saving registration: {ex.Message}");
+                MessageBox.Show(
+                    $"Error saving registration: {ex.Message}");
             }
         }
     }

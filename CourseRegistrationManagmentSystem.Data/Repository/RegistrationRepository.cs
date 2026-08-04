@@ -1,5 +1,6 @@
 using CourseRegistrationManagmentSystem.Data.Database;
 using CourseRegistrationManagmentSystem.Models;
+using CourseRegistrationManagmentSystem.Shared.Dtos;
 using CourseRegistrationManagmentSystem.Shared.Models;
 using Microsoft.Data.SqlClient;
 using System.Data;
@@ -278,7 +279,7 @@ public class RegistrationRepository : IGenericRepository<Registration>
         await connection.OpenAsync();
 
         string sql = @"
-        SELECT 
+        SELECT
             r.Id,
             r.StudentId,
             r.ClassId,
@@ -333,6 +334,113 @@ public class RegistrationRepository : IGenericRepository<Registration>
             };
 
             registrations.Add((registration, cls));
+        }
+
+        return registrations;
+    }
+    public async Task<List<RegistrationDto>> GetAllDetailedAsync()
+    {
+        using var connection = DBConnectionFactory.CreateConnection();
+        await connection.OpenAsync();
+
+        string sql = @"
+        SELECT
+            r.Id,
+            r.StudentId,
+            s.FullName,
+            r.ClassId,
+            c.ClassName,
+            co.CourseName,
+            r.RegistrationDate,
+            r.Status
+        FROM Registrations r
+        INNER JOIN Student s 
+            ON r.StudentId = s.Id
+        INNER JOIN Class c 
+            ON r.ClassId = c.Id
+        INNER JOIN Course co 
+            ON c.CourseId = co.Id";
+
+        using var command = new SqlCommand(sql, connection);
+        using var reader = await command.ExecuteReaderAsync();
+
+        var registrations = new List<RegistrationDto>();
+
+        while (await reader.ReadAsync())
+        {
+            registrations.Add(new RegistrationDto
+            {
+                Id = reader.GetGuid(0),
+
+                StudentId = reader.GetGuid(1),
+                StudentUserName = reader.GetString(2),
+
+                ClassId = reader.GetGuid(3),
+                ClassName = reader.GetString(4),
+                CourseName  = reader.GetString(5),
+
+                RegistrationDate = reader.GetDateTime(6),
+                Status = reader.GetString(7)
+            });
+        }
+
+        return registrations;
+    }
+    public async Task<List<RegistrationDto>> SearchDetailedAsync(string regex)
+    {
+        using var connection = DBConnectionFactory.CreateConnection();
+        await connection.OpenAsync();
+
+        string sql = @"
+        SELECT
+            r.Id,
+            r.StudentId,
+            s.FullName,
+            r.ClassId,
+            c.ClassName,
+            co.CourseName,
+            r.RegistrationDate,
+            r.Status
+        FROM Registrations r
+        INNER JOIN Student s 
+            ON r.StudentId = s.Id
+        INNER JOIN Class c 
+            ON r.ClassId = c.Id
+        INNER JOIN Course co 
+            ON c.CourseId = co.Id
+        WHERE 
+            s.FullName LIKE @regex
+            OR c.ClassName LIKE @regex
+            OR co.CourseName LIKE @regex
+            OR r.Status LIKE @regex";
+
+        using var command = new SqlCommand(sql, connection);
+
+        command.Parameters.Add("@regex", SqlDbType.NVarChar)
+            .Value = $"%{regex}%";
+
+        using var reader = await command.ExecuteReaderAsync();
+
+        var registrations = new List<RegistrationDto>();
+
+        while (await reader.ReadAsync())
+        {
+            registrations.Add(new RegistrationDto
+            {
+                Id = reader.GetGuid(0),
+
+                StudentId = reader.GetGuid(1),
+                StudentUserName = reader.GetString(2),
+
+
+                ClassId = reader.GetGuid(3),
+                ClassName = reader.GetString(4),
+
+                CourseName = reader.GetString(5),
+
+                RegistrationDate = reader.GetDateTime(6),
+                Status = reader.GetString(7)
+            });
         }
 
         return registrations;

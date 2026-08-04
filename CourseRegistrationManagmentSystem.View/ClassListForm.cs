@@ -108,6 +108,19 @@ namespace CourseRegistrationManagmentSystem.View
             dgvClasses.DataSource = null;
             dgvClasses.DataSource = await _classService.GetAllAsync();
             if (dgvClasses.Columns["Schedule"] != null) dgvClasses.Columns["Schedule"].Visible = false;
+
+            if (dgvClasses.Columns["ScheduleString"] != null)
+            {
+                dgvClasses.Columns["ScheduleString"].HeaderText = "Schedule";
+            }
+
+            if (dgvClasses.Columns["CurrentCapacity"] != null && dgvClasses.Columns["MaxCapacity"] != null)
+            {
+                int currentIdx = dgvClasses.Columns["CurrentCapacity"].DisplayIndex;
+                int maxIdx = dgvClasses.Columns["MaxCapacity"].DisplayIndex;
+                dgvClasses.Columns["CurrentCapacity"].DisplayIndex = maxIdx;
+                dgvClasses.Columns["MaxCapacity"].DisplayIndex = currentIdx;
+            }
         }
 
         private async void btnSearch_Click(object sender, EventArgs e)
@@ -117,6 +130,19 @@ namespace CourseRegistrationManagmentSystem.View
                 dgvClasses.DataSource = null;
                 dgvClasses.DataSource = await _classService.SearchAsync(txtSearch.Text);
                 if (dgvClasses.Columns["Schedule"] != null) dgvClasses.Columns["Schedule"].Visible = false;
+
+                if (dgvClasses.Columns["ScheduleString"] != null)
+                {
+                    dgvClasses.Columns["ScheduleString"].HeaderText = "Schedule";
+                }
+
+                if (dgvClasses.Columns["CurrentCapacity"] != null && dgvClasses.Columns["MaxCapacity"] != null)
+                {
+                    int currentIdx = dgvClasses.Columns["CurrentCapacity"].DisplayIndex;
+                    int maxIdx = dgvClasses.Columns["MaxCapacity"].DisplayIndex;
+                    dgvClasses.Columns["CurrentCapacity"].DisplayIndex = maxIdx;
+                    dgvClasses.Columns["MaxCapacity"].DisplayIndex = currentIdx;
+                }
             }
             else
             {

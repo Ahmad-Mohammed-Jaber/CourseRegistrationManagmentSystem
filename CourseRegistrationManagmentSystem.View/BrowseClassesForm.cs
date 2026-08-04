@@ -52,7 +52,7 @@ namespace CourseRegistrationManagmentSystem.View
             dgvClasses.DataBindingComplete += dgvClasses_DataBindingComplete;
 
             // BrowseClassesForm
-            ClientSize = new Size(850, 1000);
+            ClientSize = new Size(1500, 1000);
             Controls.Add(dgvClasses);
             Controls.Add(topPanel);
             Text = "Available Classes";
@@ -60,33 +60,66 @@ namespace CourseRegistrationManagmentSystem.View
 
             ResumeLayout(false);
         }
-
         private void dgvClasses_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
         {
             if (dgvClasses.Columns.Count == 0)
                 return;
 
-            if (dgvClasses.Columns.Contains("Id"))
-                dgvClasses.Columns["Id"].DisplayIndex = 0;
 
-            if (dgvClasses.Columns.Contains("ClassName"))
-                dgvClasses.Columns["ClassName"].DisplayIndex = 1;
+            // Headers
+            if (dgvClasses.Columns["Id"] != null)
+                dgvClasses.Columns["Id"].HeaderText = "Class ID";
 
-            if (dgvClasses.Columns.Contains("CourseName"))
-                dgvClasses.Columns["CourseName"].DisplayIndex = 2;
+            if (dgvClasses.Columns["ClassName"] != null)
+                dgvClasses.Columns["ClassName"].HeaderText = "Class";
 
-            if (dgvClasses.Columns.Contains("InstructorName"))
-                dgvClasses.Columns["InstructorName"].DisplayIndex = 3;
+            if (dgvClasses.Columns["CourseName"] != null)
+                dgvClasses.Columns["CourseName"].HeaderText = "Course";
 
-            if (dgvClasses.Columns.Contains("Schedule"))
-                dgvClasses.Columns["Schedule"].DisplayIndex = 4;
+            if (dgvClasses.Columns["InstructorName"] != null)
+                dgvClasses.Columns["InstructorName"].HeaderText = "Instructor";
+
+            if (dgvClasses.Columns["Schedule"] != null)
+                dgvClasses.Columns["Schedule"].HeaderText = "Schedule";
+
+            if (dgvClasses.Columns["CurrentCapacity"] != null)
+                dgvClasses.Columns["CurrentCapacity"].HeaderText = "Current Capacity";
+
+            if (dgvClasses.Columns["MaxCapacity"] != null)
+                dgvClasses.Columns["MaxCapacity"].HeaderText = "Max Capacity";
+
+
+            // Ordering
+            int index = 0;
+
+            if (dgvClasses.Columns["Id"] != null)
+                dgvClasses.Columns["Id"].DisplayIndex = index++;
+
+            if (dgvClasses.Columns["ClassName"] != null)
+                dgvClasses.Columns["ClassName"].DisplayIndex = index++;
+
+            if (dgvClasses.Columns["CourseName"] != null)
+                dgvClasses.Columns["CourseName"].DisplayIndex = index++;
+
+            if (dgvClasses.Columns["InstructorName"] != null)
+                dgvClasses.Columns["InstructorName"].DisplayIndex = index++;
+
+            if (dgvClasses.Columns["Schedule"] != null)
+                dgvClasses.Columns["Schedule"].DisplayIndex = index++;
+
+            if (dgvClasses.Columns["CurrentCapacity"] != null)
+                dgvClasses.Columns["CurrentCapacity"].DisplayIndex = index++;
+
+            if (dgvClasses.Columns["MaxCapacity"] != null)
+                dgvClasses.Columns["MaxCapacity"].DisplayIndex = index++;
+
 
             foreach (DataGridViewColumn column in dgvClasses.Columns)
             {
-                column.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleLeft;
+                column.HeaderCell.Style.Alignment =
+                    DataGridViewContentAlignment.MiddleLeft;
             }
         }
-
         private async void LoadAvailableClasses()
         {
             dgvClasses.DataSource = null;
