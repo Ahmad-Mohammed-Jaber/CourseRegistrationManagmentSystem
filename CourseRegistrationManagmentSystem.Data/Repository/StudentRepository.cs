@@ -13,7 +13,7 @@ public class StudentRepository : IGenericRepository<Student>
         using var connection = DBConnectionFactory.CreateConnection();
         connection.Open();
 
-        string sql = "SELECT Id, UserId, StudentNumber, FullName, Email, Phone FROM Student WHERE Id = @Id";
+        string sql = "SELECT Id, UserId, StudentNumber, Email, Phone FROM Student WHERE Id = @Id";
         using var command = new SqlCommand(sql, connection);
         command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
 
@@ -25,9 +25,8 @@ public class StudentRepository : IGenericRepository<Student>
                 Id = reader.GetGuid(0),
                 UserId = reader.GetGuid(1),
                 StudentNumber = reader.GetInt32(2),
-                FullName = reader.GetString(3),
-                Email = reader.GetString(4),
-                Phone = reader.GetString(5)
+                Email = reader.GetString(3),
+                Phone = reader.GetString(4)
             };
         }
         return null;
@@ -38,7 +37,7 @@ public class StudentRepository : IGenericRepository<Student>
         using var connection = DBConnectionFactory.CreateConnection();
         await connection.OpenAsync();
 
-        string sql = "SELECT Id, UserId, StudentNumber, FullName, Email, Phone FROM Student WHERE Id = @Id";
+        string sql = "SELECT Id, UserId, StudentNumber, Email, Phone FROM Student WHERE Id = @Id";
         using var command = new SqlCommand(sql, connection);
         command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
 
@@ -50,9 +49,8 @@ public class StudentRepository : IGenericRepository<Student>
                 Id = reader.GetGuid(0),
                 UserId = reader.GetGuid(1),
                 StudentNumber = reader.GetInt32(2),
-                FullName = reader.GetString(3),
-                Email = reader.GetString(4),
-                Phone = reader.GetString(5)
+                Email = reader.GetString(3),
+                Phone = reader.GetString(4)
             };
         }
         return null;
@@ -63,7 +61,7 @@ public class StudentRepository : IGenericRepository<Student>
         using var connection = DBConnectionFactory.CreateConnection();
         await connection.OpenAsync();
 
-        string sql = "SELECT Id, UserId, StudentNumber, FullName, Email, Phone FROM Student WHERE UserId = @UserId";
+        string sql = "SELECT Id, UserId, StudentNumber, Email, Phone FROM Student WHERE UserId = @UserId";
         using var command = new SqlCommand(sql, connection);
         command.Parameters.Add("@UserId", SqlDbType.UniqueIdentifier).Value = userId;
 
@@ -75,9 +73,8 @@ public class StudentRepository : IGenericRepository<Student>
                 Id = reader.GetGuid(0),
                 UserId = reader.GetGuid(1),
                 StudentNumber = reader.GetInt32(2),
-                FullName = reader.GetString(3),
-                Email = reader.GetString(4),
-                Phone = reader.GetString(5)
+                Email = reader.GetString(3),
+                Phone = reader.GetString(4)
             };
         }
         return null;
@@ -88,7 +85,7 @@ public class StudentRepository : IGenericRepository<Student>
         using var connection = DBConnectionFactory.CreateConnection();
         connection.Open();
 
-        string sql = "SELECT Id, UserId, StudentNumber, FullName, Email, Phone FROM Student";
+        string sql = "SELECT Id, UserId, StudentNumber, Email, Phone FROM Student";
         using var command = new SqlCommand(sql, connection);
         using var reader = command.ExecuteReader();
 
@@ -100,9 +97,8 @@ public class StudentRepository : IGenericRepository<Student>
                 Id = reader.GetGuid(0),
                 UserId = reader.GetGuid(1),
                 StudentNumber = reader.GetInt32(2),
-                FullName = reader.GetString(3),
-                Email = reader.GetString(4),
-                Phone = reader.GetString(5)
+                Email = reader.GetString(3),
+                Phone = reader.GetString(4)
             });
         }
         return students;
@@ -113,7 +109,7 @@ public class StudentRepository : IGenericRepository<Student>
         using var connection = DBConnectionFactory.CreateConnection();
         await connection.OpenAsync();
 
-        string sql = "SELECT Id, UserId, StudentNumber, FullName, Email, Phone FROM Student";
+        string sql = "SELECT Id, UserId, StudentNumber, Email, Phone FROM Student";
         using var command = new SqlCommand(sql, connection);
         using var reader = await command.ExecuteReaderAsync();
 
@@ -125,9 +121,8 @@ public class StudentRepository : IGenericRepository<Student>
                 Id = reader.GetGuid(0),
                 UserId = reader.GetGuid(1),
                 StudentNumber = reader.GetInt32(2),
-                FullName = reader.GetString(3),
-                Email = reader.GetString(4),
-                Phone = reader.GetString(5)
+                Email = reader.GetString(3),
+                Phone = reader.GetString(4)
             });
         }
         return students;
@@ -138,14 +133,13 @@ public class StudentRepository : IGenericRepository<Student>
         using var connection = DBConnectionFactory.CreateConnection();
         connection.Open();
 
-        string sql = "INSERT INTO Student (Id, UserId, StudentNumber, FullName, Email, Phone) " +
-                     "VALUES (@Id, @UserId, @StudentNumber, @FullName, @Email, @Phone)";
+        string sql = "INSERT INTO Student (Id, UserId, StudentNumber, Email, Phone) " +
+                     "VALUES (@Id, @UserId, @StudentNumber, @Email, @Phone)";
 
         using var insertCommand = new SqlCommand(sql, connection);
         insertCommand.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = entity.Id;
         insertCommand.Parameters.Add("@UserId", SqlDbType.UniqueIdentifier).Value = entity.UserId;
         insertCommand.Parameters.Add("@StudentNumber", SqlDbType.Int).Value = entity.StudentNumber;
-        insertCommand.Parameters.Add("@FullName", SqlDbType.NVarChar, 100).Value = entity.FullName;
         insertCommand.Parameters.Add("@Email", SqlDbType.NVarChar, 100).Value = entity.Email;
         insertCommand.Parameters.Add("@Phone", SqlDbType.NVarChar, 15).Value = entity.Phone;
 
@@ -157,14 +151,13 @@ public class StudentRepository : IGenericRepository<Student>
         using var connection = DBConnectionFactory.CreateConnection();
         await connection.OpenAsync();
 
-        string sql = "INSERT INTO Student (Id, UserId, StudentNumber, FullName, Email, Phone) " +
-                     "VALUES (@Id, @UserId, @StudentNumber, @FullName, @Email, @Phone)";
+        string sql = "INSERT INTO Student (Id, UserId, StudentNumber, Email, Phone) " +
+                     "VALUES (@Id, @UserId, @StudentNumber, @Email, @Phone)";
 
         using var insertCommand = new SqlCommand(sql, connection);
         insertCommand.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = entity.Id;
         insertCommand.Parameters.Add("@UserId", SqlDbType.UniqueIdentifier).Value = entity.UserId;
         insertCommand.Parameters.Add("@StudentNumber", SqlDbType.Int).Value = entity.StudentNumber;
-        insertCommand.Parameters.Add("@FullName", SqlDbType.NVarChar, 100).Value = entity.FullName;
         insertCommand.Parameters.Add("@Email", SqlDbType.NVarChar, 100).Value = entity.Email;
         insertCommand.Parameters.Add("@Phone", SqlDbType.NVarChar, 15).Value = entity.Phone;
 
@@ -177,14 +170,13 @@ public class StudentRepository : IGenericRepository<Student>
         connection.Open();
 
         string sql = "UPDATE Student SET UserId = @UserId, StudentNumber = @StudentNumber, " +
-                     "FullName = @FullName, Email = @Email, Phone = @Phone " +
+                     "Email = @Email, Phone = @Phone " +
                      "WHERE Id = @Id";
 
         using var updateCommand = new SqlCommand(sql, connection);
         updateCommand.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
         updateCommand.Parameters.Add("@UserId", SqlDbType.UniqueIdentifier).Value = entity.UserId;
         updateCommand.Parameters.Add("@StudentNumber", SqlDbType.Int).Value = entity.StudentNumber;
-        updateCommand.Parameters.Add("@FullName", SqlDbType.NVarChar, 100).Value = entity.FullName;
         updateCommand.Parameters.Add("@Email", SqlDbType.NVarChar, 100).Value = entity.Email;
         updateCommand.Parameters.Add("@Phone", SqlDbType.NVarChar, 15).Value = entity.Phone;
 
@@ -197,14 +189,13 @@ public class StudentRepository : IGenericRepository<Student>
         await connection.OpenAsync();
 
         string sql = "UPDATE Student SET UserId = @UserId, StudentNumber = @StudentNumber, " +
-                     "FullName = @FullName, Email = @Email, Phone = @Phone " +
+                     "Email = @Email, Phone = @Phone " +
                      "WHERE Id = @Id";
 
         using var updateCommand = new SqlCommand(sql, connection);
         updateCommand.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
         updateCommand.Parameters.Add("@UserId", SqlDbType.UniqueIdentifier).Value = entity.UserId;
         updateCommand.Parameters.Add("@StudentNumber", SqlDbType.Int).Value = entity.StudentNumber;
-        updateCommand.Parameters.Add("@FullName", SqlDbType.NVarChar, 100).Value = entity.FullName;
         updateCommand.Parameters.Add("@Email", SqlDbType.NVarChar, 100).Value = entity.Email;
         updateCommand.Parameters.Add("@Phone", SqlDbType.NVarChar, 15).Value = entity.Phone;
 
@@ -240,7 +231,9 @@ public class StudentRepository : IGenericRepository<Student>
         using var connection = DBConnectionFactory.CreateConnection();
         connection.Open();
 
-        string sql = "SELECT Id, UserId, StudentNumber, FullName, Email, Phone FROM Student WHERE FullName LIKE @regex OR Email LIKE @regex";
+        string sql = "SELECT s.Id, s.UserId, s.StudentNumber, s.Email, s.Phone " +
+                     "FROM Student s JOIN [User] u ON s.UserId = u.Id " +
+                     "WHERE u.FullName LIKE @regex OR s.Email LIKE @regex";
         using var command = new SqlCommand(sql, connection);
         command.Parameters.Add("@regex", SqlDbType.NVarChar).Value = $"%{regex}%";
 
@@ -253,9 +246,8 @@ public class StudentRepository : IGenericRepository<Student>
                 Id = reader.GetGuid(0),
                 UserId = reader.GetGuid(1),
                 StudentNumber = reader.GetInt32(2),
-                FullName = reader.GetString(3),
-                Email = reader.GetString(4),
-                Phone = reader.GetString(5)
+                Email = reader.GetString(3),
+                Phone = reader.GetString(4)
             });
         }
         return students;
@@ -266,7 +258,9 @@ public class StudentRepository : IGenericRepository<Student>
         using var connection = DBConnectionFactory.CreateConnection();
         await connection.OpenAsync();
 
-        string sql = "SELECT Id, UserId, StudentNumber, FullName, Email, Phone FROM Student WHERE FullName LIKE @regex OR Email LIKE @regex";
+        string sql = "SELECT s.Id, s.UserId, s.StudentNumber, s.Email, s.Phone " +
+                     "FROM Student s JOIN [User] u ON s.UserId = u.Id " +
+                     "WHERE u.FullName LIKE @regex OR s.Email LIKE @regex";
         using var command = new SqlCommand(sql, connection);
         command.Parameters.Add("@regex", SqlDbType.NVarChar).Value = $"%{regex}%";
 
@@ -279,9 +273,8 @@ public class StudentRepository : IGenericRepository<Student>
                 Id = reader.GetGuid(0),
                 UserId = reader.GetGuid(1),
                 StudentNumber = reader.GetInt32(2),
-                FullName = reader.GetString(3),
-                Email = reader.GetString(4),
-                Phone = reader.GetString(5)
+                Email = reader.GetString(3),
+                Phone = reader.GetString(4)
             });
         }
         return students;

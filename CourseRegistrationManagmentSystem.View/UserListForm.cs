@@ -84,7 +84,7 @@ namespace CourseRegistrationManagmentSystem.View
             this.dgvUsers.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
 
             // UserListForm
-            this.ClientSize = new Size(650, 450);
+            ClientSize = new Size(1500, 800);
             this.Controls.Add(this.dgvUsers);
             this.Controls.Add(this.topPanel);
             this.Name = "UserListForm";

@@ -16,27 +16,42 @@ public class StudentService : ICrudService<StudentDto>
     {
         AccessValidator.RequireAdmin();
         var student = _studentRepository.GetById(id);
-        return student.ToDto();
+        if (student == null) return null;
+        var user = _userRepository.GetById(student.UserId);
+        return student.ToDto(user);
     }
 
     public async Task<StudentDto?> GetByIdAsync(Guid id)
     {
         AccessValidator.RequireAdmin();
         var student = await _studentRepository.GetByIdAsync(id);
-        return student.ToDto();
+        if (student == null) return null;
+        var user = await _userRepository.GetByIdAsync(student.UserId);
+        return student.ToDto(user);
     }
 
     public List<StudentDto> GetAll()
     {
         AccessValidator.RequireAdmin();
-        return _studentRepository.GetAll().Select(student => student.ToDto()!).ToList();
+        var students = _studentRepository.GetAll();
+        var users = _userRepository.GetAll();
+        return students.Select(student =>
+        {
+            var user = users.FirstOrDefault(u => u.Id == student.UserId);
+            return student.ToDto(user)!;
+        }).ToList();
     }
 
     public async Task<List<StudentDto>> GetAllAsync()
     {
         AccessValidator.RequireAdmin();
         var students = await _studentRepository.GetAllAsync();
-        return students.Select(student => student.ToDto()!).ToList();
+        var users = await _userRepository.GetAllAsync();
+        return students.Select(student =>
+        {
+            var user = users.FirstOrDefault(u => u.Id == student.UserId);
+            return student.ToDto(user)!;
+        }).ToList();
     }
 
     public void Add(StudentDto studentDto)
@@ -98,7 +113,6 @@ public class StudentService : ICrudService<StudentDto>
             throw new KeyNotFoundException($"User with id {student.UserId} not found.");
 
         student.StudentNumber = studentDto.StudentNumber;
-        student.FullName = studentDto.FullName;
         student.Email = studentDto.Email;
         student.Phone = studentDto.Phone;
 
@@ -123,7 +137,6 @@ public class StudentService : ICrudService<StudentDto>
             throw new KeyNotFoundException($"User with id {student.UserId} not found.");
 
         student.StudentNumber = studentDto.StudentNumber;
-        student.FullName = studentDto.FullName;
         student.Email = studentDto.Email;
         student.Phone = studentDto.Phone;
 
@@ -162,22 +175,28 @@ public class StudentService : ICrudService<StudentDto>
     public List<StudentDto> Search(string regex)
     {
         AccessValidator.RequireAdmin();
-        var students = _studentRepository.GetAll();
+        var students = _studentRepository.Search(regex);
+        var users = _userRepository.GetAll();
         return students
-            .Where(student => Regex.IsMatch(student.FullName, regex, RegexOptions.IgnoreCase) ||
-                        Regex.IsMatch(student.Email, regex, RegexOptions.IgnoreCase))
-            .Select(student => student.ToDto()!)
+            .Select(student =>
+            {
+                var user = users.FirstOrDefault(u => u.Id == student.UserId);
+                return student.ToDto(user)!;
+            })
             .ToList();
     }
 
     public async Task<List<StudentDto>> SearchAsync(string regex)
     {
         AccessValidator.RequireAdmin();
-        var students = await _studentRepository.GetAllAsync();
+        var students = await _studentRepository.SearchAsync(regex);
+        var users = await _userRepository.GetAllAsync();
         return students
-            .Where(student => Regex.IsMatch(student.FullName, regex, RegexOptions.IgnoreCase) ||
-                        Regex.IsMatch(student.Email, regex, RegexOptions.IgnoreCase))
-            .Select(student => student.ToDto()!)
+            .Select(student =>
+            {
+                var user = users.FirstOrDefault(u => u.Id == student.UserId);
+                return student.ToDto(user)!;
+            })
             .ToList();
     }
 }

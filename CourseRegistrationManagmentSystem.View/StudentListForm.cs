@@ -97,7 +97,7 @@ namespace CourseRegistrationManagmentSystem.View
             dgvStudents.DataBindingComplete += dgvStudents_DataBindingComplete;
 
             // StudentListForm
-            ClientSize = new Size(950, 500);
+            ClientSize = new Size(1500, 800);
             Controls.Add(dgvStudents);
             Controls.Add(topPanel);
             Name = "StudentListForm";

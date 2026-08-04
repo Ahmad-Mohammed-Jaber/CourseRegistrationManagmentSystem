@@ -28,7 +28,14 @@ namespace CourseRegistrationManagmentSystem.View
             _user = user;
             _isEditMode = user != null;
             InitializeComponent();
-            if (_isEditMode) LoadUserData();
+            if (_isEditMode)
+            {
+                LoadUserData();
+            }
+            else
+            {
+                cmbRole.SelectedItem = User.UserRoles.Admin;
+            }
         }
 
         private void InitializeComponent()
@@ -74,6 +81,7 @@ namespace CourseRegistrationManagmentSystem.View
             this.cmbRole.Size = new Size(200, 25);
             this.cmbRole.DropDownStyle = ComboBoxStyle.DropDownList;
             this.cmbRole.DataSource = Enum.GetValues(typeof(User.UserRoles));
+            this.cmbRole.Enabled = false;
 
             // lblPassword
             this.lblPassword.Text = "Password:";

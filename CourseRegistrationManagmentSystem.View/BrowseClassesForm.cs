@@ -52,7 +52,7 @@ namespace CourseRegistrationManagmentSystem.View
             dgvClasses.DataBindingComplete += dgvClasses_DataBindingComplete;
 
             // BrowseClassesForm
-            ClientSize = new Size(850, 500);
+            ClientSize = new Size(850, 1000);
             Controls.Add(dgvClasses);
             Controls.Add(topPanel);
             Text = "Available Classes";

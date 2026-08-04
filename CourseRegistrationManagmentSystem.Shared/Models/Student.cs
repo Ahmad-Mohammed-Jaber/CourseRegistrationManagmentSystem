@@ -3,17 +3,8 @@
 public class Student : User
 {
     new public Guid Id { get; set; }
-
-    public Guid UserId { get; set; } = Guid.NewGuid();
-
+    public Guid UserId { get; set; }
     public int StudentNumber { get; set; }
-
-    public string Email { get; set; }
-
-    public string Phone { get; set; }
-
-    public Student()
-    {
-        Role = UserRoles.Student;
-    }
+    public string Email { get; set; } = string.Empty;
+    public string Phone { get; set; } = string.Empty;
 }

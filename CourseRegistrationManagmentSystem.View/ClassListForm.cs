@@ -93,7 +93,7 @@ namespace CourseRegistrationManagmentSystem.View
             dgvClasses.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
 
             // Form
-            ClientSize = new Size(900, 500);
+            ClientSize = new Size(1500, 800);
             Controls.Add(dgvClasses);
             Controls.Add(topPanel);
             Name = "ClassListForm";
