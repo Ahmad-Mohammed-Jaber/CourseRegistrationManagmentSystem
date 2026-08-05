@@ -1,10 +1,7 @@
-using CourseRegistrationManagmentSystem.Data.Database;
-using CourseRegistrationManagmentSystem.Models;
 using CourseRegistrationManagmentSystem.Shared.Dtos;
 using CourseRegistrationManagmentSystem.Shared.Models;
-using Microsoft.Data.SqlClient;
-using System.Data;
-using System.Data.Common;
+using DAL.Interfaces;
+using DAL.Providers;
 
 namespace CourseRegistrationManagmentSystem.Data.Repository;
 
@@ -12,437 +9,101 @@ public class RegistrationRepository : IGenericRepository<Registration>
 {
     public Registration? GetById(Guid id)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        connection.Open();
-
-        string sql = "SELECT Id, StudentId, ClassId, RegistrationDate, Status FROM Registrations WHERE Id = @Id";
-        using var command = new SqlCommand(sql, connection);
-        command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
-
-        using var reader = command.ExecuteReader();
-        if (reader.Read())
-        {
-            return new Registration
-            {
-                Id = reader.GetGuid(0),
-                StudentId = reader.GetGuid(1),
-                ClassId = reader.GetGuid(2),
-                RegsitrationDate = reader.GetDateTime(3),
-                Status = reader.GetString(4)
-            };
-        }
-        return null;
+        return RegistrationDataProvider.GetById(id);
     }
 
-    public async Task<Registration?> GetByIdAsync(Guid id)
+    public Task<Registration?> GetByIdAsync(Guid id)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        string sql = "SELECT Id, StudentId, ClassId, RegistrationDate, Status FROM Registrations WHERE Id = @Id";
-        using var command = new SqlCommand(sql, connection);
-        command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
-
-        using var reader = await command.ExecuteReaderAsync();
-        if (await reader.ReadAsync())
-        {
-            return new Registration
-            {
-                Id = reader.GetGuid(0),
-                StudentId = reader.GetGuid(1),
-                ClassId = reader.GetGuid(2),
-                RegsitrationDate = reader.GetDateTime(3),
-                Status = reader.GetString(4)
-            };
-        }
-        return null;
+        return RegistrationDataProvider.GetByIdAsync(id);
     }
 
-    public async Task<bool> ExistsAsync(Guid studentId, Guid classId)
+    public Task<bool> ExistsAsync(Guid studentId, Guid classId)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        await connection.OpenAsync();
+        return RegistrationDataProvider.ExistsAsync(studentId, classId);
+    }
 
-        string sql = "SELECT 1 FROM Registrations WHERE StudentId = @StudentId AND ClassId = @ClassId;";
+    public List<Registration> GetRegistrationsByStudentId(Guid studentId)
+    {
+        return RegistrationDataProvider.GetRegistrationsByStudentId(studentId);
+    }
 
-        using var command = new SqlCommand(sql, connection);
+    public Task<List<Registration>> GetRegistrationsByStudentIdAsync(Guid studentId)
+    {
+        return RegistrationDataProvider.GetRegistrationsByStudentIdAsync(studentId);
+    }
 
-        command.Parameters.Add("@StudentId", SqlDbType.UniqueIdentifier).Value = studentId;
-        command.Parameters.Add("@ClassId", SqlDbType.UniqueIdentifier).Value = classId;
+    public List<Registration> GetRegistrationsByClassId(Guid classId)
+    {
+        return RegistrationDataProvider.GetRegistrationsByClassId(classId);
+    }
 
-        return await command.ExecuteScalarAsync() is not null;
+    public Task<List<Registration>> GetRegistrationsByClassIdAsync(Guid classId)
+    {
+        return RegistrationDataProvider.GetRegistrationsByClassIdAsync(classId);
     }
 
     public List<Registration> GetAll()
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        connection.Open();
-
-        string sql = "SELECT Id, StudentId, ClassId, RegistrationDate, Status FROM Registrations";
-        using var command = new SqlCommand(sql, connection);
-        using var reader = command.ExecuteReader();
-
-        var registrations = new List<Registration>();
-        while (reader.Read())
-        {
-            registrations.Add(new Registration
-            {
-                Id = reader.GetGuid(0),
-                StudentId = reader.GetGuid(1),
-                ClassId = reader.GetGuid(2),
-                RegsitrationDate = reader.GetDateTime(3),
-                Status = reader.GetString(4)
-            });
-        }
-        return registrations;
+        return RegistrationDataProvider.GetAll();
     }
 
-    public async Task<List<Registration>> GetAllAsync()
+    public Task<List<Registration>> GetAllAsync()
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        string sql = "SELECT Id, StudentId, ClassId, RegistrationDate, Status FROM Registrations";
-        using var command = new SqlCommand(sql, connection);
-        using var reader = await command.ExecuteReaderAsync();
-
-        var registrations = new List<Registration>();
-        while (await reader.ReadAsync())
-        {
-            registrations.Add(new Registration
-            {
-                Id = reader.GetGuid(0),
-                StudentId = reader.GetGuid(1),
-                ClassId = reader.GetGuid(2),
-                RegsitrationDate = reader.GetDateTime(3),
-                Status = reader.GetString(4)
-            });
-        }
-        return registrations;
+        return RegistrationDataProvider.GetAllAsync();
     }
 
     public void Add(Registration entity)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        connection.Open();
-
-        string sql = "INSERT INTO Registrations (Id, StudentId, ClassId, RegistrationDate, Status) " +
-                     "VALUES (@Id, @StudentId, @ClassId, @RegistrationDate, @Status)";
-
-        using var insertCommand = new SqlCommand(sql, connection);
-        insertCommand.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = entity.Id;
-        insertCommand.Parameters.Add("@StudentId", SqlDbType.UniqueIdentifier).Value = entity.StudentId;
-        insertCommand.Parameters.Add("@ClassId", SqlDbType.UniqueIdentifier).Value = entity.ClassId;
-        insertCommand.Parameters.Add("@RegistrationDate", SqlDbType.DateTime2).Value = entity.RegsitrationDate;
-        insertCommand.Parameters.Add("@Status", SqlDbType.NVarChar, 50).Value = entity.Status;
-
-        insertCommand.ExecuteNonQuery();
+        RegistrationDataProvider.Add(entity);
     }
 
-    public async Task AddAsync(Registration entity)
+    public Task AddAsync(Registration entity)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        string sql = "INSERT INTO Registrations (Id, StudentId, ClassId, RegistrationDate, Status) " +
-                     "VALUES (@Id, @StudentId, @ClassId, @RegistrationDate, @Status)";
-
-        using var insertCommand = new SqlCommand(sql, connection);
-        insertCommand.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = entity.Id;
-        insertCommand.Parameters.Add("@StudentId", SqlDbType.UniqueIdentifier).Value = entity.StudentId;
-        insertCommand.Parameters.Add("@ClassId", SqlDbType.UniqueIdentifier).Value = entity.ClassId;
-        insertCommand.Parameters.Add("@RegistrationDate", SqlDbType.DateTime2).Value = entity.RegsitrationDate;
-        insertCommand.Parameters.Add("@Status", SqlDbType.NVarChar, 50).Value = entity.Status;
-
-        await insertCommand.ExecuteNonQueryAsync();
+        return RegistrationDataProvider.AddAsync(entity);
     }
 
     public void Update(Guid id, Registration entity)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        connection.Open();
-
-        string sql = "UPDATE Registrations SET StudentId = @StudentId, ClassId = @ClassId, " +
-                     "RegistrationDate = @RegistrationDate, Status = @Status " +
-                     "WHERE Id = @Id";
-
-        using var updateCommand = new SqlCommand(sql, connection);
-        updateCommand.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
-        updateCommand.Parameters.Add("@StudentId", SqlDbType.UniqueIdentifier).Value = entity.StudentId;
-        updateCommand.Parameters.Add("@ClassId", SqlDbType.UniqueIdentifier).Value = entity.ClassId;
-        updateCommand.Parameters.Add("@RegistrationDate", SqlDbType.DateTime2).Value = entity.RegsitrationDate;
-        updateCommand.Parameters.Add("@Status", SqlDbType.NVarChar, 50).Value = entity.Status;
-
-        updateCommand.ExecuteNonQuery();
+        RegistrationDataProvider.Update(id, entity);
     }
 
-    public async Task UpdateAsync(Guid id, Registration entity)
+    public Task UpdateAsync(Guid id, Registration entity)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        string sql = "UPDATE Registrations SET StudentId = @StudentId, ClassId = @ClassId, " +
-                     "RegistrationDate = @RegistrationDate, Status = @Status " +
-                     "WHERE Id = @Id";
-
-        using var updateCommand = new SqlCommand(sql, connection);
-        updateCommand.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
-        updateCommand.Parameters.Add("@StudentId", SqlDbType.UniqueIdentifier).Value = entity.StudentId;
-        updateCommand.Parameters.Add("@ClassId", SqlDbType.UniqueIdentifier).Value = entity.ClassId;
-        updateCommand.Parameters.Add("@RegistrationDate", SqlDbType.DateTime2).Value = entity.RegsitrationDate;
-        updateCommand.Parameters.Add("@Status", SqlDbType.NVarChar, 50).Value = entity.Status;
-
-        await updateCommand.ExecuteNonQueryAsync();
+        return RegistrationDataProvider.UpdateAsync(id, entity);
     }
 
     public void Delete(Guid id)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        connection.Open();
-
-        string sql = "DELETE FROM Registrations WHERE Id = @Id";
-        using var deleteCommand = new SqlCommand(sql, connection);
-        deleteCommand.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
-
-        deleteCommand.ExecuteNonQuery();
+        RegistrationDataProvider.Delete(id);
     }
 
-    public async Task DeleteAsync(Guid id)
+    public Task DeleteAsync(Guid id)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        string sql = "DELETE FROM Registrations WHERE Id = @Id";
-        using var deleteCommand = new SqlCommand(sql, connection);
-        deleteCommand.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
-
-        await deleteCommand.ExecuteNonQueryAsync();
+        return RegistrationDataProvider.DeleteAsync(id);
     }
 
     public List<Registration> Search(string regex)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        connection.Open();
-
-        string sql = "SELECT Id, StudentId, ClassId, RegistrationDate, Status FROM Registrations WHERE Status LIKE @regex";
-        using var command = new SqlCommand(sql, connection);
-        command.Parameters.Add("@regex", SqlDbType.NVarChar).Value = $"%{regex}%";
-
-        using var reader = command.ExecuteReader();
-        var registrations = new List<Registration>();
-        while (reader.Read())
-        {
-            registrations.Add(new Registration
-            {
-                Id = reader.GetGuid(0),
-                StudentId = reader.GetGuid(1),
-                ClassId = reader.GetGuid(2),
-                RegsitrationDate = reader.GetDateTime(3),
-                Status = reader.GetString(4)
-            });
-        }
-        return registrations;
+        return RegistrationDataProvider.Search(regex);
     }
 
-    public async Task<List<Registration>> SearchAsync(string regex)
+    public Task<List<Registration>> SearchAsync(string regex)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        string sql = "SELECT Id, StudentId, ClassId, RegistrationDate, Status FROM Registrations WHERE Status LIKE @regex";
-
-        using var command = new SqlCommand(sql, connection);
-        command.Parameters.Add("@regex", SqlDbType.NVarChar).Value = $"%{regex}%";
-
-        using var reader = await command.ExecuteReaderAsync();
-
-        var registrations = new List<Registration>();
-
-        while (await reader.ReadAsync())
-        {
-            registrations.Add(new Registration
-            {
-                Id = reader.GetGuid(0),
-                StudentId = reader.GetGuid(1),
-                ClassId = reader.GetGuid(2),
-                RegsitrationDate = reader.GetDateTime(3),
-                Status = reader.GetString(4)
-            });
-        }
-
-        return registrations;
+        return RegistrationDataProvider.SearchAsync(regex);
     }
 
-    public async Task<List<(Registration Registration, Class Class)>> GetStudentRegistrationsWithClassesAsync(Guid studentId)
+    public Task<List<(Registration Registration, Class Class)>> GetStudentRegistrationsWithClassesAsync(Guid studentId)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        string sql = @"
-        SELECT
-            r.Id,
-            r.StudentId,
-            r.ClassId,
-            r.RegistrationDate,
-            r.Status,
-
-            c.Id,
-            c.CourseId,
-            c.ClassName,
-            c.Instructor,
-            c.MaxCapacity,
-            c.CurrentCapacity,
-            c.StartDate,
-            c.EndDate,
-            c.Schedule,
-            c.IsActive
-
-        FROM Registrations r
-        INNER JOIN Class c ON r.ClassId = c.Id
-        WHERE r.StudentId = @studentId";
-
-        using var command = new SqlCommand(sql, connection);
-        command.Parameters.Add("@studentId", SqlDbType.UniqueIdentifier).Value = studentId;
-
-        using var reader = await command.ExecuteReaderAsync();
-
-        var registrations = new List<(Registration Registration, Class Class)>();
-
-        while (await reader.ReadAsync())
-        {
-            var registration = new Registration
-            {
-                Id = reader.GetGuid(0),
-                StudentId = reader.GetGuid(1),
-                ClassId = reader.GetGuid(2),
-                RegsitrationDate = reader.GetDateTime(3),
-                Status = reader.GetString(4)
-            };
-
-            var cls = new Class
-            {
-                Id = reader.GetGuid(5),
-                CourseId = reader.GetGuid(6),
-                ClassName = reader.GetString(7),
-                Instructor = reader.GetString(8),
-                MaxCapacity = reader.GetInt32(9),
-                CurrentCapacity = reader.GetInt32(10),
-                StartDate = reader.GetDateTime(11),
-                EndDate = reader.GetDateTime(12),
-                Schedule = (Class.DaysOfWeek)reader.GetInt32(13),
-                IsActive = reader.GetBoolean(14)
-            };
-
-            registrations.Add((registration, cls));
-        }
-
-        return registrations;
+        return RegistrationDataProvider.GetStudentRegistrationsWithClassesAsync(studentId);
     }
-    public async Task<List<RegistrationDto>> GetAllDetailedAsync()
+
+    public Task<List<RegistrationDto>> GetAllDetailedAsync()
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        string sql = @"
-        SELECT
-            r.Id,
-            r.StudentId,
-            s.FullName,
-            r.ClassId,
-            c.ClassName,
-            co.CourseName,
-            r.RegistrationDate,
-            r.Status
-        FROM Registrations r
-        INNER JOIN Student s 
-            ON r.StudentId = s.Id
-        INNER JOIN Class c 
-            ON r.ClassId = c.Id
-        INNER JOIN Course co 
-            ON c.CourseId = co.Id";
-
-        using var command = new SqlCommand(sql, connection);
-        using var reader = await command.ExecuteReaderAsync();
-
-        var registrations = new List<RegistrationDto>();
-
-        while (await reader.ReadAsync())
-        {
-            registrations.Add(new RegistrationDto
-            {
-                Id = reader.GetGuid(0),
-
-                StudentId = reader.GetGuid(1),
-                StudentUserName = reader.GetString(2),
-
-                ClassId = reader.GetGuid(3),
-                ClassName = reader.GetString(4),
-                CourseName  = reader.GetString(5),
-
-                RegistrationDate = reader.GetDateTime(6),
-                Status = reader.GetString(7)
-            });
-        }
-
-        return registrations;
+        return RegistrationDataProvider.GetAllDetailedAsync();
     }
-    public async Task<List<RegistrationDto>> SearchDetailedAsync(string regex)
+
+    public Task<List<RegistrationDto>> SearchDetailedAsync(string regex)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        string sql = @"
-        SELECT
-            r.Id,
-            r.StudentId,
-            s.FullName,
-            r.ClassId,
-            c.ClassName,
-            co.CourseName,
-            r.RegistrationDate,
-            r.Status
-        FROM Registrations r
-        INNER JOIN Student s 
-            ON r.StudentId = s.Id
-        INNER JOIN Class c 
-            ON r.ClassId = c.Id
-        INNER JOIN Course co 
-            ON c.CourseId = co.Id
-        WHERE 
-            s.FullName LIKE @regex
-            OR c.ClassName LIKE @regex
-            OR co.CourseName LIKE @regex
-            OR r.Status LIKE @regex";
-
-        using var command = new SqlCommand(sql, connection);
-
-        command.Parameters.Add("@regex", SqlDbType.NVarChar)
-            .Value = $"%{regex}%";
-
-        using var reader = await command.ExecuteReaderAsync();
-
-        var registrations = new List<RegistrationDto>();
-
-        while (await reader.ReadAsync())
-        {
-            registrations.Add(new RegistrationDto
-            {
-                Id = reader.GetGuid(0),
-
-                StudentId = reader.GetGuid(1),
-                StudentUserName = reader.GetString(2),
-
-
-                ClassId = reader.GetGuid(3),
-                ClassName = reader.GetString(4),
-
-                CourseName = reader.GetString(5),
-
-                RegistrationDate = reader.GetDateTime(6),
-                Status = reader.GetString(7)
-            });
-        }
-
-        return registrations;
+        return RegistrationDataProvider.SearchDetailedAsync(regex);
     }
 }

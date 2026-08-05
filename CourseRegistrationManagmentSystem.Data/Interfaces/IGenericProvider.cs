@@ -1,6 +1,6 @@
 namespace CourseRegistrationManagmentSystem.Data.Interfaces;
 
-public interface IGenericRepository<T> where T : class
+public interface IGenericProvider<T> where T : class
 {
     T? GetById(Guid id);
 

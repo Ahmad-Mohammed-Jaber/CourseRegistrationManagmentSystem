@@ -1,4 +1,4 @@
-﻿using CourseRegistrationManagmentSystem.Shared.Session;
+namespace CourseRegistrationManagmentSystem.Shared.Session;
 
 public static class SessionManager
 {
@@ -14,7 +14,6 @@ public static class SessionManager
     }
 
     public static void Logout()
-
     {
         UserSession = null;
     }

@@ -1,8 +1,6 @@
-using CourseRegistrationManagmentSystem.Data.Database;
-using CourseRegistrationManagmentSystem.Models;
+using CourseRegistrationManagmentSystem.Data.Providers;
 using CourseRegistrationManagmentSystem.Shared.Models;
-using Microsoft.Data.SqlClient;
-using System.Data;
+using DAL.Interfaces;
 
 namespace CourseRegistrationManagmentSystem.Data.Repository;
 
@@ -10,273 +8,66 @@ public class StudentRepository : IGenericRepository<Student>
 {
     public Student? GetById(Guid id)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        connection.Open();
-
-        string sql = "SELECT Id, UserId, StudentNumber, Email, Phone FROM Student WHERE Id = @Id";
-        using var command = new SqlCommand(sql, connection);
-        command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
-
-        using var reader = command.ExecuteReader();
-        if (reader.Read())
-        {
-            return new Student
-            {
-                Id = reader.GetGuid(0),
-                UserId = reader.GetGuid(1),
-                StudentNumber = reader.GetInt32(2),
-                Email = reader.GetString(3),
-                Phone = reader.GetString(4)
-            };
-        }
-        return null;
+        return StudentDataProvider.GetById(id);
     }
 
-    public async Task<Student?> GetByIdAsync(Guid id)
+    public Task<Student?> GetByIdAsync(Guid id)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        string sql = "SELECT Id, UserId, StudentNumber, Email, Phone FROM Student WHERE Id = @Id";
-        using var command = new SqlCommand(sql, connection);
-        command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
-
-        using var reader = await command.ExecuteReaderAsync();
-        if (await reader.ReadAsync())
-        {
-            return new Student
-            {
-                Id = reader.GetGuid(0),
-                UserId = reader.GetGuid(1),
-                StudentNumber = reader.GetInt32(2),
-                Email = reader.GetString(3),
-                Phone = reader.GetString(4)
-            };
-        }
-        return null;
+        return StudentDataProvider.GetByIdAsync(id);
     }
 
-    public async Task<Student?> GetByUserIdAsync(Guid userId)
+    public Task<Student?> GetByUserIdAsync(Guid userId)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        string sql = "SELECT Id, UserId, StudentNumber, Email, Phone FROM Student WHERE UserId = @UserId";
-        using var command = new SqlCommand(sql, connection);
-        command.Parameters.Add("@UserId", SqlDbType.UniqueIdentifier).Value = userId;
-
-        using var reader = await command.ExecuteReaderAsync();
-        if (await reader.ReadAsync())
-        {
-            return new Student
-            {
-                Id = reader.GetGuid(0),
-                UserId = reader.GetGuid(1),
-                StudentNumber = reader.GetInt32(2),
-                Email = reader.GetString(3),
-                Phone = reader.GetString(4)
-            };
-        }
-        return null;
+        return StudentDataProvider.GetByUserIdAsync(userId);
     }
 
     public List<Student> GetAll()
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        connection.Open();
-
-        string sql = "SELECT Id, UserId, StudentNumber, Email, Phone FROM Student";
-        using var command = new SqlCommand(sql, connection);
-        using var reader = command.ExecuteReader();
-
-        var students = new List<Student>();
-        while (reader.Read())
-        {
-            students.Add(new Student
-            {
-                Id = reader.GetGuid(0),
-                UserId = reader.GetGuid(1),
-                StudentNumber = reader.GetInt32(2),
-                Email = reader.GetString(3),
-                Phone = reader.GetString(4)
-            });
-        }
-        return students;
+        return StudentDataProvider.GetAll();
     }
 
-    public async Task<List<Student>> GetAllAsync()
+    public Task<List<Student>> GetAllAsync()
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        string sql = "SELECT Id, UserId, StudentNumber, Email, Phone FROM Student";
-        using var command = new SqlCommand(sql, connection);
-        using var reader = await command.ExecuteReaderAsync();
-
-        var students = new List<Student>();
-        while (await reader.ReadAsync())
-        {
-            students.Add(new Student
-            {
-                Id = reader.GetGuid(0),
-                UserId = reader.GetGuid(1),
-                StudentNumber = reader.GetInt32(2),
-                Email = reader.GetString(3),
-                Phone = reader.GetString(4)
-            });
-        }
-        return students;
+        return StudentDataProvider.GetAllAsync();
     }
 
     public void Add(Student entity)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        connection.Open();
-
-        string sql = "INSERT INTO Student (Id, UserId, StudentNumber, Email, Phone) " +
-                     "VALUES (@Id, @UserId, @StudentNumber, @Email, @Phone)";
-
-        using var insertCommand = new SqlCommand(sql, connection);
-        insertCommand.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = entity.Id;
-        insertCommand.Parameters.Add("@UserId", SqlDbType.UniqueIdentifier).Value = entity.UserId;
-        insertCommand.Parameters.Add("@StudentNumber", SqlDbType.Int).Value = entity.StudentNumber;
-        insertCommand.Parameters.Add("@Email", SqlDbType.NVarChar, 100).Value = entity.Email;
-        insertCommand.Parameters.Add("@Phone", SqlDbType.NVarChar, 15).Value = entity.Phone;
-
-        insertCommand.ExecuteNonQuery();
+        StudentDataProvider.Add(entity);
     }
 
-    public async Task AddAsync(Student entity)
+    public Task AddAsync(Student entity)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        string sql = "INSERT INTO Student (Id, UserId, StudentNumber, Email, Phone) " +
-                     "VALUES (@Id, @UserId, @StudentNumber, @Email, @Phone)";
-
-        using var insertCommand = new SqlCommand(sql, connection);
-        insertCommand.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = entity.Id;
-        insertCommand.Parameters.Add("@UserId", SqlDbType.UniqueIdentifier).Value = entity.UserId;
-        insertCommand.Parameters.Add("@StudentNumber", SqlDbType.Int).Value = entity.StudentNumber;
-        insertCommand.Parameters.Add("@Email", SqlDbType.NVarChar, 100).Value = entity.Email;
-        insertCommand.Parameters.Add("@Phone", SqlDbType.NVarChar, 15).Value = entity.Phone;
-
-        await insertCommand.ExecuteNonQueryAsync();
+        return StudentDataProvider.AddAsync(entity);
     }
 
     public void Update(Guid id, Student entity)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        connection.Open();
-
-        string sql = "UPDATE Student SET UserId = @UserId, StudentNumber = @StudentNumber, " +
-                     "Email = @Email, Phone = @Phone " +
-                     "WHERE Id = @Id";
-
-        using var updateCommand = new SqlCommand(sql, connection);
-        updateCommand.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
-        updateCommand.Parameters.Add("@UserId", SqlDbType.UniqueIdentifier).Value = entity.UserId;
-        updateCommand.Parameters.Add("@StudentNumber", SqlDbType.Int).Value = entity.StudentNumber;
-        updateCommand.Parameters.Add("@Email", SqlDbType.NVarChar, 100).Value = entity.Email;
-        updateCommand.Parameters.Add("@Phone", SqlDbType.NVarChar, 15).Value = entity.Phone;
-
-        updateCommand.ExecuteNonQuery();
+        StudentDataProvider.Update(id, entity);
     }
 
-    public async Task UpdateAsync(Guid id, Student entity)
+    public Task UpdateAsync(Guid id, Student entity)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        string sql = "UPDATE Student SET UserId = @UserId, StudentNumber = @StudentNumber, " +
-                     "Email = @Email, Phone = @Phone " +
-                     "WHERE Id = @Id";
-
-        using var updateCommand = new SqlCommand(sql, connection);
-        updateCommand.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
-        updateCommand.Parameters.Add("@UserId", SqlDbType.UniqueIdentifier).Value = entity.UserId;
-        updateCommand.Parameters.Add("@StudentNumber", SqlDbType.Int).Value = entity.StudentNumber;
-        updateCommand.Parameters.Add("@Email", SqlDbType.NVarChar, 100).Value = entity.Email;
-        updateCommand.Parameters.Add("@Phone", SqlDbType.NVarChar, 15).Value = entity.Phone;
-
-        await updateCommand.ExecuteNonQueryAsync();
+        return StudentDataProvider.UpdateAsync(id, entity);
     }
 
     public void Delete(Guid id)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        connection.Open();
-
-        string sql = "DELETE FROM Student WHERE Id = @Id";
-        using var deleteCommand = new SqlCommand(sql, connection);
-        deleteCommand.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
-
-        deleteCommand.ExecuteNonQuery();
+        StudentDataProvider.Delete(id);
     }
 
-    public async Task DeleteAsync(Guid id)
+    public Task DeleteAsync(Guid id)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        string sql = "DELETE FROM Student WHERE Id = @Id";
-        using var deleteCommand = new SqlCommand(sql, connection);
-        deleteCommand.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
-
-        await deleteCommand.ExecuteNonQueryAsync();
+        return StudentDataProvider.DeleteAsync(id);
     }
 
     public List<Student> Search(string regex)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        connection.Open();
-
-        string sql = "SELECT s.Id, s.UserId, s.StudentNumber, s.Email, s.Phone " +
-                     "FROM Student s JOIN [User] u ON s.UserId = u.Id " +
-                     "WHERE u.FullName LIKE @regex OR s.Email LIKE @regex";
-        using var command = new SqlCommand(sql, connection);
-        command.Parameters.Add("@regex", SqlDbType.NVarChar).Value = $"%{regex}%";
-
-        using var reader = command.ExecuteReader();
-        var students = new List<Student>();
-        while (reader.Read())
-        {
-            students.Add(new Student
-            {
-                Id = reader.GetGuid(0),
-                UserId = reader.GetGuid(1),
-                StudentNumber = reader.GetInt32(2),
-                Email = reader.GetString(3),
-                Phone = reader.GetString(4)
-            });
-        }
-        return students;
+        return StudentDataProvider.Search(regex);
     }
 
-    public async Task<List<Student>> SearchAsync(string regex)
+    public Task<List<Student>> SearchAsync(string regex)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        string sql = "SELECT s.Id, s.UserId, s.StudentNumber, s.Email, s.Phone " +
-                     "FROM Student s JOIN [User] u ON s.UserId = u.Id " +
-                     "WHERE u.FullName LIKE @regex OR s.Email LIKE @regex";
-        using var command = new SqlCommand(sql, connection);
-        command.Parameters.Add("@regex", SqlDbType.NVarChar).Value = $"%{regex}%";
-
-        using var reader = await command.ExecuteReaderAsync();
-        var students = new List<Student>();
-        while (await reader.ReadAsync())
-        {
-            students.Add(new Student
-            {
-                Id = reader.GetGuid(0),
-                UserId = reader.GetGuid(1),
-                StudentNumber = reader.GetInt32(2),
-                Email = reader.GetString(3),
-                Phone = reader.GetString(4)
-            });
-        }
-        return students;
+        return StudentDataProvider.SearchAsync(regex);
     }
 }

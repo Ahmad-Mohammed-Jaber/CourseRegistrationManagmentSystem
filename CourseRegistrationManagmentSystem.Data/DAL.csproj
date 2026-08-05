@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CourseRegistrationManagmentSystem.Shared\CourseRegistrationManagmentSystem.Shared.csproj" />
+    <ProjectReference Include="..\CourseRegistrationManagmentSystem.Shared\Shared.csproj" />
   </ItemGroup>
 
 </Project>

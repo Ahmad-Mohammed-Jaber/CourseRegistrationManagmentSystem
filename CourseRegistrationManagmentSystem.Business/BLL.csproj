@@ -12,8 +12,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CourseRegistrationManagmentSystem.Data\CourseRegistrationManagmentSystem.Data.csproj" />
-    <ProjectReference Include="..\CourseRegistrationManagmentSystem.Shared\CourseRegistrationManagmentSystem.Shared.csproj" />
+    <ProjectReference Include="..\CourseRegistrationManagmentSystem.Data\DAL.csproj" />
+    <ProjectReference Include="..\CourseRegistrationManagmentSystem.Shared\Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>

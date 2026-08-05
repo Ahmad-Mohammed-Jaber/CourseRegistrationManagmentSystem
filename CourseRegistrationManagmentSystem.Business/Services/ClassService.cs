@@ -3,8 +3,10 @@ using CourseRegistrationManagmentSystem.Business.Validation;
 using CourseRegistrationManagmentSystem.Shared.Dtos;
 using CourseRegistrationManagmentSystem.Data.Repository;
 using System.Text.RegularExpressions;
+using CourseRegistrationManagmentSystem.Business.Managers;
 
 namespace CourseRegistrationManagmentSystem.Business.Services;
+
 public class ClassService : ICrudService<ClassDto>
 {
     private readonly ClassRepository _classRepository = new ClassRepository();

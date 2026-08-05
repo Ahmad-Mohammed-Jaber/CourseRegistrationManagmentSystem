@@ -162,8 +162,9 @@ namespace CourseRegistrationManagmentSystem.View
             txtPhone.Text = _student.Phone;
             chkActive.Checked = _student.IsActive;
 
-            // Password is intentionally not loaded
-            txtPassword.Text = "";
+            // Password cannot be edited
+            txtPassword.Text = "********";
+            txtPassword.Enabled = false;
         }
 
 

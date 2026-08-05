@@ -1,8 +1,6 @@
-using CourseRegistrationManagmentSystem.Data.Database;
-using CourseRegistrationManagmentSystem.Models;
 using CourseRegistrationManagmentSystem.Shared.Models;
-using Microsoft.Data.SqlClient;
-using System.Data;
+using DAL.Interfaces;
+using DAL.Providers;
 
 namespace CourseRegistrationManagmentSystem.Data.Repository;
 
@@ -10,255 +8,61 @@ public class CourseRepository : IGenericRepository<Course>
 {
     public Course? GetById(Guid id)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        connection.Open();
-
-        string sql = "SELECT Id, CourseCode, CourseName, CreditHours, Description, IsActive FROM Course WHERE Id = @Id";
-        using var command = new SqlCommand(sql, connection);
-        command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
-
-        using var reader = command.ExecuteReader();
-        if (reader.Read())
-        {
-            return new Course
-            {
-                Id = reader.GetGuid(0),
-                CourseCode = reader.GetString(1),
-                CourseName = reader.GetString(2),
-                CreditHours = (double)reader.GetDecimal(3),
-                Description = reader.GetString(4),
-                IsActive = reader.GetBoolean(5)
-            };
-        }
-        return null;
+        return CourseDataProvider.GetById(id);
     }
 
-    public async Task<Course?> GetByIdAsync(Guid id)
+    public Task<Course?> GetByIdAsync(Guid id)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        string sql = "SELECT Id, CourseCode, CourseName, CreditHours, Description, IsActive FROM Course WHERE Id = @Id";
-        using var command = new SqlCommand(sql, connection);
-        command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
-
-        using var reader = await command.ExecuteReaderAsync();
-        if (await reader.ReadAsync())
-        {
-            return new Course
-            {
-                Id = reader.GetGuid(0),
-                CourseCode = reader.GetString(1),
-                CourseName = reader.GetString(2),
-                CreditHours = (double)reader.GetDecimal(3),
-                Description = reader.GetString(4),
-                IsActive = reader.GetBoolean(5)
-            };
-        }
-        return null;
+        return CourseDataProvider.GetByIdAsync(id);
     }
 
     public List<Course> GetAll()
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        connection.Open();
-
-        string sql = "SELECT Id, CourseCode, CourseName, CreditHours, Description, IsActive FROM Course";
-        using var command = new SqlCommand(sql, connection);
-        using var reader = command.ExecuteReader();
-
-        var courses = new List<Course>();
-        while (reader.Read())
-        {
-            courses.Add(new Course
-            {
-                Id = reader.GetGuid(0),
-                CourseCode = reader.GetString(1),
-                CourseName = reader.GetString(2),
-                CreditHours = (double)reader.GetDecimal(3),
-                Description = reader.GetString(4),
-                IsActive = reader.GetBoolean(5)
-            });
-        }
-        return courses;
+        return CourseDataProvider.GetAll();
     }
 
-    public async Task<List<Course>> GetAllAsync()
+    public Task<List<Course>> GetAllAsync()
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        string sql = "SELECT Id, CourseCode, CourseName, CreditHours, Description, IsActive FROM Course";
-        using var command = new SqlCommand(sql, connection);
-        using var reader = await command.ExecuteReaderAsync();
-
-        var courses = new List<Course>();
-        while (await reader.ReadAsync())
-        {
-            courses.Add(new Course
-            {
-                Id = reader.GetGuid(0),
-                CourseCode = reader.GetString(1),
-                CourseName = reader.GetString(2),
-                CreditHours = (double)reader.GetDecimal(3),
-                Description = reader.GetString(4),
-                IsActive = reader.GetBoolean(5)
-            });
-        }
-        return courses;
+        return CourseDataProvider.GetAllAsync();
     }
 
     public void Add(Course entity)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        connection.Open();
-
-        string sql = "INSERT INTO Course (Id, CourseCode, CourseName, CreditHours, Description, IsActive) " +
-                     "VALUES (@Id, @CourseCode, @CourseName, @CreditHours, @Description, @IsActive)";
-
-        using var insertCommand = new SqlCommand(sql, connection);
-        insertCommand.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = entity.Id;
-        insertCommand.Parameters.Add("@CourseCode", SqlDbType.NVarChar, 6).Value = entity.CourseCode;
-        insertCommand.Parameters.Add("@CourseName", SqlDbType.NVarChar, 100).Value = entity.CourseName;
-        insertCommand.Parameters.Add("@CreditHours", SqlDbType.Decimal).Value = entity.CreditHours;
-        insertCommand.Parameters.Add("@Description", SqlDbType.NVarChar).Value = entity.Description;
-        insertCommand.Parameters.Add("@IsActive", SqlDbType.Bit).Value = entity.IsActive;
-
-        insertCommand.ExecuteNonQuery();
+        CourseDataProvider.Add(entity);
     }
 
-    public async Task AddAsync(Course entity)
+    public Task AddAsync(Course entity)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        string sql = "INSERT INTO Course (Id, CourseCode, CourseName, CreditHours, Description, IsActive) " +
-                     "VALUES (@Id, @CourseCode, @CourseName, @CreditHours, @Description, @IsActive)";
-
-        using var insertCommand = new SqlCommand(sql, connection);
-        insertCommand.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = entity.Id;
-        insertCommand.Parameters.Add("@CourseCode", SqlDbType.NVarChar, 6).Value = entity.CourseCode;
-        insertCommand.Parameters.Add("@CourseName", SqlDbType.NVarChar, 100).Value = entity.CourseName;
-        insertCommand.Parameters.Add("@CreditHours", SqlDbType.Decimal).Value = entity.CreditHours;
-        insertCommand.Parameters.Add("@Description", SqlDbType.NVarChar).Value = entity.Description;
-        insertCommand.Parameters.Add("@IsActive", SqlDbType.Bit).Value = entity.IsActive;
-
-        await insertCommand.ExecuteNonQueryAsync();
+        return CourseDataProvider.AddAsync(entity);
     }
 
     public void Update(Guid id, Course entity)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        connection.Open();
-
-        string sql = "UPDATE Course SET CourseCode = @CourseCode, CourseName = @CourseName, " +
-                     "CreditHours = @CreditHours, Description = @Description, IsActive = @IsActive " +
-                     "WHERE Id = @Id";
-
-        using var updateCommand = new SqlCommand(sql, connection);
-        updateCommand.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
-        updateCommand.Parameters.Add("@CourseCode", SqlDbType.NVarChar, 6).Value = entity.CourseCode;
-        updateCommand.Parameters.Add("@CourseName", SqlDbType.NVarChar, 100).Value = entity.CourseName;
-        updateCommand.Parameters.Add("@CreditHours", SqlDbType.Decimal).Value = entity.CreditHours;
-        updateCommand.Parameters.Add("@Description", SqlDbType.NVarChar).Value = entity.Description;
-        updateCommand.Parameters.Add("@IsActive", SqlDbType.Bit).Value = entity.IsActive;
-
-        updateCommand.ExecuteNonQuery();
+        CourseDataProvider.Update(id, entity);
     }
 
-    public async Task UpdateAsync(Guid id, Course entity)
+    public Task UpdateAsync(Guid id, Course entity)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        string sql = "UPDATE Course SET CourseCode = @CourseCode, CourseName = @CourseName, " +
-                     "CreditHours = @CreditHours, Description = @Description, IsActive = @IsActive " +
-                     "WHERE Id = @Id";
-
-        using var updateCommand = new SqlCommand(sql, connection);
-        updateCommand.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
-        updateCommand.Parameters.Add("@CourseCode", SqlDbType.NVarChar, 6).Value = entity.CourseCode;
-        updateCommand.Parameters.Add("@CourseName", SqlDbType.NVarChar, 100).Value = entity.CourseName;
-        updateCommand.Parameters.Add("@CreditHours", SqlDbType.Decimal).Value = entity.CreditHours;
-        updateCommand.Parameters.Add("@Description", SqlDbType.NVarChar).Value = entity.Description;
-        updateCommand.Parameters.Add("@IsActive", SqlDbType.Bit).Value = entity.IsActive;
-
-        await updateCommand.ExecuteNonQueryAsync();
+        return CourseDataProvider.UpdateAsync(id, entity);
     }
 
     public void Delete(Guid id)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        connection.Open();
-
-        string sql = "DELETE FROM Course WHERE Id = @Id";
-        using var deleteCommand = new SqlCommand(sql, connection);
-        deleteCommand.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
-
-        deleteCommand.ExecuteNonQuery();
+        CourseDataProvider.Delete(id);
     }
 
-    public async Task DeleteAsync(Guid id)
+    public Task DeleteAsync(Guid id)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        string sql = "DELETE FROM Course WHERE Id = @Id";
-        using var deleteCommand = new SqlCommand(sql, connection);
-        deleteCommand.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
-
-        await deleteCommand.ExecuteNonQueryAsync();
+        return CourseDataProvider.DeleteAsync(id);
     }
 
     public List<Course> Search(string regex)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        connection.Open();
-
-        string sql = "SELECT Id, CourseCode, CourseName, CreditHours, Description, IsActive FROM Course WHERE CourseCode LIKE @regex OR CourseName LIKE @regex";
-        using var command = new SqlCommand(sql, connection);
-        command.Parameters.Add("@regex", SqlDbType.NVarChar).Value = $"%{regex}%";
-
-        using var reader = command.ExecuteReader();
-        var courses = new List<Course>();
-        while (reader.Read())
-        {
-            courses.Add(new Course
-            {
-                Id = reader.GetGuid(0),
-                CourseCode = reader.GetString(1),
-                CourseName = reader.GetString(2),
-                CreditHours = (double)reader.GetDecimal(3),
-                Description = reader.GetString(4),
-                IsActive = reader.GetBoolean(5)
-            });
-        }
-        return courses;
+        return CourseDataProvider.Search(regex);
     }
 
-    public async Task<List<Course>> SearchAsync(string regex)
+    public Task<List<Course>> SearchAsync(string regex)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        string sql = "SELECT Id, CourseCode, CourseName, CreditHours, Description, IsActive FROM Course WHERE CourseCode LIKE @regex OR CourseName LIKE @regex";
-        using var command = new SqlCommand(sql, connection);
-        command.Parameters.Add("@regex", SqlDbType.NVarChar).Value = $"%{regex}%";
-
-        using var reader = await command.ExecuteReaderAsync();
-        var courses = new List<Course>();
-        while (await reader.ReadAsync())
-        {
-            courses.Add(new Course
-            {
-                Id = reader.GetGuid(0),
-                CourseCode = reader.GetString(1),
-                CourseName = reader.GetString(2),
-                CreditHours = (double)reader.GetDecimal(3),
-                Description = reader.GetString(4),
-                IsActive = reader.GetBoolean(5)
-            });
-        }
-        return courses;
+        return CourseDataProvider.SearchAsync(regex);
     }
 }
