@@ -1,28 +1,28 @@
 ﻿namespace CourseRegistrationManagmentSystem.Business.Interfaces;
 
-public interface ICrudService<TDto>
+public interface ICrudService<TEntity>
 {
-    TDto? GetById(Guid id);
+    TEntity? GetById(Guid id);
 
-    Task<TDto?> GetByIdAsync(Guid id);
+    Task<TEntity?> GetByIdAsync(Guid id);
 
-    List<TDto> GetAll();
+    List<TEntity> GetAll();
 
-    Task<List<TDto>> GetAllAsync();
+    Task<List<TEntity>> GetAllAsync();
 
-    void Add(TDto dto);
+    void Add(TEntity entity);
 
-    Task AddAsync(TDto dto);
+    Task AddAsync(TEntity entity);
 
-    void Update(Guid id, TDto dto);
+    void Update(Guid id, TEntity entity);
 
-    Task UpdateAsync(Guid id, TDto dto);
+    Task UpdateAsync(Guid id, TEntity entity);
 
     void Delete(Guid id);
 
     Task DeleteAsync(Guid id);
 
-    List<TDto> Search(string regex);
+    List<TEntity> Search(string regex);
 
-    Task<List<TDto>> SearchAsync(string regex);
+    Task<List<TEntity>> SearchAsync(string regex);
 }

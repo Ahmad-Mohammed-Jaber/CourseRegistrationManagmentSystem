@@ -1,126 +1,114 @@
 using CourseRegistrationManagmentSystem.Business.Interfaces;
-using CourseRegistrationManagmentSystem.Business.Validation;
-using CourseRegistrationManagmentSystem.Shared.Dtos;
-using CourseRegistrationManagmentSystem.Data.Repository;
-using System.Text.RegularExpressions;
 using CourseRegistrationManagmentSystem.Business.Managers;
+using CourseRegistrationManagmentSystem.Business.Validation;
+using CourseRegistrationManagmentSystem.Shared.Models;
+using System.Text.RegularExpressions;
 
 namespace CourseRegistrationManagmentSystem.Business.Services;
 
-public class ClassService : ICrudService<ClassDto>
+public class ClassService : ICrudService<Class>
 {
-    private readonly ClassRepository _classRepository = new ClassRepository();
+    private readonly ClassManager _classManager = new ClassManager();
 
-    public ClassDto? GetById(Guid id)
+    public Class? GetById(Guid id)
     {
         AccessValidator.RequireLogin();
-        var classEntity = _classRepository.GetById(id);
-        return classEntity.ToDto();
+        return _classManager.GetById(id);
     }
 
-    public async Task<ClassDto?> GetByIdAsync(Guid id)
+    public async Task<Class?> GetByIdAsync(Guid id)
     {
         AccessValidator.RequireLogin();
-        var classEntity = await _classRepository.GetByIdAsync(id);
-        return classEntity.ToDto();
+        return await _classManager.GetByIdAsync(id);
     }
 
-    public List<ClassDto> GetAll()
+    public List<Class> GetAll()
     {
         AccessValidator.RequireLogin();
-        return _classRepository.GetAll().Select(classEntity => classEntity.ToDto()!).ToList();
+        return _classManager.GetAll();
     }
 
-    public async Task<List<ClassDto>> GetAllAsync()
+    public async Task<List<Class>> GetAllAsync()
     {
         AccessValidator.RequireLogin();
-        var classes = await _classRepository.GetAllAsync();
-        return classes.Select(classEntity => classEntity.ToDto()!).ToList();
+        return await _classManager.GetAllAsync();
     }
 
-    public void Add(ClassDto classDto)
+    public void Add(Class classEntity)
     {
         AccessValidator.RequireAdmin();
-        var classEntity = classDto.ToEntity();
-        _classRepository.Add(classEntity);
+        // Validation
+        if (string.IsNullOrWhiteSpace(classEntity.ClassName)) throw new ArgumentException("Class name is required.");
+        if (classEntity.MaxCapacity <= 0) throw new ArgumentException("Max capacity must be greater than 0.");
+
+        _classManager.Add(classEntity);
     }
 
-    public async Task AddAsync(ClassDto classDto)
+    public async Task AddAsync(Class classEntity)
     {
         AccessValidator.RequireAdmin();
-        var classEntity = classDto.ToEntity();
-        await _classRepository.AddAsync(classEntity);
+        // Validation
+        if (string.IsNullOrWhiteSpace(classEntity.ClassName)) throw new ArgumentException("Class name is required.");
+        if (classEntity.MaxCapacity <= 0) throw new ArgumentException("Max capacity must be greater than 0.");
+
+        await _classManager.AddAsync(classEntity);
     }
 
-    public void Update(Guid id, ClassDto classDto)
+    public void Update(Guid id, Class classEntity)
     {
         AccessValidator.RequireAdmin();
-        var classEntity = _classRepository.GetById(id);
-        if (classEntity == null) throw new KeyNotFoundException($"Class with id {id} not found.");
+        var existingClass = _classManager.GetById(id);
+        if (existingClass == null) throw new KeyNotFoundException($"Class with id {id} not found.");
 
-        classEntity.CourseId = classDto.CourseId;
-        classEntity.ClassName = classDto.ClassName;
-        classEntity.Instructor = classDto.Instructor;
-        classEntity.MaxCapacity = classDto.MaxCapacity;
-        classEntity.CurrentCapacity = classDto.CurrentCapacity;
-        classEntity.StartDate = classDto.StartDate;
-        classEntity.EndDate = classDto.EndDate;
-        classEntity.Schedule = classDto.Schedule;
-        classEntity.IsActive = classDto.IsActive;
+        // Validation
+        if (string.IsNullOrWhiteSpace(classEntity.ClassName)) throw new ArgumentException("Class name is required.");
+        if (classEntity.MaxCapacity <= 0) throw new ArgumentException("Max capacity must be greater than 0.");
 
-        _classRepository.Update(id, classEntity);
+        _classManager.Update(id, classEntity);
     }
 
-    public async Task UpdateAsync(Guid id, ClassDto classDto)
+    public async Task UpdateAsync(Guid id, Class classEntity)
     {
         AccessValidator.RequireAdmin();
-        var classEntity = await _classRepository.GetByIdAsync(id);
-        if (classEntity == null) throw new KeyNotFoundException($"Class with id {id} not found.");
+        var existingClass = await _classManager.GetByIdAsync(id);
+        if (existingClass == null) throw new KeyNotFoundException($"Class with id {id} not found.");
 
-        classEntity.CourseId = classDto.CourseId;
-        classEntity.ClassName = classDto.ClassName;
-        classEntity.Instructor = classDto.Instructor;
-        classEntity.MaxCapacity = classDto.MaxCapacity;
-        classEntity.CurrentCapacity = classDto.CurrentCapacity;
-        classEntity.StartDate = classDto.StartDate;
-        classEntity.EndDate = classDto.EndDate;
-        classEntity.Schedule = classDto.Schedule;
-        classEntity.IsActive = classDto.IsActive;
+        // Validation
+        if (string.IsNullOrWhiteSpace(classEntity.ClassName)) throw new ArgumentException("Class name is required.");
+        if (classEntity.MaxCapacity <= 0) throw new ArgumentException("Max capacity must be greater than 0.");
 
-        await _classRepository.UpdateAsync(id, classEntity);
+        await _classManager.UpdateAsync(id, classEntity);
     }
 
     public void Delete(Guid id)
     {
         AccessValidator.RequireAdmin();
-        _classRepository.Delete(id);
+        _classManager.Delete(id);
     }
 
     public async Task DeleteAsync(Guid id)
     {
         AccessValidator.RequireAdmin();
-        await _classRepository.DeleteAsync(id);
+        await _classManager.DeleteAsync(id);
     }
 
-    public List<ClassDto> Search(string regex)
+    public List<Class> Search(string regex)
     {
         AccessValidator.RequireLogin();
-        var classes = _classRepository.GetAll();
+        var classes = _classManager.GetAll();
         return classes
             .Where(classEntity => Regex.IsMatch(classEntity.ClassName, regex, RegexOptions.IgnoreCase) ||
-                        Regex.IsMatch(classEntity.Instructor, regex, RegexOptions.IgnoreCase))
-            .Select(classEntity => classEntity.ToDto()!)
+                                  Regex.IsMatch(classEntity.Instructor, regex, RegexOptions.IgnoreCase))
             .ToList();
     }
 
-    public async Task<List<ClassDto>> SearchAsync(string regex)
+    public async Task<List<Class>> SearchAsync(string regex)
     {
         AccessValidator.RequireLogin();
-        var classes = await _classRepository.GetAllAsync();
+        var classes = await _classManager.GetAllAsync();
         return classes
             .Where(classEntity => Regex.IsMatch(classEntity.ClassName, regex, RegexOptions.IgnoreCase) ||
-                        Regex.IsMatch(classEntity.Instructor, regex, RegexOptions.IgnoreCase))
-            .Select(classEntity => classEntity.ToDto()!)
+                                  Regex.IsMatch(classEntity.Instructor, regex, RegexOptions.IgnoreCase))
             .ToList();
     }
 }

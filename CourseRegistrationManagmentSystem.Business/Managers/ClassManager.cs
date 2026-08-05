@@ -1,121 +1,37 @@
-﻿using CourseRegistrationManagmentSystem.Business.Interfaces;
-using CourseRegistrationManagmentSystem.Business.Validation;
 using CourseRegistrationManagmentSystem.Data.Repository;
-using CourseRegistrationManagmentSystem.Shared.Dtos;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Text.RegularExpressions;
+using CourseRegistrationManagmentSystem.Shared.Models;
 
-namespace CourseRegistrationManagmentSystem.Business.Managers
+namespace CourseRegistrationManagmentSystem.Business.Managers;
+
+internal class ClassManager
 {
-    internal class ClassManager
-    {
-        private readonly CourseRepository _courseRepository = new CourseRepository();
+    private readonly ClassRepository _classRepository = new ClassRepository();
 
-        public CourseDto? GetById(Guid id)
-        {
-            AccessValidator.RequireAdmin();
-            var course = _courseRepository.GetById(id);
-            return course.ToDto();
-        }
+    public Class? GetById(Guid id) => _classRepository.GetById(id);
 
-        public async Task<CourseDto?> GetByIdAsync(Guid id)
-        {
-            AccessValidator.RequireAdmin();
-            var course = await _courseRepository.GetByIdAsync(id);
-            return course.ToDto();
-        }
+    public Task<Class?> GetByIdAsync(Guid id) => _classRepository.GetByIdAsync(id);
 
-        public List<CourseDto> GetAll()
-        {
-            AccessValidator.RequireAdmin();
-            return _courseRepository.GetAll().Select(course => course.ToDto()!).ToList();
-        }
+    public List<Class> GetClassesByCourseId(Guid courseId) => _classRepository.GetClassesByCourseId(courseId);
 
-        public async Task<List<CourseDto>> GetAllAsync()
-        {
-            AccessValidator.RequireAdmin();
-            var courses = await _courseRepository.GetAllAsync();
-            return courses.Select(course => course.ToDto()!).ToList();
-        }
+    public Task<List<Class>> GetClassesByCourseIdAsync(Guid courseId) => _classRepository.GetClassesByCourseIdAsync(courseId);
 
-        public void Add(CourseDto courseDto)
-        {
-            AccessValidator.RequireAdmin();
-            var course = courseDto.ToEntity();
-            _courseRepository.Add(course);
-        }
+    public List<Class> GetAll() => _classRepository.GetAll();
 
-        public async Task AddAsync(CourseDto courseDto)
-        {
-            AccessValidator.RequireAdmin();
-            var course = courseDto.ToEntity();
-            await _courseRepository.AddAsync(course);
-        }
+    public Task<List<Class>> GetAllAsync() => _classRepository.GetAllAsync();
 
-        public void Update(Guid id, CourseDto courseDto)
-        {
-            AccessValidator.RequireAdmin();
-            var course = _courseRepository.GetById(id);
-            if (course == null) throw new KeyNotFoundException($"Course with id {id} not found.");
+    public void Add(Class classEntity) => _classRepository.Add(classEntity);
 
-            course.CourseCode = courseDto.CourseCode;
-            course.CourseName = courseDto.CourseName;
-            course.CreditHours = courseDto.CreditHours;
-            course.Description = courseDto.Description;
-            course.IsActive = courseDto.IsActive;
+    public Task AddAsync(Class classEntity) => _classRepository.AddAsync(classEntity);
 
-            _courseRepository.Update(id, course);
-        }
+    public void Update(Guid id, Class classEntity) => _classRepository.Update(id, classEntity);
 
-        public async Task UpdateAsync(Guid id, CourseDto courseDto)
-        {
-            AccessValidator.RequireAdmin();
-            var course = await _courseRepository.GetByIdAsync(id);
-            if (course == null) throw new KeyNotFoundException($"Course with id {id} not found.");
+    public Task UpdateAsync(Guid id, Class classEntity) => _classRepository.UpdateAsync(id, classEntity);
 
-            course.CourseCode = courseDto.CourseCode;
-            course.CourseName = courseDto.CourseName;
-            course.CreditHours = courseDto.CreditHours;
-            course.Description = courseDto.Description;
-            course.IsActive = courseDto.IsActive;
+    public void Delete(Guid id) => _classRepository.Delete(id);
 
-            await _courseRepository.UpdateAsync(id, course);
-        }
+    public Task DeleteAsync(Guid id) => _classRepository.DeleteAsync(id);
 
-        public void Delete(Guid id)
-        {
-            AccessValidator.RequireAdmin();
-            _courseRepository.Delete(id);
-        }
+    public List<Class> Search(string regex) => _classRepository.Search(regex);
 
-        public async Task DeleteAsync(Guid id)
-        {
-            AccessValidator.RequireAdmin();
-            await _courseRepository.DeleteAsync(id);
-        }
-
-        public List<CourseDto> Search(string regex)
-        {
-            AccessValidator.RequireAdmin();
-            var courses = _courseRepository.GetAll();
-            return courses
-                .Where(course => Regex.IsMatch(course.CourseCode, regex, RegexOptions.IgnoreCase) ||
-                            Regex.IsMatch(course.CourseName, regex, RegexOptions.IgnoreCase))
-                .Select(course => course.ToDto()!)
-                .ToList();
-        }
-
-        public async Task<List<CourseDto>> SearchAsync(string regex)
-        {
-            AccessValidator.RequireAdmin();
-            var courses = await _courseRepository.GetAllAsync();
-            return courses
-                .Where(course => Regex.IsMatch(course.CourseCode, regex, RegexOptions.IgnoreCase) ||
-                            Regex.IsMatch(course.CourseName, regex, RegexOptions.IgnoreCase))
-                .Select(course => course.ToDto()!)
-                .ToList();
-        }
-    }
+    public Task<List<Class>> SearchAsync(string regex) => _classRepository.SearchAsync(regex);
 }

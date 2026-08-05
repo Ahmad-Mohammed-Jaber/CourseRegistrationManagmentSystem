@@ -1,4 +1,4 @@
-using CourseRegistrationManagmentSystem.Business.Interfaces;
+using BLL.Interfaces;
 using CourseRegistrationManagmentSystem.Business.Validation;
 using CourseRegistrationManagmentSystem.Data.Repository;
 using CourseRegistrationManagmentSystem.Shared.Dtos;

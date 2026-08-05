@@ -1,114 +1,114 @@
 using CourseRegistrationManagmentSystem.Business.Interfaces;
+using CourseRegistrationManagmentSystem.Business.Managers;
 using CourseRegistrationManagmentSystem.Business.Validation;
-using CourseRegistrationManagmentSystem.Shared.Dtos;
-using CourseRegistrationManagmentSystem.Data.Repository;
+using CourseRegistrationManagmentSystem.Shared.Models;
 using System.Text.RegularExpressions;
 
 namespace CourseRegistrationManagmentSystem.Business.Services;
-public class UserService : ICrudService<UserDto>
+
+public class UserService : ICrudService<User>
 {
-    private readonly UserRepository _userRepository = new UserRepository();
+    private readonly UserManager _userManager = new UserManager();
 
-    public UserDto? GetById(Guid id)
+    public User? GetById(Guid id)
     {
         AccessValidator.RequireAdmin();
-        var user = _userRepository.GetById(id);
-        return user.ToDto();
+        return _userManager.GetById(id);
     }
 
-    public async Task<UserDto?> GetByIdAsync(Guid id)
+    public async Task<User?> GetByIdAsync(Guid id)
     {
         AccessValidator.RequireAdmin();
-        var user = await _userRepository.GetByIdAsync(id);
-        return user.ToDto();
+        return await _userManager.GetByIdAsync(id);
     }
 
-    public List<UserDto> GetAll()
+    public List<User> GetAll()
     {
         AccessValidator.RequireAdmin();
-        return _userRepository.GetAll().Select(user => user.ToDto()!).ToList();
+        return _userManager.GetAll();
     }
 
-    public async Task<List<UserDto>> GetAllAsync()
+    public async Task<List<User>> GetAllAsync()
     {
         AccessValidator.RequireAdmin();
-        var users = await _userRepository.GetAllAsync();
-        return users.Select(user => user.ToDto()!).ToList();
+        return await _userManager.GetAllAsync();
     }
 
-    public void Add(UserDto userDto)
+    public void Add(User user)
     {
         AccessValidator.RequireAdmin();
-        var user = userDto.ToEntity();
-        _userRepository.Add(user);
+        // Validation
+        if (string.IsNullOrWhiteSpace(user.UserName)) throw new ArgumentException("Username is required.");
+        if (string.IsNullOrWhiteSpace(user.FullName)) throw new ArgumentException("Full name is required.");
+
+        _userManager.Add(user);
     }
 
-    public async Task AddAsync(UserDto userDto)
+    public async Task AddAsync(User user)
     {
         AccessValidator.RequireAdmin();
-        var user = userDto.ToEntity();
-        await _userRepository.AddAsync(user);
+        // Validation
+        if (string.IsNullOrWhiteSpace(user.UserName)) throw new ArgumentException("Username is required.");
+        if (string.IsNullOrWhiteSpace(user.FullName)) throw new ArgumentException("Full name is required.");
+
+        await _userManager.AddAsync(user);
     }
 
-    public void Update(Guid id, UserDto userDto)
+    public void Update(Guid id, User user)
     {
         AccessValidator.RequireAdmin();
-        var user = _userRepository.GetById(id);
-        if (user == null) throw new KeyNotFoundException($"User with id {id} not found.");
+        var existingUser = _userManager.GetById(id);
+        if (existingUser == null) throw new KeyNotFoundException($"User with id {id} not found.");
 
-        user.UserName = userDto.UserName;
-        user.FullName = userDto.FullName;
-        user.Role = userDto.Role;
-        user.IsActive = userDto.IsActive;
+        // Validation
+        if (string.IsNullOrWhiteSpace(user.UserName)) throw new ArgumentException("Username is required.");
+        if (string.IsNullOrWhiteSpace(user.FullName)) throw new ArgumentException("Full name is required.");
 
-        _userRepository.Update(id, user);
+        _userManager.Update(id, user);
     }
 
-    public async Task UpdateAsync(Guid id, UserDto userDto)
+    public async Task UpdateAsync(Guid id, User user)
     {
         AccessValidator.RequireAdmin();
-        var user = await _userRepository.GetByIdAsync(id);
-        if (user == null) throw new KeyNotFoundException($"User with id {id} not found.");
+        var existingUser = await _userManager.GetByIdAsync(id);
+        if (existingUser == null) throw new KeyNotFoundException($"User with id {id} not found.");
 
-        user.UserName = userDto.UserName;
-        user.FullName = userDto.FullName;
-        user.Role = userDto.Role;
-        user.IsActive = userDto.IsActive;
+        // Validation
+        if (string.IsNullOrWhiteSpace(user.UserName)) throw new ArgumentException("Username is required.");
+        if (string.IsNullOrWhiteSpace(user.FullName)) throw new ArgumentException("Full name is required.");
 
-        await _userRepository.UpdateAsync(id, user);
+        await _userManager.UpdateAsync(id, user);
     }
 
     public void Delete(Guid id)
     {
         AccessValidator.RequireAdmin();
-        _userRepository.Delete(id);
+        _userManager.Delete(id);
     }
 
     public async Task DeleteAsync(Guid id)
     {
         AccessValidator.RequireAdmin();
-        await _userRepository.DeleteAsync(id);
+        await _userManager.DeleteAsync(id);
     }
 
-    public List<UserDto> Search(string regex)
+    public List<User> Search(string regex)
     {
         AccessValidator.RequireAdmin();
-        var users = _userRepository.GetAll();
+        var users = _userManager.GetAll();
         return users
             .Where(user => Regex.IsMatch(user.UserName, regex, RegexOptions.IgnoreCase) ||
-                        Regex.IsMatch(user.FullName, regex, RegexOptions.IgnoreCase))
-            .Select(user => user.ToDto()!)
+                           Regex.IsMatch(user.FullName, regex, RegexOptions.IgnoreCase))
             .ToList();
     }
 
-    public async Task<List<UserDto>> SearchAsync(string regex)
+    public async Task<List<User>> SearchAsync(string regex)
     {
         AccessValidator.RequireAdmin();
-        var users = await _userRepository.GetAllAsync();
+        var users = await _userManager.GetAllAsync();
         return users
             .Where(user => Regex.IsMatch(user.UserName, regex, RegexOptions.IgnoreCase) ||
-                        Regex.IsMatch(user.FullName, regex, RegexOptions.IgnoreCase))
-            .Select(user => user.ToDto()!)
+                           Regex.IsMatch(user.FullName, regex, RegexOptions.IgnoreCase))
             .ToList();
     }
 }
