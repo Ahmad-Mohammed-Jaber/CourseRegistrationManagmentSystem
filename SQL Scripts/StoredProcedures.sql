@@ -116,9 +116,14 @@ CREATE OR ALTER PROCEDURE [dbo].[usp_GetStudentById]
 AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT Id, UserId, StudentNumber, Email, Phone 
-    FROM Student 
-    WHERE Id = @Id;
+    SELECT s.Id, s.UserId, s.StudentNumber, s.Email, s.Phone,
+           u.UserName AS UserName,
+           u.FullName AS FullName,
+           u.Role AS Role,
+           u.IsActive AS IsActive
+    FROM Student s
+    JOIN [User] u ON s.UserId = u.Id
+    WHERE s.Id = @Id;
 END
 GO
 
@@ -127,9 +132,14 @@ CREATE OR ALTER PROCEDURE [dbo].[usp_GetStudentByUserId]
 AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT Id, UserId, StudentNumber, Email, Phone 
-    FROM Student 
-    WHERE UserId = @UserId;
+    SELECT s.Id, s.UserId, s.StudentNumber, s.Email, s.Phone,
+           u.UserName AS UserName,
+           u.FullName AS FullName,
+           u.Role AS Role,
+           u.IsActive AS IsActive
+    FROM Student s
+    JOIN [User] u ON s.UserId = u.Id
+    WHERE s.UserId = @UserId;
 END
 GO
 
@@ -137,8 +147,13 @@ CREATE OR ALTER PROCEDURE [dbo].[usp_GetAllStudents]
 AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT Id, UserId, StudentNumber, Email, Phone 
-    FROM Student;
+    SELECT s.Id, s.UserId, s.StudentNumber, s.Email, s.Phone,
+           u.UserName AS UserName,
+           u.FullName AS FullName,
+           u.Role AS Role,
+           u.IsActive AS IsActive
+    FROM Student s
+    JOIN [User] u ON s.UserId = u.Id;
 END
 GO
 
@@ -176,7 +191,11 @@ CREATE OR ALTER PROCEDURE [dbo].[usp_SearchStudents]
 AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT s.Id, s.UserId, s.StudentNumber, s.Email, s.Phone 
+    SELECT s.Id, s.UserId, s.StudentNumber, s.Email, s.Phone,
+           u.UserName AS UserName,
+           u.FullName AS FullName,
+           u.Role AS Role,
+           u.IsActive AS IsActive
     FROM Student s 
     JOIN [User] u ON s.UserId = u.Id 
     WHERE u.FullName LIKE '%' + @regex + '%' OR s.Email LIKE '%' + @regex + '%';

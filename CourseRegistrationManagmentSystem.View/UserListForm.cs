@@ -1,9 +1,9 @@
-using CourseRegistrationManagmentSystem.Shared.Dtos;
 using System.Windows.Forms;
 using System.Windows;
-using CourseRegistrationManagmentSystem.Business.Services;
+using Shared.Dtos;
+using BL.Services;
 
-namespace CourseRegistrationManagmentSystem.View
+namespace View
 {
     public partial class UserListForm : Form
     {

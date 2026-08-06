@@ -1,22 +1,22 @@
-using CourseRegistrationManagmentSystem.Business.Interfaces;
-using CourseRegistrationManagmentSystem.Business.Managers;
-using CourseRegistrationManagmentSystem.Business.Validation;
-using CourseRegistrationManagmentSystem.Shared.Models;
+using BL.Interfaces;
+using BL.Managers;
+using BL.Validation;
+using Shared.Entities;
 
-namespace CourseRegistrationManagmentSystem.Business.Services;
+namespace BL.Services;
 
 public class StudentService : ICrudService<Student>
 {
     private readonly StudentManager _studentManager = new StudentManager();
     private readonly UserManager _userManager = new UserManager();
 
-    public Student? GetById(Guid id)
+    public Student? GetById(int id)
     {
         AccessValidator.RequireAdmin();
         return _studentManager.GetById(id);
     }
 
-    public async Task<Student?> GetByIdAsync(Guid id)
+    public async Task<Student?> GetByIdAsync(int id)
     {
         AccessValidator.RequireAdmin();
         return await _studentManager.GetByIdAsync(id);
@@ -39,11 +39,10 @@ public class StudentService : ICrudService<Student>
         AccessValidator.RequireAdmin();
         ValidateStudent(student);
 
-        if (student.UserId == Guid.Empty)
+        if (student.UserId <= 0)
         {
             var user = new User
             {
-                Id = Guid.NewGuid(),
                 FullName = student.FullName,
                 UserName = student.UserName,
                 IsActive = student.IsActive,
@@ -62,11 +61,10 @@ public class StudentService : ICrudService<Student>
         AccessValidator.RequireAdmin();
         ValidateStudent(student);
 
-        if (student.UserId == Guid.Empty)
+        if (student.UserId <= 0)
         {
             var user = new User
             {
-                Id = Guid.NewGuid(),
                 FullName = student.FullName,
                 UserName = student.UserName,
                 IsActive = student.IsActive,
@@ -80,7 +78,7 @@ public class StudentService : ICrudService<Student>
         await _studentManager.AddAsync(student);
     }
 
-    public void Update(Guid id, Student student)
+    public void Update(int id, Student student)
     {
         AccessValidator.RequireAdmin();
         ValidateStudent(student);
@@ -101,7 +99,7 @@ public class StudentService : ICrudService<Student>
         }
     }
 
-    public async Task UpdateAsync(Guid id, Student student)
+    public async Task UpdateAsync(int id, Student student)
     {
         AccessValidator.RequireAdmin();
         ValidateStudent(student);
@@ -132,7 +130,7 @@ public class StudentService : ICrudService<Student>
         AccessValidator.ValidatePhone(student.Phone);
     }
 
-    public void Delete(Guid id)
+    public void Delete(int id)
     {
         AccessValidator.RequireAdmin();
 
@@ -144,7 +142,7 @@ public class StudentService : ICrudService<Student>
         _userManager.Delete(student.UserId);
     }
 
-    public async Task DeleteAsync(Guid id)
+    public async Task DeleteAsync(int id)
     {
         AccessValidator.RequireAdmin();
 

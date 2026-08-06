@@ -1,6 +1,6 @@
 using Microsoft.Data.SqlClient;
 
-namespace CourseRegistrationManagmentSystem.Data.Database;
+namespace DAL.Database;
 
 public static class DBConnectionFactory
 {

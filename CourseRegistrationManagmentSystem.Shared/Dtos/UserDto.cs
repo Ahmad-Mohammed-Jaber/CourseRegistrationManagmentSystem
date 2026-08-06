@@ -1,9 +1,10 @@
-namespace CourseRegistrationManagmentSystem.Shared.Dtos;
-using CourseRegistrationManagmentSystem.Shared.Models;
+namespace Shared.Dtos;
+
+using Shared.Entities;
 
 public class UserDto
 {
-    public Guid Id { get; init; }
+    public int Id { get; init; }
     public required string UserName { get; set; }
     public required string FullName { get; set; }
     public User.UserRoles Role { get; set; }

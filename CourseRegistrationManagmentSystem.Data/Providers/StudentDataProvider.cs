@@ -1,241 +1,461 @@
-using CourseRegistrationManagmentSystem.Shared.Models;
-using CourseRegistrationManagmentSystem.Data.Database;
 using Microsoft.Data.SqlClient;
 using System.Data;
+using DAL.Database;
+using Shared.Entities;
 
-namespace CourseRegistrationManagmentSystem.Data.Providers;
+namespace DAL.Providers;
 
 public static class StudentDataProvider
 {
-    public static Student? GetById(Guid id)
+    public static Student? GetById(int id)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        connection.Open();
-
-        using var command = new SqlCommand("usp_GetStudentById", connection)
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        SqlDataReader? reader = null;
+        try
         {
-            CommandType = CommandType.StoredProcedure
-        };
-        command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
+            connection = DBConnectionFactory.CreateConnection();
+            connection.Open();
 
-        using var reader = command.ExecuteReader();
-        if (reader.Read())
-        {
-            return MapStudent(reader);
+            command = new SqlCommand("usp_GetStudentById", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+
+            reader = command.ExecuteReader();
+            if (reader.Read())
+            {
+                return MapStudent(reader);
+            }
+            return null;
         }
-        return null;
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            reader?.Close();
+            reader?.Dispose();
+            command?.Dispose();
+            connection?.Close();
+            connection?.Dispose();
+        }
     }
 
-    public static async Task<Student?> GetByIdAsync(Guid id)
+    public static async Task<Student?> GetByIdAsync(int id)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        using var command = new SqlCommand("usp_GetStudentById", connection)
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        SqlDataReader? reader = null;
+        try
         {
-            CommandType = CommandType.StoredProcedure
-        };
-        command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
+            connection = DBConnectionFactory.CreateConnection();
+            await connection.OpenAsync();
 
-        using var reader = await command.ExecuteReaderAsync();
-        if (await reader.ReadAsync())
-        {
-            return MapStudent(reader);
+            command = new SqlCommand("usp_GetStudentById", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+
+            reader = await command.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                return MapStudent(reader);
+            }
+            return null;
         }
-        return null;
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            reader?.Close();
+            reader?.Dispose();
+            command?.Dispose();
+            connection?.Close();
+            connection?.Dispose();
+        }
     }
 
-    public static async Task<Student?> GetByUserIdAsync(Guid userId)
+    public static async Task<Student?> GetByUserIdAsync(int userId)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        using var command = new SqlCommand("usp_GetStudentByUserId", connection)
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        SqlDataReader? reader = null;
+        try
         {
-            CommandType = CommandType.StoredProcedure
-        };
-        command.Parameters.Add("@UserId", SqlDbType.UniqueIdentifier).Value = userId;
+            connection = DBConnectionFactory.CreateConnection();
+            await connection.OpenAsync();
 
-        using var reader = await command.ExecuteReaderAsync();
-        if (await reader.ReadAsync())
-        {
-            return MapStudent(reader);
+            command = new SqlCommand("usp_GetStudentByUserId", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            command.Parameters.Add("@UserId", SqlDbType.Int).Value = userId;
+
+            reader = await command.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                return MapStudent(reader);
+            }
+            return null;
         }
-        return null;
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            reader?.Close();
+            reader?.Dispose();
+            command?.Dispose();
+            connection?.Close();
+            connection?.Dispose();
+        }
     }
 
     public static List<Student> GetAll()
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        connection.Open();
-
-        using var command = new SqlCommand("usp_GetAllStudents", connection)
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        SqlDataReader? reader = null;
+        try
         {
-            CommandType = CommandType.StoredProcedure
-        };
+            connection = DBConnectionFactory.CreateConnection();
+            connection.Open();
 
-        using var reader = command.ExecuteReader();
-        var students = new List<Student>();
-        while (reader.Read())
-        {
-            students.Add(MapStudent(reader));
+            command = new SqlCommand("usp_GetAllStudents", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+
+            reader = command.ExecuteReader();
+            var students = new List<Student>();
+            while (reader.Read())
+            {
+                students.Add(MapStudent(reader));
+            }
+            return students;
         }
-        return students;
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            reader?.Close();
+            reader?.Dispose();
+            command?.Dispose();
+            connection?.Close();
+            connection?.Dispose();
+        }
     }
 
     public static async Task<List<Student>> GetAllAsync()
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        using var command = new SqlCommand("usp_GetAllStudents", connection)
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        SqlDataReader? reader = null;
+        try
         {
-            CommandType = CommandType.StoredProcedure
-        };
+            connection = DBConnectionFactory.CreateConnection();
+            await connection.OpenAsync();
 
-        using var reader = await command.ExecuteReaderAsync();
-        var students = new List<Student>();
-        while (await reader.ReadAsync())
-        {
-            students.Add(MapStudent(reader));
+            command = new SqlCommand("usp_GetAllStudents", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+
+            reader = await command.ExecuteReaderAsync();
+            var students = new List<Student>();
+            while (await reader.ReadAsync())
+            {
+                students.Add(MapStudent(reader));
+            }
+            return students;
         }
-        return students;
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            reader?.Close();
+            reader?.Dispose();
+            command?.Dispose();
+            connection?.Close();
+            connection?.Dispose();
+        }
     }
 
     public static void Add(Student entity)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        connection.Open();
-
-        using var command = new SqlCommand("usp_CreateStudent", connection)
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        try
         {
-            CommandType = CommandType.StoredProcedure
-        };
-        AddStudentParameters(command, entity);
-        command.ExecuteNonQuery();
+            connection = DBConnectionFactory.CreateConnection();
+            connection.Open();
+
+            command = new SqlCommand("usp_CreateStudent", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            AddStudentParameters(command, entity);
+            command.ExecuteNonQuery();
+        }
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            command?.Dispose();
+            connection?.Close();
+            connection?.Dispose();
+        }
     }
 
     public static async Task AddAsync(Student entity)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        using var command = new SqlCommand("usp_CreateStudent", connection)
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        try
         {
-            CommandType = CommandType.StoredProcedure
-        };
-        AddStudentParameters(command, entity);
-        await command.ExecuteNonQueryAsync();
+            connection = DBConnectionFactory.CreateConnection();
+            await connection.OpenAsync();
+
+            command = new SqlCommand("usp_CreateStudent", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            AddStudentParameters(command, entity);
+            await command.ExecuteNonQueryAsync();
+        }
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            command?.Dispose();
+            connection?.Close();
+            connection?.Dispose();
+        }
     }
 
-    public static void Update(Guid id, Student entity)
+    public static void Update(int id, Student entity)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        connection.Open();
-
-        using var command = new SqlCommand("usp_UpdateStudent", connection)
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        try
         {
-            CommandType = CommandType.StoredProcedure
-        };
-        AddStudentParameters(command, entity, id);
-        command.ExecuteNonQuery();
+            connection = DBConnectionFactory.CreateConnection();
+            connection.Open();
+
+            command = new SqlCommand("usp_UpdateStudent", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            AddStudentParameters(command, entity, id);
+            command.ExecuteNonQuery();
+        }
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            command?.Dispose();
+            connection?.Close();
+            connection?.Dispose();
+        }
     }
 
-    public static async Task UpdateAsync(Guid id, Student entity)
+    public static async Task UpdateAsync(int id, Student entity)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        using var command = new SqlCommand("usp_UpdateStudent", connection)
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        try
         {
-            CommandType = CommandType.StoredProcedure
-        };
-        AddStudentParameters(command, entity, id);
-        await command.ExecuteNonQueryAsync();
+            connection = DBConnectionFactory.CreateConnection();
+            await connection.OpenAsync();
+
+            command = new SqlCommand("usp_UpdateStudent", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            AddStudentParameters(command, entity, id);
+            await command.ExecuteNonQueryAsync();
+        }
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            command?.Dispose();
+            connection?.Close();
+            connection?.Dispose();
+        }
     }
 
-    public static void Delete(Guid id)
+    public static void Delete(int id)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        connection.Open();
-
-        using var command = new SqlCommand("usp_DeleteStudent", connection)
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        try
         {
-            CommandType = CommandType.StoredProcedure
-        };
-        command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
-        command.ExecuteNonQuery();
+            connection = DBConnectionFactory.CreateConnection();
+            connection.Open();
+
+            command = new SqlCommand("usp_DeleteStudent", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+            command.ExecuteNonQuery();
+        }
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            command?.Dispose();
+            connection?.Close();
+            connection?.Dispose();
+        }
     }
 
-    public static async Task DeleteAsync(Guid id)
+    public static async Task DeleteAsync(int id)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        using var command = new SqlCommand("usp_DeleteStudent", connection)
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        try
         {
-            CommandType = CommandType.StoredProcedure
-        };
-        command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
-        await command.ExecuteNonQueryAsync();
+            connection = DBConnectionFactory.CreateConnection();
+            await connection.OpenAsync();
+
+            command = new SqlCommand("usp_DeleteStudent", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+            await command.ExecuteNonQueryAsync();
+        }
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            command?.Dispose();
+            connection?.Close();
+            connection?.Dispose();
+        }
     }
 
     public static List<Student> Search(string regex)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        connection.Open();
-
-        using var command = new SqlCommand("usp_SearchStudents", connection)
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        SqlDataReader? reader = null;
+        try
         {
-            CommandType = CommandType.StoredProcedure
-        };
-        command.Parameters.Add("@regex", SqlDbType.NVarChar, 100).Value = regex ?? string.Empty;
+            connection = DBConnectionFactory.CreateConnection();
+            connection.Open();
 
-        using var reader = command.ExecuteReader();
-        var students = new List<Student>();
-        while (reader.Read())
-        {
-            students.Add(MapStudent(reader));
+            command = new SqlCommand("usp_SearchStudents", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            command.Parameters.Add("@regex", SqlDbType.NVarChar, 100).Value = regex ?? string.Empty;
+
+            reader = command.ExecuteReader();
+            var students = new List<Student>();
+            while (reader.Read())
+            {
+                students.Add(MapStudent(reader));
+            }
+            return students;
         }
-        return students;
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            reader?.Close();
+            reader?.Dispose();
+            command?.Dispose();
+            connection?.Close();
+            connection?.Dispose();
+        }
     }
 
     public static async Task<List<Student>> SearchAsync(string regex)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        using var command = new SqlCommand("usp_SearchStudents", connection)
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        SqlDataReader? reader = null;
+        try
         {
-            CommandType = CommandType.StoredProcedure
-        };
-        command.Parameters.Add("@regex", SqlDbType.NVarChar, 100).Value = regex ?? string.Empty;
+            connection = DBConnectionFactory.CreateConnection();
+            await connection.OpenAsync();
 
-        using var reader = await command.ExecuteReaderAsync();
-        var students = new List<Student>();
-        while (await reader.ReadAsync())
-        {
-            students.Add(MapStudent(reader));
+            command = new SqlCommand("usp_SearchStudents", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            command.Parameters.Add("@regex", SqlDbType.NVarChar, 100).Value = regex ?? string.Empty;
+
+            reader = await command.ExecuteReaderAsync();
+            var students = new List<Student>();
+            while (await reader.ReadAsync())
+            {
+                students.Add(MapStudent(reader));
+            }
+            return students;
         }
-        return students;
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            reader?.Close();
+            reader?.Dispose();
+            command?.Dispose();
+            connection?.Close();
+            connection?.Dispose();
+        }
     }
 
     private static Student MapStudent(SqlDataReader reader)
     {
         return new Student
         {
-            Id = reader.GetGuid(reader.GetOrdinal("Id")),
-            UserId = reader.GetGuid(reader.GetOrdinal("UserId")),
+            Id = reader.GetInt32(reader.GetOrdinal("Id")),
+            UserId = reader.GetInt32(reader.GetOrdinal("UserId")),
+            UserName = reader.GetString(reader.GetOrdinal("UserName")),
+            FullName = reader.GetString(reader.GetOrdinal("FullName")),
+            Role = (User.UserRoles)reader.GetInt32(reader.GetOrdinal("Role")),
+            IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
             StudentNumber = reader.GetInt32(reader.GetOrdinal("StudentNumber")),
             Email = reader.GetString(reader.GetOrdinal("Email")),
             Phone = reader.GetString(reader.GetOrdinal("Phone"))
         };
     }
 
-    private static void AddStudentParameters(SqlCommand command, Student entity, Guid? explicitId = null)
+    private static void AddStudentParameters(SqlCommand command, Student entity, int? explicitId = null)
     {
-        command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = explicitId ?? entity.Id;
-        command.Parameters.Add("@UserId", SqlDbType.UniqueIdentifier).Value = entity.UserId;
+        command.Parameters.Add("@Id", SqlDbType.Int).Value = explicitId ?? entity.Id;
+        command.Parameters.Add("@UserId", SqlDbType.Int).Value = entity.UserId;
         command.Parameters.Add("@StudentNumber", SqlDbType.Int).Value = entity.StudentNumber;
         command.Parameters.Add("@FullName", SqlDbType.NVarChar, 100).Value = (object?)entity.FullName ?? DBNull.Value;
         command.Parameters.Add("@Email", SqlDbType.NVarChar, 100).Value = entity.Email ?? string.Empty;

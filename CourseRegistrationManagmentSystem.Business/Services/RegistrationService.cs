@@ -1,22 +1,22 @@
-using CourseRegistrationManagmentSystem.Business.Interfaces;
-using CourseRegistrationManagmentSystem.Business.Managers;
-using CourseRegistrationManagmentSystem.Business.Validation;
-using CourseRegistrationManagmentSystem.Shared.Models;
+using BL.Interfaces;
+using BL.Managers;
+using BL.Validation;
+using Shared.Entities;
 using System.Text.RegularExpressions;
 
-namespace CourseRegistrationManagmentSystem.Business.Services;
+namespace BL.Services;
 
 public class RegistrationService : ICrudService<Registration>
 {
     private readonly RegistrationManager _registrationManager = new RegistrationManager();
 
-    public Registration? GetById(Guid id)
+    public Registration? GetById(int id)
     {
         AccessValidator.RequireAdmin();
         return _registrationManager.GetById(id);
     }
 
-    public async Task<Registration?> GetByIdAsync(Guid id)
+    public async Task<Registration?> GetByIdAsync(int id)
     {
         AccessValidator.RequireAdmin();
         return await _registrationManager.GetByIdAsync(id);
@@ -48,7 +48,7 @@ public class RegistrationService : ICrudService<Registration>
         await _registrationManager.AddAsync(registration);
     }
 
-    public void Update(Guid id, Registration registration)
+    public void Update(int id, Registration registration)
     {
         AccessValidator.RequireAdmin();
         ValidateRegistration(registration);
@@ -59,7 +59,7 @@ public class RegistrationService : ICrudService<Registration>
         _registrationManager.Update(id, registration);
     }
 
-    public async Task UpdateAsync(Guid id, Registration registration)
+    public async Task UpdateAsync(int id, Registration registration)
     {
         AccessValidator.RequireAdmin();
         ValidateRegistration(registration);
@@ -70,13 +70,13 @@ public class RegistrationService : ICrudService<Registration>
         await _registrationManager.UpdateAsync(id, registration);
     }
 
-    public void Delete(Guid id)
+    public void Delete(int id)
     {
         AccessValidator.RequireAdmin();
         _registrationManager.Delete(id);
     }
 
-    public async Task DeleteAsync(Guid id)
+    public async Task DeleteAsync(int id)
     {
         AccessValidator.RequireAdmin();
         await _registrationManager.DeleteAsync(id);
@@ -115,8 +115,8 @@ public class RegistrationService : ICrudService<Registration>
     private static void ValidateRegistration(Registration registration)
     {
         if (registration == null) throw new ArgumentNullException(nameof(registration));
-        if (registration.StudentId == Guid.Empty) throw new ArgumentException("Student is required.");
-        if (registration.ClassId == Guid.Empty) throw new ArgumentException("Class is required.");
+        if (registration.StudentId <= 0) throw new ArgumentException("Student is required.");
+        if (registration.ClassId <= 0) throw new ArgumentException("Class is required.");
         if (string.IsNullOrWhiteSpace(registration.Status)) throw new ArgumentException("Status is required.");
     }
 }

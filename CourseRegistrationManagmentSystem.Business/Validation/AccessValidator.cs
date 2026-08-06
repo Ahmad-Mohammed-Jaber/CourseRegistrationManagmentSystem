@@ -1,9 +1,9 @@
-using CourseRegistrationManagmentSystem.Shared.Session;
-using CourseRegistrationManagmentSystem.Shared.Models;
 using System;
 using System.Text.RegularExpressions;
+using Shared.Session;
+using Shared.Entities;
 
-namespace CourseRegistrationManagmentSystem.Business.Validation;
+namespace BL.Validation;
 
 public static class AccessValidator
 {

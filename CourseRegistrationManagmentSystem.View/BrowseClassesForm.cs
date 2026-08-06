@@ -1,9 +1,9 @@
-using CourseRegistrationManagmentSystem.Shared.Dtos;
-using CourseRegistrationManagmentSystem.Business.Services;
 using System.Drawing;
 using System.Windows.Forms;
+using Shared.Dtos;
+using BL.Services;
 
-namespace CourseRegistrationManagmentSystem.View
+namespace View
 {
     public partial class BrowseClassesForm : Form
     {

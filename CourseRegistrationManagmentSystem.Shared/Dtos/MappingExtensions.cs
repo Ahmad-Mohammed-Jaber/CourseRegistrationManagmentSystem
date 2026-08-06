@@ -1,6 +1,6 @@
-using CourseRegistrationManagmentSystem.Shared.Models;
+using Shared.Entities;
 
-namespace CourseRegistrationManagmentSystem.Shared.Dtos;
+namespace Shared.Dtos;
 
 public static class MappingExtensions
 {

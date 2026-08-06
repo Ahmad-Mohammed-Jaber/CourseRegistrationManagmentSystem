@@ -1,4 +1,4 @@
-namespace CourseRegistrationManagmentSystem.Shared.Session;
+namespace Shared.Session;
 
 public static class SessionManager
 {

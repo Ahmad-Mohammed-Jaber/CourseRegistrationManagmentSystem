@@ -1,8 +1,8 @@
-namespace CourseRegistrationManagmentSystem.Shared.Dtos;
+namespace Shared.Dtos;
 
 public class CourseDto
 {
-    public Guid Id { get; init; }
+    public int Id { get; init; }
     public required string CourseCode { get; set; }
     public required string CourseName { get; set; }
     public double CreditHours { get; set; }

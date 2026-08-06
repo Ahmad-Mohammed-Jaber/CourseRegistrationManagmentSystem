@@ -1,4 +1,3 @@
-﻿namespace CourseRegistrationManagmentSystem.Shared.Session;
+﻿namespace Shared.Session;
 
-public record StudentSession(Guid Id, Guid UserId, string UserName, int StudentNumber, string Email, string Phone);
-
+public record StudentSession(int Id, int UserId, string UserName, int StudentNumber, string Email, string Phone);

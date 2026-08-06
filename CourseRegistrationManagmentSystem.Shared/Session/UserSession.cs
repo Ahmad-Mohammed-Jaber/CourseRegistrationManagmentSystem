@@ -1,6 +1,8 @@
-﻿namespace CourseRegistrationManagmentSystem.Shared.Session;
-using CourseRegistrationManagmentSystem.Shared.Models;
-public record UserSession(Guid UserId, string UserName, string FullName, bool IsActive)
+﻿namespace Shared.Session;
+
+using Shared.Entities;
+
+public record UserSession(int UserId, string UserName, string FullName, bool IsActive)
 {
     public User.UserRoles Role { get; init; }
 

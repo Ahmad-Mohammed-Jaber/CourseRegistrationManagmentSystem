@@ -1,229 +1,412 @@
-using CourseRegistrationManagmentSystem.Data.Database;
 using Microsoft.Data.SqlClient;
 using System.Data;
-using CourseRegistrationManagmentSystem.Shared.Models;
+using DAL.Database;
+using Shared.Entities;
 
-namespace CourseRegistrationManagmentSystem.Data.Providers;
+namespace DAL.Providers;
+
 public static class UserDataProvider
 {
-    public static User? GetById(Guid id)
+    public static User? GetById(int id)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        connection.Open();
-
-        using var command = new SqlCommand("usp_GetUserById", connection)
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        try
         {
-            CommandType = CommandType.StoredProcedure
-        };
-        command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
+            connection = DBConnectionFactory.CreateConnection();
+            connection.Open();
 
-        using var reader = command.ExecuteReader();
-        if (reader.Read())
-        {
-            return MapUser(reader);
+            command = new SqlCommand("usp_GetUserById", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+
+            using var reader = command.ExecuteReader();
+            if (reader.Read())
+            {
+                return MapUser(reader);
+            }
+            return null;
         }
-        return null;
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            command?.Dispose();
+            connection?.Close();
+        }
     }
 
-    public static async Task<User?> GetByIdAsync(Guid id)
+    public static async Task<User?> GetByIdAsync(int id)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        using var command = new SqlCommand("usp_GetUserById", connection)
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        try
         {
-            CommandType = CommandType.StoredProcedure
-        };
-        command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
+            connection = DBConnectionFactory.CreateConnection();
+            await connection.OpenAsync();
 
-        using var reader = await command.ExecuteReaderAsync();
-        if (await reader.ReadAsync())
-        {
-            return MapUser(reader);
+            command = new SqlCommand("usp_GetUserById", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+
+            using var reader = await command.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                return MapUser(reader);
+            }
+            return null;
         }
-        return null;
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            command?.Dispose();
+            connection?.Close();
+        }
     }
 
     public static async Task<User?> GetByUserNameAsync(string userName)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        using var command = new SqlCommand("usp_GetUserByUserName", connection)
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        try
         {
-            CommandType = CommandType.StoredProcedure
-        };
-        command.Parameters.Add("@UserName", SqlDbType.NVarChar, 100).Value = userName ?? string.Empty;
+            connection = DBConnectionFactory.CreateConnection();
+            await connection.OpenAsync();
 
-        using var reader = await command.ExecuteReaderAsync();
-        if (await reader.ReadAsync())
-        {
-            return MapUser(reader);
+            command = new SqlCommand("usp_GetUserByUserName", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            command.Parameters.Add("@UserName", SqlDbType.NVarChar, 100).Value = userName ?? string.Empty;
+
+            using var reader = await command.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                return MapUser(reader);
+            }
+            return null;
         }
-        return null;
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            command?.Dispose();
+            connection?.Close();
+        }
     }
 
     public static List<User> GetAll()
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        connection.Open();
-
-        using var command = new SqlCommand("usp_GetAllUsers", connection)
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        try
         {
-            CommandType = CommandType.StoredProcedure
-        };
+            connection = DBConnectionFactory.CreateConnection();
+            connection.Open();
 
-        using var reader = command.ExecuteReader();
-        var users = new List<User>();
-        while (reader.Read())
-        {
-            users.Add(MapUser(reader));
+            command = new SqlCommand("usp_GetAllUsers", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+
+            using var reader = command.ExecuteReader();
+            var users = new List<User>();
+            while (reader.Read())
+            {
+                users.Add(MapUser(reader));
+            }
+            return users;
         }
-        return users;
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            command?.Dispose();
+            connection?.Close();
+        }
     }
 
     public static async Task<List<User>> GetAllAsync()
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        using var command = new SqlCommand("usp_GetAllUsers", connection)
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        try
         {
-            CommandType = CommandType.StoredProcedure
-        };
+            connection = DBConnectionFactory.CreateConnection();
+            await connection.OpenAsync();
 
-        using var reader = await command.ExecuteReaderAsync();
-        var users = new List<User>();
-        while (await reader.ReadAsync())
-        {
-            users.Add(MapUser(reader));
+            command = new SqlCommand("usp_GetAllUsers", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+
+            using var reader = await command.ExecuteReaderAsync();
+            var users = new List<User>();
+            while (await reader.ReadAsync())
+            {
+                users.Add(MapUser(reader));
+            }
+            return users;
         }
-        return users;
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            command?.Dispose();
+            connection?.Close();
+        }
     }
 
     public static void Add(User entity)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        connection.Open();
-
-        using var command = new SqlCommand("usp_CreateUser", connection)
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        try
         {
-            CommandType = CommandType.StoredProcedure
-        };
-        AddUserParameters(command, entity);
-        command.ExecuteNonQuery();
+            connection = DBConnectionFactory.CreateConnection();
+            connection.Open();
+
+            command = new SqlCommand("usp_CreateUser", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            AddUserParameters(command, entity);
+            command.ExecuteNonQuery();
+        }
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            command?.Dispose();
+            connection?.Close();
+        }
     }
 
     public static async Task AddAsync(User entity)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        using var command = new SqlCommand("usp_CreateUser", connection)
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        try
         {
-            CommandType = CommandType.StoredProcedure
-        };
-        AddUserParameters(command, entity);
-        await command.ExecuteNonQueryAsync();
+            connection = DBConnectionFactory.CreateConnection();
+            await connection.OpenAsync();
+
+            command = new SqlCommand("usp_CreateUser", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            AddUserParameters(command, entity);
+            await command.ExecuteNonQueryAsync();
+        }
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            command?.Dispose();
+            connection?.Close();
+        }
     }
 
-    public static void Update(Guid id, User entity)
+    public static void Update(int id, User entity)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        connection.Open();
-
-        using var command = new SqlCommand("usp_UpdateUser", connection)
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        try
         {
-            CommandType = CommandType.StoredProcedure
-        };
-        AddUserParameters(command, entity, id);
-        command.ExecuteNonQuery();
+            connection = DBConnectionFactory.CreateConnection();
+            connection.Open();
+
+            command = new SqlCommand("usp_UpdateUser", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            AddUserParameters(command, entity, id);
+            command.ExecuteNonQuery();
+        }
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            command?.Dispose();
+            connection?.Close();
+        }
     }
 
-    public static async Task UpdateAsync(Guid id, User entity)
+    public static async Task UpdateAsync(int id, User entity)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        using var command = new SqlCommand("usp_UpdateUser", connection)
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        try
         {
-            CommandType = CommandType.StoredProcedure
-        };
-        AddUserParameters(command, entity, id);
-        await command.ExecuteNonQueryAsync();
+            connection = DBConnectionFactory.CreateConnection();
+            await connection.OpenAsync();
+
+            command = new SqlCommand("usp_UpdateUser", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            AddUserParameters(command, entity, id);
+            await command.ExecuteNonQueryAsync();
+        }
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            command?.Dispose();
+            connection?.Close();
+        }
     }
 
-    public static void Delete(Guid id)
+    public static void Delete(int id)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        connection.Open();
-
-        using var command = new SqlCommand("usp_DeleteUser", connection)
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        try
         {
-            CommandType = CommandType.StoredProcedure
-        };
-        command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
-        command.ExecuteNonQuery();
+            connection = DBConnectionFactory.CreateConnection();
+            connection.Open();
+
+            command = new SqlCommand("usp_DeleteUser", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+            command.ExecuteNonQuery();
+        }
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            command?.Dispose();
+            connection?.Close();
+        }
     }
 
-    public static async Task DeleteAsync(Guid id)
+    public static async Task DeleteAsync(int id)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        using var command = new SqlCommand("usp_DeleteUser", connection)
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        try
         {
-            CommandType = CommandType.StoredProcedure
-        };
-        command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
-        await command.ExecuteNonQueryAsync();
+            connection = DBConnectionFactory.CreateConnection();
+            await connection.OpenAsync();
+
+            command = new SqlCommand("usp_DeleteUser", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+            await command.ExecuteNonQueryAsync();
+        }
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            command?.Dispose();
+            connection?.Close();
+        }
     }
 
     public static List<User> Search(string regex)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        connection.Open();
-
-        using var command = new SqlCommand("usp_SearchUsers", connection)
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        try
         {
-            CommandType = CommandType.StoredProcedure
-        };
-        command.Parameters.Add("@regex", SqlDbType.NVarChar, 100).Value = regex ?? string.Empty;
+            connection = DBConnectionFactory.CreateConnection();
+            connection.Open();
 
-        using var reader = command.ExecuteReader();
-        var users = new List<User>();
-        while (reader.Read())
-        {
-            users.Add(MapUser(reader));
+            command = new SqlCommand("usp_SearchUsers", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            command.Parameters.Add("@regex", SqlDbType.NVarChar, 100).Value = regex ?? string.Empty;
+
+            using var reader = command.ExecuteReader();
+            var users = new List<User>();
+            while (reader.Read())
+            {
+                users.Add(MapUser(reader));
+            }
+            return users;
         }
-        return users;
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            command?.Dispose();
+            connection?.Close();
+        }
     }
 
     public static async Task<List<User>> SearchAsync(string regex)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        using var command = new SqlCommand("usp_SearchUsers", connection)
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        try
         {
-            CommandType = CommandType.StoredProcedure
-        };
-        command.Parameters.Add("@regex", SqlDbType.NVarChar, 100).Value = regex ?? string.Empty;
+            connection = DBConnectionFactory.CreateConnection();
+            await connection.OpenAsync();
 
-        using var reader = await command.ExecuteReaderAsync();
-        var users = new List<User>();
-        while (await reader.ReadAsync())
-        {
-            users.Add(MapUser(reader));
+            command = new SqlCommand("usp_SearchUsers", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            command.Parameters.Add("@regex", SqlDbType.NVarChar, 100).Value = regex ?? string.Empty;
+
+            using var reader = await command.ExecuteReaderAsync();
+            var users = new List<User>();
+            while (await reader.ReadAsync())
+            {
+                users.Add(MapUser(reader));
+            }
+            return users;
         }
-        return users;
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            command?.Dispose();
+            connection?.Close();
+        }
     }
 
     private static User MapUser(SqlDataReader reader)
     {
         return new User
         {
-            Id = reader.GetGuid(reader.GetOrdinal("Id")),
+            Id = reader.GetInt32(reader.GetOrdinal("Id")),
             UserName = reader.GetString(reader.GetOrdinal("UserName")),
             PasswordHash = reader.GetString(reader.GetOrdinal("PasswordHash")),
             FullName = reader.GetString(reader.GetOrdinal("FullName")),
@@ -232,9 +415,9 @@ public static class UserDataProvider
         };
     }
 
-    private static void AddUserParameters(SqlCommand command, User entity, Guid? explicitId = null)
+    private static void AddUserParameters(SqlCommand command, User entity, int? explicitId = null)
     {
-        command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = explicitId ?? entity.Id;
+        command.Parameters.Add("@Id", SqlDbType.Int).Value = explicitId ?? entity.Id;
         command.Parameters.Add("@UserName", SqlDbType.NVarChar, 100).Value = entity.UserName ?? string.Empty;
         command.Parameters.Add("@PasswordHash", SqlDbType.NVarChar, 255).Value = entity.PasswordHash ?? string.Empty;
         command.Parameters.Add("@FullName", SqlDbType.NVarChar, 100).Value = entity.FullName ?? string.Empty;

@@ -1,9 +1,9 @@
-using CourseRegistrationManagmentSystem.Business.Services;
-using CourseRegistrationManagmentSystem.Shared.Dtos;
+using BL.Services;
+using Shared.Dtos;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace CourseRegistrationManagmentSystem.View
+namespace View
 {
     public partial class StudentListForm : Form
     {

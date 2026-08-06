@@ -1,9 +1,9 @@
-using CourseRegistrationManagmentSystem.Shared.Models;
+using Shared.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace CourseRegistrationManagmentSystem.Shared.Helpers
+namespace Shared.Helpers
 {
     public static class ScheduleHelper
     {

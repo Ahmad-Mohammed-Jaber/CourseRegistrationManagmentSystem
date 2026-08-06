@@ -1,7 +1,9 @@
-namespace CourseRegistrationManagmentSystem.View
-{
-    using CourseRegistrationManagmentSystem.Shared.Session;
+using CourseRegistrationManagmentSystem.View;
+using Shared.Entities;
+using Shared.Session;
 
+namespace View
+{
     internal static class Program
     {
         /// <summary>
@@ -18,7 +20,7 @@ namespace CourseRegistrationManagmentSystem.View
                 LoginForm loginForm = new LoginForm();
                 if (loginForm.ShowDialog() == DialogResult.OK)
                 {
-                    if (SessionManager.UserSession?.Role == CourseRegistrationManagmentSystem.Shared.Models.User.UserRoles.Admin)
+                    if (SessionManager.UserSession?.Role == User.UserRoles.Admin)
                     {
                         Application.Run(new AdminDashboard());
                     }

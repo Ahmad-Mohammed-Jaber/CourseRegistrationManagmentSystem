@@ -1,8 +1,8 @@
-using CourseRegistrationManagmentSystem.Business.Services;
-using CourseRegistrationManagmentSystem.Shared.Dtos;
+using BL.Services;
+using Shared.Dtos;
 using System.Windows.Forms;
 
-namespace CourseRegistrationManagmentSystem.View
+namespace View
 {
     public partial class RegistrationDetailForm : Form
     {
@@ -221,11 +221,11 @@ namespace CourseRegistrationManagmentSystem.View
             {
                 Id = _isEditMode
                     ? _reg!.Id
-                    : Guid.NewGuid(),
+                    : 0,
 
-                StudentId = (Guid)cmbStudent.SelectedValue,
+                StudentId = (int)cmbStudent.SelectedValue,
 
-                ClassId = (Guid)cmbClass.SelectedValue,
+                ClassId = (int)cmbClass.SelectedValue,
 
                 Status = cmbStatus.SelectedItem?.ToString()
                          ?? "Registered",

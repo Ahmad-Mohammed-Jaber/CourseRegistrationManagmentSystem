@@ -1,9 +1,9 @@
-using CourseRegistrationManagmentSystem.Business.Services;
-using CourseRegistrationManagmentSystem.Shared.Dtos;
-using CourseRegistrationManagmentSystem.Shared.Models;
+using BL.Services;
+using Shared.Dtos;
+using Shared.Entities;
 using System.Windows.Forms;
 
-namespace CourseRegistrationManagmentSystem.View
+namespace View
 {
     public partial class UserDetailForm : Form
     {
@@ -143,7 +143,7 @@ namespace CourseRegistrationManagmentSystem.View
 
             var dto = new UserDto
             {
-                Id = _isEditMode ? _user!.Id : Guid.NewGuid(),
+                Id = _isEditMode ? _user!.Id : 0,
                 UserName = txtUsername.Text,
                 FullName = txtFullName.Text,
                 Role = _isEditMode ? _user!.Role : (User.UserRoles)cmbRole.SelectedItem!,

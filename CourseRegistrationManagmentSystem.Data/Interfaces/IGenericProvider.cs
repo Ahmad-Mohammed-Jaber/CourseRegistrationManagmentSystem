@@ -1,10 +1,10 @@
-namespace CourseRegistrationManagmentSystem.Data.Interfaces;
+namespace DAL.Interfaces;
 
 public interface IGenericProvider<T> where T : class
 {
-    T? GetById(Guid id);
+    T? GetById(int id);
 
-    Task<T?> GetByIdAsync(Guid id);
+    Task<T?> GetByIdAsync(int id);
 
     List<T> GetAll();
 
@@ -14,13 +14,13 @@ public interface IGenericProvider<T> where T : class
 
     Task AddAsync(T entity);
 
-    void Update(Guid id, T entity);
+    void Update(int id, T entity);
 
-    Task UpdateAsync(Guid id, T entity);
+    Task UpdateAsync(int id, T entity);
 
-    void Delete(Guid id);
+    void Delete(int id);
 
-    Task DeleteAsync(Guid id);
+    Task DeleteAsync(int id);
 
     List<T> Search(string regex);
 

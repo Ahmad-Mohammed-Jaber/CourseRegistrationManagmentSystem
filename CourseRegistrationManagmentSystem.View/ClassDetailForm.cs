@@ -1,9 +1,10 @@
-using CourseRegistrationManagmentSystem.Business.Services;
-using CourseRegistrationManagmentSystem.Shared.Dtos;
-using CourseRegistrationManagmentSystem.Shared.Helpers;
+using Shared.Helpers;
+using Shared.Dtos;
+using Shared.Entities;
 using System.Windows.Forms;
+using BL.Services;
 
-namespace CourseRegistrationManagmentSystem.View
+namespace View
 {
     public partial class ClassDetailForm : Form
     {
@@ -17,7 +18,7 @@ namespace CourseRegistrationManagmentSystem.View
         private TextBox txtInstructor;
         private NumericUpDown numCapacity;
         private TableLayoutPanel pnlSchedule;
-        private Dictionary<CourseRegistrationManagmentSystem.Shared.Models.Class.DaysOfWeek, CheckBox> chkDays = new();
+        private Dictionary<Class.DaysOfWeek, CheckBox> chkDays = new();
         private DateTimePicker dtStart;
         private DateTimePicker dtEnd;
         private CheckBox chkActive;
@@ -126,13 +127,13 @@ namespace CourseRegistrationManagmentSystem.View
 
             var orderedDays = new[]
             {
-        CourseRegistrationManagmentSystem.Shared.Models.Class.DaysOfWeek.Sunday,
-        CourseRegistrationManagmentSystem.Shared.Models.Class.DaysOfWeek.Monday,
-        CourseRegistrationManagmentSystem.Shared.Models.Class.DaysOfWeek.Tuesday,
-        CourseRegistrationManagmentSystem.Shared.Models.Class.DaysOfWeek.Wednesday,
-        CourseRegistrationManagmentSystem.Shared.Models.Class.DaysOfWeek.Thursday,
-        CourseRegistrationManagmentSystem.Shared.Models.Class.DaysOfWeek.Friday,
-        CourseRegistrationManagmentSystem.Shared.Models.Class.DaysOfWeek.Saturday
+        Class.DaysOfWeek.Sunday,
+        Class.DaysOfWeek.Monday,
+        Class.DaysOfWeek.Tuesday,
+        Class.DaysOfWeek.Wednesday,
+        Class.DaysOfWeek.Thursday,
+        Class.DaysOfWeek.Friday,
+        Class.DaysOfWeek.Saturday
     };
 
             chkDays.Clear();
@@ -244,19 +245,19 @@ namespace CourseRegistrationManagmentSystem.View
 
             var dto = new ClassDto
             {
-                Id = _isEditMode ? _class!.Id : Guid.NewGuid(),
-                CourseId = (Guid)cmbCourse.SelectedValue!,
+                Id = _isEditMode ? _class!.Id : 0,
+                CourseId = (int)cmbCourse.SelectedValue!,
                 ClassName = txtName.Text,
                 Instructor = txtInstructor.Text,
                 MaxCapacity = (int)numCapacity.Value,
                 Schedule = chkDays.Where(kvp => kvp.Value.Checked)
-                                  .Aggregate(CourseRegistrationManagmentSystem.Shared.Models.Class.DaysOfWeek.None, (acc, kvp) => acc | kvp.Key),
+                                  .Aggregate(Class.DaysOfWeek.None, (acc, kvp) => acc | kvp.Key),
                 StartDate = dtStart.Value,
                 EndDate = dtEnd.Value,
                 IsActive = chkActive.Checked
             };
 
-try
+            try
             {
                 var entity = dto.ToEntity();
                 if (_isEditMode) await _classService.UpdateAsync(entity.Id, entity);

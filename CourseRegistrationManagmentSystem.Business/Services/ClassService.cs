@@ -1,22 +1,22 @@
-using CourseRegistrationManagmentSystem.Business.Interfaces;
-using CourseRegistrationManagmentSystem.Business.Managers;
-using CourseRegistrationManagmentSystem.Business.Validation;
-using CourseRegistrationManagmentSystem.Shared.Models;
+using BL.Interfaces;
+using BL.Managers;
+using BL.Validation;
+using Shared.Entities;
 using System.Text.RegularExpressions;
 
-namespace CourseRegistrationManagmentSystem.Business.Services;
+namespace BL.Services;
 
 public class ClassService : ICrudService<Class>
 {
     private readonly ClassManager _classManager = new ClassManager();
 
-    public Class? GetById(Guid id)
+    public Class? GetById(int id)
     {
         AccessValidator.RequireLogin();
         return _classManager.GetById(id);
     }
 
-    public async Task<Class?> GetByIdAsync(Guid id)
+    public async Task<Class?> GetByIdAsync(int id)
     {
         AccessValidator.RequireLogin();
         return await _classManager.GetByIdAsync(id);
@@ -54,7 +54,7 @@ public class ClassService : ICrudService<Class>
         await _classManager.AddAsync(classEntity);
     }
 
-    public void Update(Guid id, Class classEntity)
+    public void Update(int id, Class classEntity)
     {
         AccessValidator.RequireAdmin();
         var existingClass = _classManager.GetById(id);
@@ -67,7 +67,7 @@ public class ClassService : ICrudService<Class>
         _classManager.Update(id, classEntity);
     }
 
-    public async Task UpdateAsync(Guid id, Class classEntity)
+    public async Task UpdateAsync(int id, Class classEntity)
     {
         AccessValidator.RequireAdmin();
         var existingClass = await _classManager.GetByIdAsync(id);
@@ -80,13 +80,13 @@ public class ClassService : ICrudService<Class>
         await _classManager.UpdateAsync(id, classEntity);
     }
 
-    public void Delete(Guid id)
+    public void Delete(int id)
     {
         AccessValidator.RequireAdmin();
         _classManager.Delete(id);
     }
 
-    public async Task DeleteAsync(Guid id)
+    public async Task DeleteAsync(int id)
     {
         AccessValidator.RequireAdmin();
         await _classManager.DeleteAsync(id);

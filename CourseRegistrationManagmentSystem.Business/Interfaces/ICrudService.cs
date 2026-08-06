@@ -1,10 +1,10 @@
-﻿namespace CourseRegistrationManagmentSystem.Business.Interfaces;
+﻿namespace BL.Interfaces;
 
 public interface ICrudService<TEntity>
 {
-    TEntity? GetById(Guid id);
+    TEntity? GetById(int id);
 
-    Task<TEntity?> GetByIdAsync(Guid id);
+    Task<TEntity?> GetByIdAsync(int id);
 
     List<TEntity> GetAll();
 
@@ -14,13 +14,13 @@ public interface ICrudService<TEntity>
 
     Task AddAsync(TEntity entity);
 
-    void Update(Guid id, TEntity entity);
+    void Update(int id, TEntity entity);
 
-    Task UpdateAsync(Guid id, TEntity entity);
+    Task UpdateAsync(int id, TEntity entity);
 
-    void Delete(Guid id);
+    void Delete(int id);
 
-    Task DeleteAsync(Guid id);
+    Task DeleteAsync(int id);
 
     List<TEntity> Search(string regex);
 

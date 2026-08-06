@@ -1,4 +1,4 @@
-﻿namespace CourseRegistrationManagmentSystem.Shared.Models;
+﻿namespace Shared.Entities;
 
 public class ValidationResult
 {

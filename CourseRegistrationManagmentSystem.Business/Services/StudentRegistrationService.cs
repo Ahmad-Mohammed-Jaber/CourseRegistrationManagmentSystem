@@ -1,18 +1,19 @@
-﻿using CourseRegistrationManagmentSystem.Business.Managers;
-using CourseRegistrationManagmentSystem.Business.Validation;
-using CourseRegistrationManagmentSystem.Shared.Models;
-using CourseRegistrationManagmentSystem.Shared.Session;
+﻿using BL.Managers;
+using BL.Validation;
+using Shared.Entities;
+using Shared.Session;
 
-namespace CourseRegistrationManagmentSystem.Business.Services;
+namespace BL.Services;
+
 public class StudentRegistrationService
 {
     private readonly ClassManager _classManager = new ClassManager();
     private readonly RegistrationManager _registrationManager = new RegistrationManager();
 
-    public async Task RegisterClass(Guid classId)
+    public async Task RegisterClass(int classId)
     {
         AccessValidator.RequireRole(User.UserRoles.Student);
-        Guid studentId = SessionManager.StudentSession!.Id;
+        int studentId = SessionManager.StudentSession!.Id;
 
         Class? @class = await _classManager.GetByIdAsync(classId);
 
@@ -38,7 +39,6 @@ public class StudentRegistrationService
 
         var registration = new Registration
         {
-            Id = Guid.NewGuid(),
             StudentId = studentId,
             ClassId = classId,
             RegsitrationDate = DateTime.Now,
@@ -50,10 +50,10 @@ public class StudentRegistrationService
         await _classManager.UpdateAsync(classId, @class);
     }
 
-    public async Task DropRegistration(Guid registrationId)
+    public async Task DropRegistration(int registrationId)
     {
         AccessValidator.RequireRole(User.UserRoles.Student);
-        Guid studentId = SessionManager.StudentSession!.Id;
+        int studentId = SessionManager.StudentSession!.Id;
 
         Registration? registration = await _registrationManager.GetByIdAsync(registrationId);
 
@@ -84,7 +84,7 @@ public class StudentRegistrationService
     {
         AccessValidator.RequireRole(User.UserRoles.Student);
 
-        Guid studentId = SessionManager.StudentSession!.Id;
+        int studentId = SessionManager.StudentSession!.Id;
 
         return await _registrationManager
             .GetStudentRegistrationsWithClassesAsync(studentId);

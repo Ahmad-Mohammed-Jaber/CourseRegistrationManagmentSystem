@@ -1,4 +1,4 @@
-﻿namespace CourseRegistrationManagmentSystem.Shared.Models;
+﻿namespace Shared.Entities;
 
 public class Class
 {
@@ -15,13 +15,13 @@ public class Class
         Saturday = 128,
     }
 
-    public Guid Id { get; set; }
+    public int Id { get; set; }
 
-    public Guid CourseId { get; set; }
+    public int CourseId { get; set; }
 
-    public string ClassName { get; set; }
+    public string ClassName { get; set; } = string.Empty;
 
-    public string Instructor { get; set; }
+    public string Instructor { get; set; } = string.Empty;
 
     public int MaxCapacity { get; set; }
 

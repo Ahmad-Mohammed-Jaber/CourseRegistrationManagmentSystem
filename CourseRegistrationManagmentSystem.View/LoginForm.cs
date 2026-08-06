@@ -1,5 +1,5 @@
-using CourseRegistrationManagmentSystem.Business.Services;
-using CourseRegistrationManagmentSystem.Shared.Session;
+using BL.Services;
+using Shared.Session;
 using System.Windows.Forms;
 
 namespace CourseRegistrationManagmentSystem.View

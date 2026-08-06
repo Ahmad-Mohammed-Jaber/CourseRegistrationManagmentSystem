@@ -1,17 +1,29 @@
-namespace CourseRegistrationManagmentSystem.Shared.Dtos;
-using CourseRegistrationManagmentSystem.Shared.Helpers;
+namespace Shared.Dtos;
+
+using Shared.Entities;
+using Shared.Helpers;
 
 public class ClassDto
 {
-    public Guid Id { get; init; }
-    public Guid CourseId { get; init; }
+    public int Id { get; init; }
+
+    public int CourseId { get; init; }
+
     public required string ClassName { get; set; }
+
     public required string Instructor { get; set; }
+
     public int MaxCapacity { get; set; }
+
     public int CurrentCapacity { get; set; }
+
     public DateTime StartDate { get; set; }
+
     public DateTime EndDate { get; set; }
-    public CourseRegistrationManagmentSystem.Shared.Models.Class.DaysOfWeek Schedule { get; set; }
+
+    public Class.DaysOfWeek Schedule { get; set; }
+
     public string ScheduleString => ScheduleHelper.GetScheduleString(Schedule);
+
     public bool IsActive { get; set; }
 }

@@ -1,10 +1,8 @@
-using CourseRegistrationManagmentSystem.Business.Managers;
-using CourseRegistrationManagmentSystem.Shared.Models;
-using CourseRegistrationManagmentSystem.Shared.Session;
-using CourseRegistrationManagmentSystem.Business.Validation;
-
-
 using static BCrypt.Net.BCrypt;
+using Shared.Session;
+using Shared.Entities;
+using BL.Managers;
+using BL.Validation;
 
 public class AuthService
 {
@@ -86,7 +84,6 @@ public class AuthService
 
         User user = new User
         {
-            Id = Guid.NewGuid(),
             UserName = userName,
             FullName = fullName,
             IsActive = isActive,
@@ -98,7 +95,6 @@ public class AuthService
 
         Student student = new Student
         {
-            Id = Guid.NewGuid(),
             UserId = user.Id,
             UserName = userName,
             FullName = fullName,
@@ -108,7 +104,6 @@ public class AuthService
             Phone = phone,
             StudentNumber = studentNumber,
             PasswordHash = passwordHash
-
         };
 
         await _studentManager.AddAsync(student);

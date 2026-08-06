@@ -1,19 +1,19 @@
-using CourseRegistrationManagmentSystem.Data.Repository;
-using CourseRegistrationManagmentSystem.Shared.Models;
+using DAL.Repository;
+using Shared.Entities;
 
-namespace CourseRegistrationManagmentSystem.Business.Managers;
+namespace BL.Managers;
 
 internal class ClassManager
 {
     private readonly ClassRepository _classRepository = new ClassRepository();
 
-    public Class? GetById(Guid id) => _classRepository.GetById(id);
+    public Class? GetById(int id) => _classRepository.GetById(id);
 
-    public Task<Class?> GetByIdAsync(Guid id) => _classRepository.GetByIdAsync(id);
+    public Task<Class?> GetByIdAsync(int id) => _classRepository.GetByIdAsync(id);
 
-    public List<Class> GetClassesByCourseId(Guid courseId) => _classRepository.GetClassesByCourseId(courseId);
+    public List<Class> GetClassesByCourseId(int courseId) => _classRepository.GetClassesByCourseId(courseId);
 
-    public Task<List<Class>> GetClassesByCourseIdAsync(Guid courseId) => _classRepository.GetClassesByCourseIdAsync(courseId);
+    public Task<List<Class>> GetClassesByCourseIdAsync(int courseId) => _classRepository.GetClassesByCourseIdAsync(courseId);
 
     public List<Class> GetAll() => _classRepository.GetAll();
 
@@ -23,13 +23,13 @@ internal class ClassManager
 
     public Task AddAsync(Class classEntity) => _classRepository.AddAsync(classEntity);
 
-    public void Update(Guid id, Class classEntity) => _classRepository.Update(id, classEntity);
+    public void Update(int id, Class classEntity) => _classRepository.Update(id, classEntity);
 
-    public Task UpdateAsync(Guid id, Class classEntity) => _classRepository.UpdateAsync(id, classEntity);
+    public Task UpdateAsync(int id, Class classEntity) => _classRepository.UpdateAsync(id, classEntity);
 
-    public void Delete(Guid id) => _classRepository.Delete(id);
+    public void Delete(int id) => _classRepository.Delete(id);
 
-    public Task DeleteAsync(Guid id) => _classRepository.DeleteAsync(id);
+    public Task DeleteAsync(int id) => _classRepository.DeleteAsync(id);
 
     public List<Class> Search(string regex) => _classRepository.Search(regex);
 

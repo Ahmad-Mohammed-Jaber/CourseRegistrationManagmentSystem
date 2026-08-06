@@ -1,10 +1,14 @@
-﻿namespace CourseRegistrationManagmentSystem.Shared.Models;
+﻿namespace Shared.Entities;
 
 public class Student : User
 {
-    new public Guid Id { get; set; }
-    public Guid UserId { get; set; }
+    public new int Id { get; set; }
+
+    public int UserId { get; set; }
+
     public int StudentNumber { get; set; }
+
     public string Email { get; set; } = string.Empty;
+
     public string Phone { get; set; } = string.Empty;
 }

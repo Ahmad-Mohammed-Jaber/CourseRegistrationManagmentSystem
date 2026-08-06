@@ -1,15 +1,15 @@
-using CourseRegistrationManagmentSystem.Data.Repository;
-using CourseRegistrationManagmentSystem.Shared.Models;
+using DAL.Repository;
+using Shared.Entities;
 
-namespace CourseRegistrationManagmentSystem.Business.Managers;
+namespace BL.Managers;
 
 internal class CourseManager
 {
     private readonly CourseRepository _courseRepository = new CourseRepository();
 
-    public Course? GetById(Guid id) => _courseRepository.GetById(id);
+    public Course? GetById(int id) => _courseRepository.GetById(id);
 
-    public Task<Course?> GetByIdAsync(Guid id) => _courseRepository.GetByIdAsync(id);
+    public Task<Course?> GetByIdAsync(int id) => _courseRepository.GetByIdAsync(id);
 
     public List<Course> GetAll() => _courseRepository.GetAll();
 
@@ -19,13 +19,13 @@ internal class CourseManager
 
     public Task AddAsync(Course course) => _courseRepository.AddAsync(course);
 
-    public void Update(Guid id, Course course) => _courseRepository.Update(id, course);
+    public void Update(int id, Course course) => _courseRepository.Update(id, course);
 
-    public Task UpdateAsync(Guid id, Course course) => _courseRepository.UpdateAsync(id, course);
+    public Task UpdateAsync(int id, Course course) => _courseRepository.UpdateAsync(id, course);
 
-    public void Delete(Guid id) => _courseRepository.Delete(id);
+    public void Delete(int id) => _courseRepository.Delete(id);
 
-    public Task DeleteAsync(Guid id) => _courseRepository.DeleteAsync(id);
+    public Task DeleteAsync(int id) => _courseRepository.DeleteAsync(id);
 
     public List<Course> Search(string regex) => _courseRepository.Search(regex);
 

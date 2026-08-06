@@ -1,15 +1,15 @@
-using CourseRegistrationManagmentSystem.Data.Repository;
-using CourseRegistrationManagmentSystem.Shared.Models;
+using DAL.Repository;
+using Shared.Entities;
 
-namespace CourseRegistrationManagmentSystem.Business.Managers;
+namespace BL.Managers;
 
 internal class UserManager
 {
     private readonly UserRepository _userRepository = new UserRepository();
 
-    public User? GetById(Guid id) => _userRepository.GetById(id);
+    public User? GetById(int id) => _userRepository.GetById(id);
 
-    public Task<User?> GetByIdAsync(Guid id) => _userRepository.GetByIdAsync(id);
+    public Task<User?> GetByIdAsync(int id) => _userRepository.GetByIdAsync(id);
 
     public Task<User?> GetByUserNameAsync(string userName) => _userRepository.GetByUserNameAsync(userName);
 
@@ -21,13 +21,13 @@ internal class UserManager
 
     public Task AddAsync(User user) => _userRepository.AddAsync(user);
 
-    public void Update(Guid id, User user) => _userRepository.Update(id, user);
+    public void Update(int id, User user) => _userRepository.Update(id, user);
 
-    public Task UpdateAsync(Guid id, User user) => _userRepository.UpdateAsync(id, user);
+    public Task UpdateAsync(int id, User user) => _userRepository.UpdateAsync(id, user);
 
-    public void Delete(Guid id) => _userRepository.Delete(id);
+    public void Delete(int id) => _userRepository.Delete(id);
 
-    public Task DeleteAsync(Guid id) => _userRepository.DeleteAsync(id);
+    public Task DeleteAsync(int id) => _userRepository.DeleteAsync(id);
 
     public List<User> Search(string regex) => _userRepository.Search(regex);
 

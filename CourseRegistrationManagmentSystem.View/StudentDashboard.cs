@@ -1,6 +1,7 @@
 using System;
 using System.Windows.Forms;
-using CourseRegistrationManagmentSystem.Shared.Session;
+using Shared.Session;
+using View;
 
 namespace CourseRegistrationManagmentSystem.View
 {

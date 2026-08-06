@@ -1,8 +1,8 @@
-﻿namespace CourseRegistrationManagmentSystem.Shared.Dtos;
+﻿namespace Shared.Dtos;
 
 public class RegistrationDetailsDto
 {
-    public Guid RegistrationId { get; set; }
+    public int RegistrationId { get; set; }
 
     public string ClassName { get; set; } = string.Empty;
 

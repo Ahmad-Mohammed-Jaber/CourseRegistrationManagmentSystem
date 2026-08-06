@@ -1,42 +1,42 @@
-using CourseRegistrationManagmentSystem.Shared.Models;
-using CourseRegistrationManagmentSystem.Data.Interfaces;
-using CourseRegistrationManagmentSystem.Data.Providers;
+using DAL.Interfaces;
+using DAL.Providers;
+using Shared.Entities;
 
-namespace CourseRegistrationManagmentSystem.Data.Repository;
+namespace DAL.Repository;
 
 public class RegistrationRepository : IGenericRepository<Registration>
 {
-    public Registration? GetById(Guid id)
+    public Registration? GetById(int id)
     {
         return RegistrationDataProvider.GetById(id);
     }
 
-    public Task<Registration?> GetByIdAsync(Guid id)
+    public Task<Registration?> GetByIdAsync(int id)
     {
         return RegistrationDataProvider.GetByIdAsync(id);
     }
 
-    public Task<bool> ExistsAsync(Guid studentId, Guid classId)
+    public Task<bool> ExistsAsync(int studentId, int classId)
     {
         return RegistrationDataProvider.ExistsAsync(studentId, classId);
     }
 
-    public List<Registration> GetRegistrationsByStudentId(Guid studentId)
+    public List<Registration> GetRegistrationsByStudentId(int studentId)
     {
         return RegistrationDataProvider.GetRegistrationsByStudentId(studentId);
     }
 
-    public Task<List<Registration>> GetRegistrationsByStudentIdAsync(Guid studentId)
+    public Task<List<Registration>> GetRegistrationsByStudentIdAsync(int studentId)
     {
         return RegistrationDataProvider.GetRegistrationsByStudentIdAsync(studentId);
     }
 
-    public List<Registration> GetRegistrationsByClassId(Guid classId)
+    public List<Registration> GetRegistrationsByClassId(int classId)
     {
         return RegistrationDataProvider.GetRegistrationsByClassId(classId);
     }
 
-    public Task<List<Registration>> GetRegistrationsByClassIdAsync(Guid classId)
+    public Task<List<Registration>> GetRegistrationsByClassIdAsync(int classId)
     {
         return RegistrationDataProvider.GetRegistrationsByClassIdAsync(classId);
     }
@@ -61,22 +61,22 @@ public class RegistrationRepository : IGenericRepository<Registration>
         return RegistrationDataProvider.AddAsync(entity);
     }
 
-    public void Update(Guid id, Registration entity)
+    public void Update(int id, Registration entity)
     {
         RegistrationDataProvider.Update(id, entity);
     }
 
-    public Task UpdateAsync(Guid id, Registration entity)
+    public Task UpdateAsync(int id, Registration entity)
     {
         return RegistrationDataProvider.UpdateAsync(id, entity);
     }
 
-    public void Delete(Guid id)
+    public void Delete(int id)
     {
         RegistrationDataProvider.Delete(id);
     }
 
-    public Task DeleteAsync(Guid id)
+    public Task DeleteAsync(int id)
     {
         return RegistrationDataProvider.DeleteAsync(id);
     }
@@ -91,7 +91,7 @@ public class RegistrationRepository : IGenericRepository<Registration>
         return RegistrationDataProvider.SearchAsync(regex);
     }
 
-    public Task<List<(Registration Registration, Class Class)>> GetStudentRegistrationsWithClassesAsync(Guid studentId)
+    public Task<List<(Registration Registration, Class Class)>> GetStudentRegistrationsWithClassesAsync(int studentId)
     {
         return RegistrationDataProvider.GetStudentRegistrationsWithClassesAsync(studentId);
     }

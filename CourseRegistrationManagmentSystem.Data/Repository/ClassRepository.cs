@@ -1,27 +1,27 @@
-using CourseRegistrationManagmentSystem.Shared.Models;
-using CourseRegistrationManagmentSystem.Data.Interfaces;
-using CourseRegistrationManagmentSystem.Data.Providers;
+using DAL.Interfaces;
+using DAL.Providers;
+using Shared.Entities;
 
-namespace CourseRegistrationManagmentSystem.Data.Repository;
+namespace DAL.Repository;
 
 public class ClassRepository : IGenericRepository<Class>
 {
-    public Class? GetById(Guid id)
+    public Class? GetById(int id)
     {
         return ClassDataProvider.GetById(id);
     }
 
-    public Task<Class?> GetByIdAsync(Guid id)
+    public Task<Class?> GetByIdAsync(int id)
     {
         return ClassDataProvider.GetByIdAsync(id);
     }
 
-    public List<Class> GetClassesByCourseId(Guid courseId)
+    public List<Class> GetClassesByCourseId(int courseId)
     {
         return ClassDataProvider.GetClassesByCourseId(courseId);
     }
 
-    public Task<List<Class>> GetClassesByCourseIdAsync(Guid courseId)
+    public Task<List<Class>> GetClassesByCourseIdAsync(int courseId)
     {
         return ClassDataProvider.GetClassesByCourseIdAsync(courseId);
     }
@@ -46,22 +46,22 @@ public class ClassRepository : IGenericRepository<Class>
         return ClassDataProvider.AddAsync(entity);
     }
 
-    public void Update(Guid id, Class entity)
+    public void Update(int id, Class entity)
     {
         ClassDataProvider.Update(id, entity);
     }
 
-    public Task UpdateAsync(Guid id, Class entity)
+    public Task UpdateAsync(int id, Class entity)
     {
         return ClassDataProvider.UpdateAsync(id, entity);
     }
 
-    public void Delete(Guid id)
+    public void Delete(int id)
     {
         ClassDataProvider.Delete(id);
     }
 
-    public Task DeleteAsync(Guid id)
+    public Task DeleteAsync(int id)
     {
         return ClassDataProvider.DeleteAsync(id);
     }

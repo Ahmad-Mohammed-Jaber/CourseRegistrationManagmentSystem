@@ -1,22 +1,22 @@
-using CourseRegistrationManagmentSystem.Business.Interfaces;
-using CourseRegistrationManagmentSystem.Business.Managers;
-using CourseRegistrationManagmentSystem.Business.Validation;
-using CourseRegistrationManagmentSystem.Shared.Models;
+using BL.Interfaces;
+using BL.Managers;
+using BL.Validation;
+using Shared.Entities;
 using System.Text.RegularExpressions;
 
-namespace CourseRegistrationManagmentSystem.Business.Services;
+namespace BL.Services;
 
 public class UserService : ICrudService<User>
 {
     private readonly UserManager _userManager = new UserManager();
 
-    public User? GetById(Guid id)
+    public User? GetById(int id)
     {
         AccessValidator.RequireAdmin();
         return _userManager.GetById(id);
     }
 
-    public async Task<User?> GetByIdAsync(Guid id)
+    public async Task<User?> GetByIdAsync(int id)
     {
         AccessValidator.RequireAdmin();
         return await _userManager.GetByIdAsync(id);
@@ -51,7 +51,7 @@ public class UserService : ICrudService<User>
         await _userManager.AddAsync(user);
     }
 
-    public void Update(Guid id, User user)
+    public void Update(int id, User user)
     {
         AccessValidator.RequireAdmin();
         var existingUser = _userManager.GetById(id);
@@ -65,7 +65,7 @@ public class UserService : ICrudService<User>
         _userManager.Update(id, user);
     }
 
-    public async Task UpdateAsync(Guid id, User user)
+    public async Task UpdateAsync(int id, User user)
     {
         AccessValidator.RequireAdmin();
         var existingUser = await _userManager.GetByIdAsync(id);
@@ -80,10 +80,10 @@ public class UserService : ICrudService<User>
         await _userManager.UpdateAsync(id, user);
     }
 
-    private async Task EnsureUniqueUserNameAsync(string userName, Guid? excludeUserId = null)
+    private async Task EnsureUniqueUserNameAsync(string userName, int? excludeUserId = null)
     {
         var existingUser = await _userManager.GetByUserNameAsync(userName);
-        if (existingUser != null && existingUser.Id != (excludeUserId ?? Guid.Empty))
+        if (existingUser != null && existingUser.Id != (excludeUserId ?? 0))
         {
             throw new InvalidOperationException($"A user with username '{userName}' already exists.");
         }
@@ -96,13 +96,13 @@ public class UserService : ICrudService<User>
         AccessValidator.ValidateFullName(user.FullName);
     }
 
-    public void Delete(Guid id)
+    public void Delete(int id)
     {
         AccessValidator.RequireAdmin();
         _userManager.Delete(id);
     }
 
-    public async Task DeleteAsync(Guid id)
+    public async Task DeleteAsync(int id)
     {
         AccessValidator.RequireAdmin();
         await _userManager.DeleteAsync(id);

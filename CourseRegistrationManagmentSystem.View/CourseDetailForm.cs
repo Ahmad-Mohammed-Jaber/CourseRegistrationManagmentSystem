@@ -1,8 +1,8 @@
-using CourseRegistrationManagmentSystem.Business.Services;
-using CourseRegistrationManagmentSystem.Shared.Dtos;
+using BL.Services;
+using Shared.Dtos;
 using System.Windows.Forms;
 
-namespace CourseRegistrationManagmentSystem.View
+namespace View
 {
     public partial class CourseDetailForm : Form
     {
@@ -112,7 +112,7 @@ namespace CourseRegistrationManagmentSystem.View
 
             var dto = new CourseDto
             {
-                Id = _isEditMode ? _course!.Id : Guid.NewGuid(),
+                Id = _isEditMode ? _course!.Id : 0,
                 CourseCode = txtCode.Text,
                 CourseName = txtName.Text,
                 CreditHours = (int)numCredits.Value,

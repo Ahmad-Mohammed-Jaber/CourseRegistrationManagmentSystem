@@ -1,252 +1,486 @@
-using CourseRegistrationManagmentSystem.Shared.Models;
 using Microsoft.Data.SqlClient;
 using System.Data;
-using CourseRegistrationManagmentSystem.Data.Database;
+using DAL.Database;
+using Shared.Entities;
 
-namespace CourseRegistrationManagmentSystem.Data.Providers;
+namespace DAL.Providers;
 
 public static class ClassDataProvider
 {
-    public static Class? GetById(Guid id)
+    public static Class? GetById(int id)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        connection.Open();
-
-        using var command = new SqlCommand("usp_GetClassById", connection)
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        SqlDataReader? reader = null;
+        try
         {
-            CommandType = CommandType.StoredProcedure
-        };
-        command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
+            connection = DBConnectionFactory.CreateConnection();
+            connection.Open();
 
-        using var reader = command.ExecuteReader();
-        if (reader.Read())
-        {
-            return MapClass(reader);
+            command = new SqlCommand("usp_GetClassById", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+
+            reader = command.ExecuteReader();
+            if (reader.Read())
+            {
+                return MapClass(reader);
+            }
+            return null;
         }
-        return null;
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            reader?.Close();
+            reader?.Dispose();
+            command?.Dispose();
+            connection?.Close();
+            connection?.Dispose();
+        }
     }
 
-    public static async Task<Class?> GetByIdAsync(Guid id)
+    public static async Task<Class?> GetByIdAsync(int id)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        using var command = new SqlCommand("usp_GetClassById", connection)
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        SqlDataReader? reader = null;
+        try
         {
-            CommandType = CommandType.StoredProcedure
-        };
-        command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
+            connection = DBConnectionFactory.CreateConnection();
+            await connection.OpenAsync();
 
-        using var reader = await command.ExecuteReaderAsync();
-        if (await reader.ReadAsync())
-        {
-            return MapClass(reader);
+            command = new SqlCommand("usp_GetClassById", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+
+            reader = await command.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                return MapClass(reader);
+            }
+            return null;
         }
-        return null;
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            reader?.Close();
+            reader?.Dispose();
+            command?.Dispose();
+            connection?.Close();
+            connection?.Dispose();
+        }
     }
 
-    public static List<Class> GetClassesByCourseId(Guid courseId)
+    public static List<Class> GetClassesByCourseId(int courseId)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        connection.Open();
-
-        using var command = new SqlCommand("usp_GetClassesByCourseId", connection)
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        SqlDataReader? reader = null;
+        try
         {
-            CommandType = CommandType.StoredProcedure
-        };
-        command.Parameters.Add("@CourseId", SqlDbType.UniqueIdentifier).Value = courseId;
+            connection = DBConnectionFactory.CreateConnection();
+            connection.Open();
 
-        using var reader = command.ExecuteReader();
-        var classes = new List<Class>();
-        while (reader.Read())
-        {
-            classes.Add(MapClass(reader));
+            command = new SqlCommand("usp_GetClassesByCourseId", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            command.Parameters.Add("@CourseId", SqlDbType.Int).Value = courseId;
+
+            reader = command.ExecuteReader();
+            var classes = new List<Class>();
+            while (reader.Read())
+            {
+                classes.Add(MapClass(reader));
+            }
+            return classes;
         }
-        return classes;
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            reader?.Close();
+            reader?.Dispose();
+            command?.Dispose();
+            connection?.Close();
+            connection?.Dispose();
+        }
     }
 
-    public static async Task<List<Class>> GetClassesByCourseIdAsync(Guid courseId)
+    public static async Task<List<Class>> GetClassesByCourseIdAsync(int courseId)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        using var command = new SqlCommand("usp_GetClassesByCourseId", connection)
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        SqlDataReader? reader = null;
+        try
         {
-            CommandType = CommandType.StoredProcedure
-        };
-        command.Parameters.Add("@CourseId", SqlDbType.UniqueIdentifier).Value = courseId;
+            connection = DBConnectionFactory.CreateConnection();
+            await connection.OpenAsync();
 
-        using var reader = await command.ExecuteReaderAsync();
-        var classes = new List<Class>();
-        while (await reader.ReadAsync())
-        {
-            classes.Add(MapClass(reader));
+            command = new SqlCommand("usp_GetClassesByCourseId", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            command.Parameters.Add("@CourseId", SqlDbType.Int).Value = courseId;
+
+            reader = await command.ExecuteReaderAsync();
+            var classes = new List<Class>();
+            while (await reader.ReadAsync())
+            {
+                classes.Add(MapClass(reader));
+            }
+            return classes;
         }
-        return classes;
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            reader?.Close();
+            reader?.Dispose();
+            command?.Dispose();
+            connection?.Close();
+            connection?.Dispose();
+        }
     }
 
     public static List<Class> GetAll()
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        connection.Open();
-
-        using var command = new SqlCommand("usp_GetAllClasses", connection)
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        SqlDataReader? reader = null;
+        try
         {
-            CommandType = CommandType.StoredProcedure
-        };
+            connection = DBConnectionFactory.CreateConnection();
+            connection.Open();
 
-        using var reader = command.ExecuteReader();
-        var classes = new List<Class>();
-        while (reader.Read())
-        {
-            classes.Add(MapClass(reader));
+            command = new SqlCommand("usp_GetAllClasses", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+
+            reader = command.ExecuteReader();
+            var classes = new List<Class>();
+            while (reader.Read())
+            {
+                classes.Add(MapClass(reader));
+            }
+            return classes;
         }
-        return classes;
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            reader?.Close();
+            reader?.Dispose();
+            command?.Dispose();
+            connection?.Close();
+            connection?.Dispose();
+        }
     }
 
     public static async Task<List<Class>> GetAllAsync()
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        using var command = new SqlCommand("usp_GetAllClasses", connection)
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        SqlDataReader? reader = null;
+        try
         {
-            CommandType = CommandType.StoredProcedure
-        };
+            connection = DBConnectionFactory.CreateConnection();
+            await connection.OpenAsync();
 
-        using var reader = await command.ExecuteReaderAsync();
-        var classes = new List<Class>();
-        while (await reader.ReadAsync())
-        {
-            classes.Add(MapClass(reader));
+            command = new SqlCommand("usp_GetAllClasses", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+
+            reader = await command.ExecuteReaderAsync();
+            var classes = new List<Class>();
+            while (await reader.ReadAsync())
+            {
+                classes.Add(MapClass(reader));
+            }
+            return classes;
         }
-        return classes;
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            reader?.Close();
+            reader?.Dispose();
+            command?.Dispose();
+            connection?.Close();
+            connection?.Dispose();
+        }
     }
 
     public static void Add(Class entity)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        connection.Open();
-
-        using var command = new SqlCommand("usp_CreateClass", connection)
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        try
         {
-            CommandType = CommandType.StoredProcedure
-        };
-        AddClassParameters(command, entity);
-        command.ExecuteNonQuery();
+            connection = DBConnectionFactory.CreateConnection();
+            connection.Open();
+
+            command = new SqlCommand("usp_CreateClass", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            AddClassParameters(command, entity);
+            command.ExecuteNonQuery();
+        }
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            command?.Dispose();
+            connection?.Close();
+            connection?.Dispose();
+        }
     }
 
     public static async Task AddAsync(Class entity)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        using var command = new SqlCommand("usp_CreateClass", connection)
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        try
         {
-            CommandType = CommandType.StoredProcedure
-        };
-        AddClassParameters(command, entity);
-        await command.ExecuteNonQueryAsync();
+            connection = DBConnectionFactory.CreateConnection();
+            await connection.OpenAsync();
+
+            command = new SqlCommand("usp_CreateClass", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            AddClassParameters(command, entity);
+            await command.ExecuteNonQueryAsync();
+        }
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            command?.Dispose();
+            connection?.Close();
+            connection?.Dispose();
+        }
     }
 
-    public static void Update(Guid id, Class entity)
+    public static void Update(int id, Class entity)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        connection.Open();
-
-        using var command = new SqlCommand("usp_UpdateClass", connection)
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        try
         {
-            CommandType = CommandType.StoredProcedure
-        };
-        AddClassParameters(command, entity, id);
-        command.ExecuteNonQuery();
+            connection = DBConnectionFactory.CreateConnection();
+            connection.Open();
+
+            command = new SqlCommand("usp_UpdateClass", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            AddClassParameters(command, entity, id);
+            command.ExecuteNonQuery();
+        }
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            command?.Dispose();
+            connection?.Close();
+            connection?.Dispose();
+        }
     }
 
-    public static async Task UpdateAsync(Guid id, Class entity)
+    public static async Task UpdateAsync(int id, Class entity)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        using var command = new SqlCommand("usp_UpdateClass", connection)
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        try
         {
-            CommandType = CommandType.StoredProcedure
-        };
-        AddClassParameters(command, entity, id);
-        await command.ExecuteNonQueryAsync();
+            connection = DBConnectionFactory.CreateConnection();
+            await connection.OpenAsync();
+
+            command = new SqlCommand("usp_UpdateClass", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            AddClassParameters(command, entity, id);
+            await command.ExecuteNonQueryAsync();
+        }
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            command?.Dispose();
+            connection?.Close();
+            connection?.Dispose();
+        }
     }
 
-    public static void Delete(Guid id)
+    public static void Delete(int id)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        connection.Open();
-
-        using var command = new SqlCommand("usp_DeleteClass", connection)
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        try
         {
-            CommandType = CommandType.StoredProcedure
-        };
-        command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
-        command.ExecuteNonQuery();
+            connection = DBConnectionFactory.CreateConnection();
+            connection.Open();
+
+            command = new SqlCommand("usp_DeleteClass", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+            command.ExecuteNonQuery();
+        }
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            command?.Dispose();
+            connection?.Close();
+            connection?.Dispose();
+        }
     }
 
-    public static async Task DeleteAsync(Guid id)
+    public static async Task DeleteAsync(int id)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        using var command = new SqlCommand("usp_DeleteClass", connection)
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        try
         {
-            CommandType = CommandType.StoredProcedure
-        };
-        command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = id;
-        await command.ExecuteNonQueryAsync();
+            connection = DBConnectionFactory.CreateConnection();
+            await connection.OpenAsync();
+
+            command = new SqlCommand("usp_DeleteClass", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+            await command.ExecuteNonQueryAsync();
+        }
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            command?.Dispose();
+            connection?.Close();
+            connection?.Dispose();
+        }
     }
 
     public static List<Class> Search(string regex)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        connection.Open();
-
-        using var command = new SqlCommand("usp_SearchClasses", connection)
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        SqlDataReader? reader = null;
+        try
         {
-            CommandType = CommandType.StoredProcedure
-        };
-        command.Parameters.Add("@regex", SqlDbType.NVarChar, 100).Value = regex ?? string.Empty;
+            connection = DBConnectionFactory.CreateConnection();
+            connection.Open();
 
-        using var reader = command.ExecuteReader();
-        var classes = new List<Class>();
-        while (reader.Read())
-        {
-            classes.Add(MapClass(reader));
+            command = new SqlCommand("usp_SearchClasses", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            command.Parameters.Add("@regex", SqlDbType.NVarChar, 100).Value = regex ?? string.Empty;
+
+            reader = command.ExecuteReader();
+            var classes = new List<Class>();
+            while (reader.Read())
+            {
+                classes.Add(MapClass(reader));
+            }
+            return classes;
         }
-        return classes;
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            reader?.Close();
+            reader?.Dispose();
+            command?.Dispose();
+            connection?.Close();
+            connection?.Dispose();
+        }
     }
 
     public static async Task<List<Class>> SearchAsync(string regex)
     {
-        using var connection = DBConnectionFactory.CreateConnection();
-        await connection.OpenAsync();
-
-        using var command = new SqlCommand("usp_SearchClasses", connection)
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        SqlDataReader? reader = null;
+        try
         {
-            CommandType = CommandType.StoredProcedure
-        };
-        command.Parameters.Add("@regex", SqlDbType.NVarChar, 100).Value = regex ?? string.Empty;
+            connection = DBConnectionFactory.CreateConnection();
+            await connection.OpenAsync();
 
-        using var reader = await command.ExecuteReaderAsync();
-        var classes = new List<Class>();
-        while (await reader.ReadAsync())
-        {
-            classes.Add(MapClass(reader));
+            command = new SqlCommand("usp_SearchClasses", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            command.Parameters.Add("@regex", SqlDbType.NVarChar, 100).Value = regex ?? string.Empty;
+
+            reader = await command.ExecuteReaderAsync();
+            var classes = new List<Class>();
+            while (await reader.ReadAsync())
+            {
+                classes.Add(MapClass(reader));
+            }
+            return classes;
         }
-        return classes;
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            reader?.Close();
+            reader?.Dispose();
+            command?.Dispose();
+            connection?.Close();
+            connection?.Dispose();
+        }
     }
 
     private static Class MapClass(SqlDataReader reader)
     {
         return new Class
         {
-            Id = reader.GetGuid(reader.GetOrdinal("Id")),
-            CourseId = reader.GetGuid(reader.GetOrdinal("CourseId")),
+            Id = reader.GetInt32(reader.GetOrdinal("Id")),
+            CourseId = reader.GetInt32(reader.GetOrdinal("CourseId")),
             ClassName = reader.GetString(reader.GetOrdinal("ClassName")),
             Instructor = reader.GetString(reader.GetOrdinal("Instructor")),
             MaxCapacity = reader.GetInt32(reader.GetOrdinal("MaxCapacity")),
@@ -258,10 +492,10 @@ public static class ClassDataProvider
         };
     }
 
-    private static void AddClassParameters(SqlCommand command, Class entity, Guid? explicitId = null)
+    private static void AddClassParameters(SqlCommand command, Class entity, int? explicitId = null)
     {
-        command.Parameters.Add("@Id", SqlDbType.UniqueIdentifier).Value = explicitId ?? entity.Id;
-        command.Parameters.Add("@CourseId", SqlDbType.UniqueIdentifier).Value = entity.CourseId;
+        command.Parameters.Add("@Id", SqlDbType.Int).Value = explicitId ?? entity.Id;
+        command.Parameters.Add("@CourseId", SqlDbType.Int).Value = entity.CourseId;
         command.Parameters.Add("@ClassName", SqlDbType.NVarChar, 50).Value = entity.ClassName ?? string.Empty;
         command.Parameters.Add("@Instructor", SqlDbType.NVarChar, 50).Value = entity.Instructor ?? string.Empty;
         command.Parameters.Add("@MaxCapacity", SqlDbType.Int).Value = entity.MaxCapacity;
