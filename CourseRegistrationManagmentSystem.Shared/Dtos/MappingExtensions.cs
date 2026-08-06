@@ -25,10 +25,29 @@ public static class MappingExtensions
         return new StudentDto
         {
             Id = student.Id,
+            UserId = student.UserId,
             UserName = user.UserName,
             FullName = user.FullName,
             Role = user.Role,
             IsActive = user.IsActive,
+            StudentNumber = student.StudentNumber,
+            Email = student.Email,
+            Phone = student.Phone
+        };
+    }
+
+    public static StudentDto? ToDto(this Student student)
+    {
+        if (student == null) return null;
+
+        return new StudentDto
+        {
+            Id = student.Id,
+            UserId = student.UserId,
+            UserName = student.UserName,
+            FullName = student.FullName,
+            Role = student.Role,
+            IsActive = student.IsActive,
             StudentNumber = student.StudentNumber,
             Email = student.Email,
             Phone = student.Phone
@@ -86,7 +105,11 @@ public static class MappingExtensions
         return new Student
         {
             Id = dto.Id,
-            UserId = dto.Id, // In Student model, UserId is often the primary link to User table
+            UserId = dto.UserId,
+            UserName = dto.UserName,
+            FullName = dto.FullName,
+            Role = dto.Role,
+            IsActive = dto.IsActive,
             StudentNumber = dto.StudentNumber,
             Email = dto.Email,
             Phone = dto.Phone

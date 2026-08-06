@@ -97,14 +97,16 @@ namespace CourseRegistrationManagmentSystem.View
         private async void LoadUsers()
         {
             dgvUsers.DataSource = null;
-            dgvUsers.DataSource = await _userService.GetAllAsync();
+            var users = await _userService.GetAllAsync();
+            dgvUsers.DataSource = users.Select(u => u.ToDto()).ToList();
         }
 
         private async void btnSearch_Click(object sender, EventArgs e)
         {
             if (!string.IsNullOrWhiteSpace(txtSearch.Text))
             {
-                dgvUsers.DataSource = await _userService.SearchAsync(txtSearch.Text);
+                var users = await _userService.SearchAsync(txtSearch.Text);
+                dgvUsers.DataSource = users.Select(u => u.ToDto()).ToList();
             }
             else
             {

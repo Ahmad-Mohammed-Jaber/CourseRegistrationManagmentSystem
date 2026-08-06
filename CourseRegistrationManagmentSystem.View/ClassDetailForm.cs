@@ -256,10 +256,11 @@ namespace CourseRegistrationManagmentSystem.View
                 IsActive = chkActive.Checked
             };
 
-            try
+try
             {
-                if (_isEditMode) await _classService.UpdateAsync(dto.Id, dto);
-                else await _classService.AddAsync(dto);
+                var entity = dto.ToEntity();
+                if (_isEditMode) await _classService.UpdateAsync(entity.Id, entity);
+                else await _classService.AddAsync(entity);
                 this.DialogResult = DialogResult.OK;
             }
             catch (Exception ex)

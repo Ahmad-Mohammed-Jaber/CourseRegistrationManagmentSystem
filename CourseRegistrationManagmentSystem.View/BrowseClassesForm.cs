@@ -120,10 +120,11 @@ namespace CourseRegistrationManagmentSystem.View
                     DataGridViewContentAlignment.MiddleLeft;
             }
         }
-        private async void LoadAvailableClasses()
+private async void LoadAvailableClasses()
         {
             dgvClasses.DataSource = null;
-            dgvClasses.DataSource = await _classService.GetAllAsync();
+            var classes = await _classService.GetAllAsync();
+            dgvClasses.DataSource = classes.Select(c => c.ToDto()).ToList();
         }
 
         private async void btnRegister_Click(object sender, EventArgs e)

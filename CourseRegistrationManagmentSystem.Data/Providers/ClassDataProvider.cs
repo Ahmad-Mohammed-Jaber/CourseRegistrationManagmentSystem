@@ -1,9 +1,9 @@
 using CourseRegistrationManagmentSystem.Shared.Models;
 using Microsoft.Data.SqlClient;
 using System.Data;
-using DAL.Database;
+using CourseRegistrationManagmentSystem.Data.Database;
 
-namespace DAL.Providers;
+namespace CourseRegistrationManagmentSystem.Data.Providers;
 
 public static class ClassDataProvider
 {

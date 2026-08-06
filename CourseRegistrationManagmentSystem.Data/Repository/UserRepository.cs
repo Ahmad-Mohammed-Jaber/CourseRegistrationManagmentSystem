@@ -1,6 +1,6 @@
 using CourseRegistrationManagmentSystem.Data.Providers;
 using CourseRegistrationManagmentSystem.Shared.Models;
-using DAL.Interfaces;
+using CourseRegistrationManagmentSystem.Data.Interfaces;
 
 namespace CourseRegistrationManagmentSystem.Data.Repository;
 

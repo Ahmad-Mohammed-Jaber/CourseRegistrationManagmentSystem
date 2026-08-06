@@ -8,6 +8,7 @@ namespace CourseRegistrationManagmentSystem.View
     public partial class UserDetailForm : Form
     {
         private readonly UserService _userService = new UserService();
+        private readonly AuthService _authService = new AuthService();
         private UserDto? _user;
         private bool _isEditMode;
 
@@ -80,7 +81,10 @@ namespace CourseRegistrationManagmentSystem.View
             this.cmbRole.Location = new Point(120, 100);
             this.cmbRole.Size = new Size(200, 25);
             this.cmbRole.DropDownStyle = ComboBoxStyle.DropDownList;
-            this.cmbRole.DataSource = Enum.GetValues(typeof(User.UserRoles));
+            foreach (User.UserRoles role in Enum.GetValues(typeof(User.UserRoles)))
+            {
+                this.cmbRole.Items.Add(role);
+            }
             this.cmbRole.Enabled = false;
 
             // lblPassword
@@ -142,7 +146,7 @@ namespace CourseRegistrationManagmentSystem.View
                 Id = _isEditMode ? _user!.Id : Guid.NewGuid(),
                 UserName = txtUsername.Text,
                 FullName = txtFullName.Text,
-                Role = (User.UserRoles)cmbRole.SelectedItem!,
+                Role = _isEditMode ? _user!.Role : (User.UserRoles)cmbRole.SelectedItem!,
                 IsActive = chkIsActive.Checked
             };
 
@@ -150,13 +154,19 @@ namespace CourseRegistrationManagmentSystem.View
             {
                 if (_isEditMode)
                 {
-                    await _userService.UpdateAsync(dto.Id, dto);
+                    await _userService.UpdateAsync(dto.Id, dto.ToEntity());
                 }
                 else
                 {
-                    // Note: This currently doesn't handle password in UserService.
-                    // In a real app, we'd pass the password to the service.
-                    await _userService.AddAsync(dto);
+                    if (!string.IsNullOrWhiteSpace(txtPassword.Text))
+                    {
+                        await _authService.RegisterAdminAsync(
+                            dto.UserName, dto.FullName, dto.IsActive, txtPassword.Text);
+                    }
+                    else
+                    {
+                        await _userService.AddAsync(dto.ToEntity());
+                    }
                 }
                 this.DialogResult = DialogResult.OK;
             }

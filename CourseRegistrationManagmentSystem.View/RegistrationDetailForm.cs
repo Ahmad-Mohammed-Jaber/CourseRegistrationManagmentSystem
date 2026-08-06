@@ -236,13 +236,14 @@ namespace CourseRegistrationManagmentSystem.View
 
             try
             {
+                var entity = dto.ToEntity();
                 if (_isEditMode)
                 {
-                    await _regService.UpdateAsync(dto.Id, dto);
+                    await _regService.UpdateAsync(entity.Id, entity);
                 }
                 else
                 {
-                    await _regService.AddAsync(dto);
+                    await _regService.AddAsync(entity);
                 }
 
 

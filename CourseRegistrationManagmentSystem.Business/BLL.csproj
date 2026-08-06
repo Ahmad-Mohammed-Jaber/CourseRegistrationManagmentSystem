@@ -16,9 +16,4 @@
     <ProjectReference Include="..\CourseRegistrationManagmentSystem.Shared\Shared.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Services\AdminServices\" />
-    <Folder Include="Services\StudentServices\" />
-  </ItemGroup>
-
 </Project>

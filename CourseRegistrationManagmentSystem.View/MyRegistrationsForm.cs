@@ -69,8 +69,11 @@ namespace CourseRegistrationManagmentSystem.View
         {
             dgvRegs.DataSource = null;
 
-            List<RegistrationDetailsDto> registrations =
-                await _regService.GetRegistrationsAsync();
+            var data = await _regService.GetRegistrationsAsync();
+
+            List<RegistrationDetailsDto> registrations = data
+                .Select(x => x.Registration.ToDetailsDto(x.Class))
+                .ToList();
 
             dgvRegs.DataSource = registrations;
         }

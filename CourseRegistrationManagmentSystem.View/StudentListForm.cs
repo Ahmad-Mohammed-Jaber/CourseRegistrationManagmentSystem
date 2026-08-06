@@ -143,14 +143,16 @@ namespace CourseRegistrationManagmentSystem.View
         private async void LoadStudents()
         {
             dgvStudents.DataSource = null;
-            dgvStudents.DataSource = await _studentService.GetAllAsync();
+            var students = await _studentService.GetAllAsync();
+            dgvStudents.DataSource = students.Select(s => s.ToDto()).ToList();
         }
 
         private async void btnSearch_Click(object sender, EventArgs e)
         {
             if (!string.IsNullOrWhiteSpace(txtSearch.Text))
             {
-                dgvStudents.DataSource = await _studentService.SearchAsync(txtSearch.Text);
+                var students = await _studentService.SearchAsync(txtSearch.Text);
+                dgvStudents.DataSource = students.Select(s => s.ToDto()).ToList();
             }
             else
             {

@@ -106,14 +106,16 @@ namespace CourseRegistrationManagmentSystem.View
         private async void LoadCourses()
         {
             dgvCourses.DataSource = null;
-            dgvCourses.DataSource = await _courseService.GetAllAsync();
+            var courses = await _courseService.GetAllAsync();
+            dgvCourses.DataSource = courses.Select(c => c.ToDto()).ToList();
         }
 
         private async void btnSearch_Click(object sender, EventArgs e)
         {
             if (!string.IsNullOrWhiteSpace(txtSearch.Text))
             {
-                dgvCourses.DataSource = await _courseService.SearchAsync(txtSearch.Text);
+                var courses = await _courseService.SearchAsync(txtSearch.Text);
+                dgvCourses.DataSource = courses.Select(c => c.ToDto()).ToList();
             }
             else
             {

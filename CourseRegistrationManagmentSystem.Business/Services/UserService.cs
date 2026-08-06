@@ -37,9 +37,7 @@ public class UserService : ICrudService<User>
     public void Add(User user)
     {
         AccessValidator.RequireAdmin();
-        // Validation
-        if (string.IsNullOrWhiteSpace(user.UserName)) throw new ArgumentException("Username is required.");
-        if (string.IsNullOrWhiteSpace(user.FullName)) throw new ArgumentException("Full name is required.");
+        ValidateUser(user);
 
         _userManager.Add(user);
     }
@@ -47,9 +45,8 @@ public class UserService : ICrudService<User>
     public async Task AddAsync(User user)
     {
         AccessValidator.RequireAdmin();
-        // Validation
-        if (string.IsNullOrWhiteSpace(user.UserName)) throw new ArgumentException("Username is required.");
-        if (string.IsNullOrWhiteSpace(user.FullName)) throw new ArgumentException("Full name is required.");
+        ValidateUser(user);
+        await EnsureUniqueUserNameAsync(user.UserName);
 
         await _userManager.AddAsync(user);
     }
@@ -60,9 +57,10 @@ public class UserService : ICrudService<User>
         var existingUser = _userManager.GetById(id);
         if (existingUser == null) throw new KeyNotFoundException($"User with id {id} not found.");
 
-        // Validation
-        if (string.IsNullOrWhiteSpace(user.UserName)) throw new ArgumentException("Username is required.");
-        if (string.IsNullOrWhiteSpace(user.FullName)) throw new ArgumentException("Full name is required.");
+        ValidateUser(user);
+
+        if (string.IsNullOrEmpty(user.PasswordHash))
+            user.PasswordHash = existingUser.PasswordHash;
 
         _userManager.Update(id, user);
     }
@@ -73,11 +71,29 @@ public class UserService : ICrudService<User>
         var existingUser = await _userManager.GetByIdAsync(id);
         if (existingUser == null) throw new KeyNotFoundException($"User with id {id} not found.");
 
-        // Validation
-        if (string.IsNullOrWhiteSpace(user.UserName)) throw new ArgumentException("Username is required.");
-        if (string.IsNullOrWhiteSpace(user.FullName)) throw new ArgumentException("Full name is required.");
+        ValidateUser(user);
+        await EnsureUniqueUserNameAsync(user.UserName, id);
+
+        if (string.IsNullOrEmpty(user.PasswordHash))
+            user.PasswordHash = existingUser.PasswordHash;
 
         await _userManager.UpdateAsync(id, user);
+    }
+
+    private async Task EnsureUniqueUserNameAsync(string userName, Guid? excludeUserId = null)
+    {
+        var existingUser = await _userManager.GetByUserNameAsync(userName);
+        if (existingUser != null && existingUser.Id != (excludeUserId ?? Guid.Empty))
+        {
+            throw new InvalidOperationException($"A user with username '{userName}' already exists.");
+        }
+    }
+
+    private static void ValidateUser(User user)
+    {
+        if (user == null) throw new ArgumentNullException(nameof(user));
+        AccessValidator.ValidateUserName(user.UserName);
+        AccessValidator.ValidateFullName(user.FullName);
     }
 
     public void Delete(Guid id)

@@ -1,20 +1,20 @@
-﻿using CourseRegistrationManagmentSystem.Business.Validation;
-using CourseRegistrationManagmentSystem.Data.Repository;
-using CourseRegistrationManagmentSystem.Shared.Dtos;
+﻿using CourseRegistrationManagmentSystem.Business.Managers;
+using CourseRegistrationManagmentSystem.Business.Validation;
 using CourseRegistrationManagmentSystem.Shared.Models;
+using CourseRegistrationManagmentSystem.Shared.Session;
 
 namespace CourseRegistrationManagmentSystem.Business.Services;
 public class StudentRegistrationService
 {
-    private readonly ClassRepository _classRepository = new ClassRepository();
-    private readonly RegistrationRepository _registrationRepository = new RegistrationRepository();
+    private readonly ClassManager _classManager = new ClassManager();
+    private readonly RegistrationManager _registrationManager = new RegistrationManager();
 
     public async Task RegisterClass(Guid classId)
     {
         AccessValidator.RequireRole(User.UserRoles.Student);
         Guid studentId = SessionManager.StudentSession!.Id;
 
-        Class? @class = await _classRepository.GetByIdAsync(classId);
+        Class? @class = await _classManager.GetByIdAsync(classId);
 
         if (@class == null)
         {
@@ -26,7 +26,7 @@ public class StudentRegistrationService
             throw new InvalidOperationException("This class is no longer active.");
         }
 
-        if (await _registrationRepository.ExistsAsync(studentId, classId))
+        if (await _registrationManager.ExistsAsync(studentId, classId))
         {
             throw new InvalidOperationException("Class already registered");
         }
@@ -44,10 +44,10 @@ public class StudentRegistrationService
             RegsitrationDate = DateTime.Now,
             Status = "Registered"
         };
-        await _registrationRepository.AddAsync(registration);
+        await _registrationManager.AddAsync(registration);
 
         @class.CurrentCapacity++;
-        await _classRepository.UpdateAsync(classId, @class);
+        await _classManager.UpdateAsync(classId, @class);
     }
 
     public async Task DropRegistration(Guid registrationId)
@@ -55,7 +55,7 @@ public class StudentRegistrationService
         AccessValidator.RequireRole(User.UserRoles.Student);
         Guid studentId = SessionManager.StudentSession!.Id;
 
-        Registration? registration = await _registrationRepository.GetByIdAsync(registrationId);
+        Registration? registration = await _registrationManager.GetByIdAsync(registrationId);
 
         if (registration == null)
         {
@@ -67,30 +67,26 @@ public class StudentRegistrationService
             throw new UnauthorizedAccessException("You do not have permission to drop this registration.");
         }
 
-        Class? @class = await _classRepository.GetByIdAsync(registration.ClassId);
+        Class? @class = await _classManager.GetByIdAsync(registration.ClassId);
 
         if (@class == null)
         {
             throw new KeyNotFoundException($"Class with id {registration.ClassId} not found.");
         }
 
-        await _registrationRepository.DeleteAsync(registrationId);
+        await _registrationManager.DeleteAsync(registrationId);
 
         @class.CurrentCapacity--;
         if (@class.CurrentCapacity < 0) @class.CurrentCapacity = 0;
-        await _classRepository.UpdateAsync(@class.Id, @class);
+        await _classManager.UpdateAsync(@class.Id, @class);
     }
-    public async Task<List<RegistrationDetailsDto>> GetRegistrationsAsync()
+    public async Task<List<(Registration Registration, Class Class)>> GetRegistrationsAsync()
     {
         AccessValidator.RequireRole(User.UserRoles.Student);
 
         Guid studentId = SessionManager.StudentSession!.Id;
 
-        var registrations = await _registrationRepository
+        return await _registrationManager
             .GetStudentRegistrationsWithClassesAsync(studentId);
-
-        return registrations
-            .Select(x => x.Registration.ToDetailsDto(x.Class))
-            .ToList();
     }
 }

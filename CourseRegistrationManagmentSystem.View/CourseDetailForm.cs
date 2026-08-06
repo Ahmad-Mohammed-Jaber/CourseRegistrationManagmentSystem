@@ -122,8 +122,9 @@ namespace CourseRegistrationManagmentSystem.View
 
             try
             {
-                if (_isEditMode) await _courseService.UpdateAsync(dto.Id, dto);
-                else await _courseService.AddAsync(dto);
+                var entity = dto.ToEntity();
+                if (_isEditMode) await _courseService.UpdateAsync(entity.Id, entity);
+                else await _courseService.AddAsync(entity);
                 this.DialogResult = DialogResult.OK;
             }
             catch (Exception ex)

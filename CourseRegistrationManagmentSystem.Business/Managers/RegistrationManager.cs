@@ -43,4 +43,10 @@ internal class RegistrationManager
 
     public Task<List<(Registration Registration, Class Class)>> GetStudentRegistrationsWithClassesAsync(Guid studentId) =>
         _registrationRepository.GetStudentRegistrationsWithClassesAsync(studentId);
+
+    public Task<List<(Registration Registration, Student Student, Class Class, Course Course)>> GetAllDetailedAsync() =>
+        _registrationRepository.GetAllDetailedAsync();
+
+    public Task<List<(Registration Registration, Student Student, Class Class, Course Course)>> SearchDetailedAsync(string regex) =>
+        _registrationRepository.SearchDetailedAsync(regex);
 }

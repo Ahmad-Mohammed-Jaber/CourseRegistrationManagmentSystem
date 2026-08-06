@@ -1,5 +1,7 @@
 namespace CourseRegistrationManagmentSystem.View
 {
+    using CourseRegistrationManagmentSystem.Shared.Session;
+
     internal static class Program
     {
         /// <summary>

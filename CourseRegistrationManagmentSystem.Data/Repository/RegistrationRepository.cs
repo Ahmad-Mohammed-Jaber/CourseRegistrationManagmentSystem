@@ -1,7 +1,6 @@
-using CourseRegistrationManagmentSystem.Shared.Dtos;
 using CourseRegistrationManagmentSystem.Shared.Models;
-using DAL.Interfaces;
-using DAL.Providers;
+using CourseRegistrationManagmentSystem.Data.Interfaces;
+using CourseRegistrationManagmentSystem.Data.Providers;
 
 namespace CourseRegistrationManagmentSystem.Data.Repository;
 
@@ -97,12 +96,12 @@ public class RegistrationRepository : IGenericRepository<Registration>
         return RegistrationDataProvider.GetStudentRegistrationsWithClassesAsync(studentId);
     }
 
-    public Task<List<RegistrationDto>> GetAllDetailedAsync()
+    public Task<List<(Registration Registration, Student Student, Class Class, Course Course)>> GetAllDetailedAsync()
     {
         return RegistrationDataProvider.GetAllDetailedAsync();
     }
 
-    public Task<List<RegistrationDto>> SearchDetailedAsync(string regex)
+    public Task<List<(Registration Registration, Student Student, Class Class, Course Course)>> SearchDetailedAsync(string regex)
     {
         return RegistrationDataProvider.SearchDetailedAsync(regex);
     }

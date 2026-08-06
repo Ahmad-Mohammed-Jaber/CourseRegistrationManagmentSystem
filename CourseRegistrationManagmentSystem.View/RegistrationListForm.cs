@@ -107,7 +107,19 @@ namespace CourseRegistrationManagmentSystem.View
         {
             dgvRegs.DataSource = null;
 
-            dgvRegs.DataSource = await _regService.GetAllDetailedAsync();
+            dgvRegs.DataSource = (await _regService.GetAllDetailedAsync())
+                .Select(x => new RegistrationDto
+                {
+                    Id = x.Registration.Id,
+                    StudentId = x.Registration.StudentId,
+                    StudentUserName = x.Student.UserName,
+                    ClassId = x.Registration.ClassId,
+                    ClassName = x.Class.ClassName,
+                    CourseName = x.Course.CourseName,
+                    RegistrationDate = x.Registration.RegsitrationDate,
+                    Status = x.Registration.Status
+                })
+                .ToList();
 
             ConfigureColumns();
         }
@@ -118,7 +130,19 @@ namespace CourseRegistrationManagmentSystem.View
             {
                 dgvRegs.DataSource = null;
 
-                dgvRegs.DataSource = await _regService.SearchDetailedAsync(txtSearch.Text);
+                dgvRegs.DataSource = (await _regService.SearchDetailedAsync(txtSearch.Text))
+                    .Select(x => new RegistrationDto
+                    {
+                        Id = x.Registration.Id,
+                        StudentId = x.Registration.StudentId,
+                        StudentUserName = x.Student.UserName,
+                        ClassId = x.Registration.ClassId,
+                        ClassName = x.Class.ClassName,
+                        CourseName = x.Course.CourseName,
+                        RegistrationDate = x.Registration.RegsitrationDate,
+                        Status = x.Registration.Status
+                    })
+                    .ToList();
 
                 ConfigureColumns();
             }

@@ -1,18 +1,19 @@
-using CourseRegistrationManagmentSystem.Data.Repository;
+using CourseRegistrationManagmentSystem.Business.Managers;
 using CourseRegistrationManagmentSystem.Shared.Models;
 using CourseRegistrationManagmentSystem.Shared.Session;
 using CourseRegistrationManagmentSystem.Business.Validation;
+
 
 using static BCrypt.Net.BCrypt;
 
 public class AuthService
 {
-    private readonly UserRepository _userRepository = new UserRepository();
-    private readonly StudentRepository _studentRepository = new StudentRepository();
+    private readonly UserManager _userManager = new UserManager();
+    private readonly StudentManager _studentManager = new StudentManager();
 
     public async Task<(UserSession?, StudentSession?)> LoginAsync(string userName, string password)
     {
-        User? userRes = await _userRepository.GetByUserNameAsync(userName);
+        User? userRes = await _userManager.GetByUserNameAsync(userName);
 
         if (userRes == null)
         {
@@ -37,7 +38,7 @@ public class AuthService
             return (userSession, null);
         }
 
-        Student? studentRes = await _studentRepository.GetByUserIdAsync(userRes.Id);
+        Student? studentRes = await _studentManager.GetByUserIdAsync(userRes.Id);
 
         StudentSession? studentSession = studentRes == null
             ? null
@@ -49,10 +50,18 @@ public class AuthService
     public async Task RegisterAdminAsync(string userName, string fullName, bool isActive, string password)
     {
         AccessValidator.RequireAdmin();
+        AccessValidator.ValidateUserName(userName);
+        AccessValidator.ValidateFullName(fullName);
+        AccessValidator.ValidatePassword(password);
+
+        if (await _userManager.GetByUserNameAsync(userName) != null)
+        {
+            throw new InvalidOperationException($"A user with username '{userName}' already exists.");
+        }
 
         string passwordHash = HashPassword(password);
 
-        await _userRepository.AddAsync(new User
+        await _userManager.AddAsync(new User
         {
             UserName = userName,
             FullName = fullName,
@@ -64,9 +73,14 @@ public class AuthService
 
     public async Task RegisterStudentAsync(string userName, int studentNumber, string fullName, bool isActive, string email, string phone, string password)
     {
-        // Depending on requirements, student registration might be open or admin-only.
-        // If it's admin-only, uncomment the line below:
-         AccessValidator.RequireAdmin();
+        AccessValidator.RequireAdmin();
+
+        AccessValidator.ValidateUserName(userName);
+        AccessValidator.ValidateFullName(fullName);
+        AccessValidator.ValidatePassword(password);
+        AccessValidator.ValidateStudentNumber(studentNumber);
+        AccessValidator.ValidateEmail(email);
+        AccessValidator.ValidatePhone(phone);
 
         string passwordHash = HashPassword(password);
 
@@ -80,11 +94,11 @@ public class AuthService
             Role = User.UserRoles.Student,
         };
 
-        await _userRepository.AddAsync(user);
+        await _userManager.AddAsync(user);
 
         Student student = new Student
         {
-            Id = Guid.NewGuid() ,
+            Id = Guid.NewGuid(),
             UserId = user.Id,
             UserName = userName,
             FullName = fullName,
@@ -97,6 +111,6 @@ public class AuthService
 
         };
 
-        await _studentRepository.AddAsync(student);
+        await _studentManager.AddAsync(student);
     }
 }

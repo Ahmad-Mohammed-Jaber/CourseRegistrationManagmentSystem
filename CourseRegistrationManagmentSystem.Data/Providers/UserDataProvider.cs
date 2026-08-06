@@ -1,9 +1,9 @@
-using DAL.Database;
+using CourseRegistrationManagmentSystem.Data.Database;
 using Microsoft.Data.SqlClient;
 using System.Data;
+using CourseRegistrationManagmentSystem.Shared.Models;
 
 namespace CourseRegistrationManagmentSystem.Data.Providers;
-
 public static class UserDataProvider
 {
     public static User? GetById(Guid id)

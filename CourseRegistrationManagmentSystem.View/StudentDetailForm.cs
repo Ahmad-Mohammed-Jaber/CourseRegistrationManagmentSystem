@@ -193,6 +193,7 @@ namespace CourseRegistrationManagmentSystem.View
                     var dto = new StudentDto
                     {
                         Id = _student!.Id,
+                        UserId = _student.UserId,
                         StudentNumber = studentNumber,
                         UserName = txtUsername.Text,
                         FullName = txtFullName.Text,
@@ -202,7 +203,8 @@ namespace CourseRegistrationManagmentSystem.View
                         Role = User.UserRoles.Student
                     };
 
-                    await _studentService.UpdateAsync(dto.Id, dto);
+                    var entity = dto.ToEntity();
+                    await _studentService.UpdateAsync(entity.Id, entity);
                 }
                 else
                 {

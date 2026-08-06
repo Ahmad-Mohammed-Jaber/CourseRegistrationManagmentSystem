@@ -1,10 +1,9 @@
-using CourseRegistrationManagmentSystem.Shared.Dtos;
 using CourseRegistrationManagmentSystem.Shared.Models;
 using Microsoft.Data.SqlClient;
 using System.Data;
-using DAL.Database;
+using CourseRegistrationManagmentSystem.Data.Database;
 
-namespace DAL.Providers;
+namespace CourseRegistrationManagmentSystem.Data.Providers;
 
 public static class RegistrationDataProvider
 {
@@ -343,7 +342,7 @@ public static class RegistrationDataProvider
         return list;
     }
 
-    public static async Task<List<RegistrationDto>> GetAllDetailedAsync()
+    public static async Task<List<(Registration Registration, Student Student, Class Class, Course Course)>> GetAllDetailedAsync()
     {
         using var connection = DBConnectionFactory.CreateConnection();
         await connection.OpenAsync();
@@ -355,27 +354,17 @@ public static class RegistrationDataProvider
 
         using var reader = await command.ExecuteReaderAsync();
 
-        var list = new List<RegistrationDto>();
+        var list = new List<(Registration, Student, Class, Course)>();
 
         while (await reader.ReadAsync())
         {
-            list.Add(new RegistrationDto
-            {
-                Id = reader.GetGuid(0),
-                StudentId = reader.GetGuid(1),
-                StudentUserName = reader.GetString(2),
-                ClassId = reader.GetGuid(3),
-                ClassName = reader.GetString(4),
-                CourseName = reader.GetString(5),
-                RegistrationDate = reader.GetDateTime(6),
-                Status = reader.GetString(7)
-            });
+            list.Add(MapDetailedRow(reader));
         }
 
         return list;
     }
 
-    public static async Task<List<RegistrationDto>> SearchDetailedAsync(string regex)
+    public static async Task<List<(Registration Registration, Student Student, Class Class, Course Course)>> SearchDetailedAsync(string searchTerm)
     {
         using var connection = DBConnectionFactory.CreateConnection();
         await connection.OpenAsync();
@@ -384,28 +373,50 @@ public static class RegistrationDataProvider
         {
             CommandType = CommandType.StoredProcedure
         };
-        command.Parameters.Add("@regex", SqlDbType.NVarChar, 100).Value = regex ?? string.Empty;
+        command.Parameters.Add("@regex", SqlDbType.NVarChar, 100).Value = searchTerm ?? string.Empty;
 
         using var reader = await command.ExecuteReaderAsync();
 
-        var list = new List<RegistrationDto>();
+        var list = new List<(Registration, Student, Class, Course)>();
 
         while (await reader.ReadAsync())
         {
-            list.Add(new RegistrationDto
-            {
-                Id = reader.GetGuid(0),
-                StudentId = reader.GetGuid(1),
-                StudentUserName = reader.GetString(2),
-                ClassId = reader.GetGuid(3),
-                ClassName = reader.GetString(4),
-                CourseName = reader.GetString(5),
-                RegistrationDate = reader.GetDateTime(6),
-                Status = reader.GetString(7)
-            });
+            list.Add(MapDetailedRow(reader));
         }
 
         return list;
+    }
+
+    private static (Registration, Student, Class, Course) MapDetailedRow(SqlDataReader reader)
+    {
+        var registration = new Registration
+        {
+            Id = reader.GetGuid(0),
+            StudentId = reader.GetGuid(1),
+            ClassId = reader.GetGuid(3),
+            RegsitrationDate = reader.GetDateTime(7),
+            Status = reader.GetString(8)
+        };
+
+        var student = new Student
+        {
+            Id = reader.GetGuid(1),
+            UserName = reader.GetString(2)
+        };
+
+        var cls = new Class
+        {
+            Id = reader.GetGuid(3),
+            ClassName = reader.GetString(4)
+        };
+
+        var course = new Course
+        {
+            Id = reader.GetGuid(5),
+            CourseName = reader.GetString(6)
+        };
+
+        return (registration, student, cls, course);
     }
 
     private static Registration MapRegistration(SqlDataReader reader)

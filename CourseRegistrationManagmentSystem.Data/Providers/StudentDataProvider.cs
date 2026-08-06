@@ -1,5 +1,5 @@
 using CourseRegistrationManagmentSystem.Shared.Models;
-using DAL.Database;
+using CourseRegistrationManagmentSystem.Data.Database;
 using Microsoft.Data.SqlClient;
 using System.Data;
 

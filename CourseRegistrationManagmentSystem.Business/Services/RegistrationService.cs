@@ -1,125 +1,122 @@
-using BLL.Interfaces;
+using CourseRegistrationManagmentSystem.Business.Interfaces;
+using CourseRegistrationManagmentSystem.Business.Managers;
 using CourseRegistrationManagmentSystem.Business.Validation;
-using CourseRegistrationManagmentSystem.Data.Repository;
-using CourseRegistrationManagmentSystem.Shared.Dtos;
+using CourseRegistrationManagmentSystem.Shared.Models;
 using System.Text.RegularExpressions;
 
 namespace CourseRegistrationManagmentSystem.Business.Services;
 
-public class RegistrationService : ICrudService<RegistrationDto>
+public class RegistrationService : ICrudService<Registration>
 {
-    private readonly RegistrationRepository _registrationRepository = new RegistrationRepository();
+    private readonly RegistrationManager _registrationManager = new RegistrationManager();
 
-    public RegistrationDto? GetById(Guid id)
+    public Registration? GetById(Guid id)
     {
         AccessValidator.RequireAdmin();
-        var registration = _registrationRepository.GetById(id);
-        return registration.ToDto();
+        return _registrationManager.GetById(id);
     }
 
-    public async Task<RegistrationDto?> GetByIdAsync(Guid id)
+    public async Task<Registration?> GetByIdAsync(Guid id)
     {
         AccessValidator.RequireAdmin();
-        var registration = await _registrationRepository.GetByIdAsync(id);
-        return registration.ToDto();
+        return await _registrationManager.GetByIdAsync(id);
     }
 
-    public List<RegistrationDto> GetAll()
+    public List<Registration> GetAll()
     {
         AccessValidator.RequireAdmin();
-        return _registrationRepository.GetAll().Select(registration => registration.ToDto()!).ToList();
+        return _registrationManager.GetAll();
     }
 
-    public async Task<List<RegistrationDto>> GetAllAsync()
+    public async Task<List<Registration>> GetAllAsync()
     {
         AccessValidator.RequireAdmin();
-        var registrations = await _registrationRepository.GetAllAsync();
-        return registrations.Select(registration => registration.ToDto()!).ToList();
+        return await _registrationManager.GetAllAsync();
     }
 
-    public void Add(RegistrationDto registrationDto)
+    public void Add(Registration registration)
     {
         AccessValidator.RequireAdmin();
-        var registration = registrationDto.ToEntity();
-        _registrationRepository.Add(registration);
+        ValidateRegistration(registration);
+        _registrationManager.Add(registration);
     }
 
-    public async Task AddAsync(RegistrationDto registrationDto)
+    public async Task AddAsync(Registration registration)
     {
         AccessValidator.RequireAdmin();
-        var registration = registrationDto.ToEntity();
-        await _registrationRepository.AddAsync(registration);
+        ValidateRegistration(registration);
+        await _registrationManager.AddAsync(registration);
     }
 
-    public void Update(Guid id, RegistrationDto registrationDto)
+    public void Update(Guid id, Registration registration)
     {
         AccessValidator.RequireAdmin();
-        var registration = _registrationRepository.GetById(id);
-        if (registration == null) throw new KeyNotFoundException($"Registration with id {id} not found.");
+        ValidateRegistration(registration);
 
-        registration.StudentId = registrationDto.StudentId;
-        registration.ClassId = registrationDto.ClassId;
-        registration.RegsitrationDate = registrationDto.RegistrationDate;
-        registration.Status = registrationDto.Status;
+        var existing = _registrationManager.GetById(id);
+        if (existing == null) throw new KeyNotFoundException($"Registration with id {id} not found.");
 
-        _registrationRepository.Update(id, registration);
+        _registrationManager.Update(id, registration);
     }
 
-    public async Task UpdateAsync(Guid id, RegistrationDto registrationDto)
+    public async Task UpdateAsync(Guid id, Registration registration)
     {
         AccessValidator.RequireAdmin();
-        var registration = await _registrationRepository.GetByIdAsync(id);
-        if (registration == null) throw new KeyNotFoundException($"Registration with id {id} not found.");
+        ValidateRegistration(registration);
 
-        registration.StudentId = registrationDto.StudentId;
-        registration.ClassId = registrationDto.ClassId;
-        registration.RegsitrationDate = registrationDto.RegistrationDate;
-        registration.Status = registrationDto.Status;
+        var existing = await _registrationManager.GetByIdAsync(id);
+        if (existing == null) throw new KeyNotFoundException($"Registration with id {id} not found.");
 
-        await _registrationRepository.UpdateAsync(id, registration);
+        await _registrationManager.UpdateAsync(id, registration);
     }
 
     public void Delete(Guid id)
     {
         AccessValidator.RequireAdmin();
-        _registrationRepository.Delete(id);
+        _registrationManager.Delete(id);
     }
 
     public async Task DeleteAsync(Guid id)
     {
         AccessValidator.RequireAdmin();
-        await _registrationRepository.DeleteAsync(id);
+        await _registrationManager.DeleteAsync(id);
     }
 
-    public List<RegistrationDto> Search(string regex)
+    public List<Registration> Search(string regex)
     {
         AccessValidator.RequireAdmin();
-        var registrations = _registrationRepository.GetAll();
+        var registrations = _registrationManager.GetAll();
         return registrations
             .Where(registration => Regex.IsMatch(registration.Status, regex, RegexOptions.IgnoreCase))
-            .Select(registration => registration.ToDto()!)
             .ToList();
     }
 
-    public async Task<List<RegistrationDto>> SearchAsync(string regex)
+    public async Task<List<Registration>> SearchAsync(string regex)
     {
         AccessValidator.RequireAdmin();
-        var registrations = await _registrationRepository.GetAllAsync();
+        var registrations = await _registrationManager.GetAllAsync();
         return registrations
             .Where(registration => Regex.IsMatch(registration.Status, regex, RegexOptions.IgnoreCase))
-            .Select(registration => registration.ToDto()!)
             .ToList();
     }
 
-    public async Task<List<RegistrationDto>> GetAllDetailedAsync()
+    public async Task<List<(Registration Registration, Student Student, Class Class, Course Course)>> GetAllDetailedAsync()
     {
         AccessValidator.RequireAdmin();
-        return await _registrationRepository.GetAllDetailedAsync();
+        return await _registrationManager.GetAllDetailedAsync();
     }
 
-    public async Task<List<RegistrationDto>> SearchDetailedAsync(string regex)
+    public async Task<List<(Registration Registration, Student Student, Class Class, Course Course)>> SearchDetailedAsync(string regex)
     {
         AccessValidator.RequireAdmin();
-        return await _registrationRepository.SearchDetailedAsync(regex);
+        return await _registrationManager.SearchDetailedAsync(regex);
+    }
+
+    private static void ValidateRegistration(Registration registration)
+    {
+        if (registration == null) throw new ArgumentNullException(nameof(registration));
+        if (registration.StudentId == Guid.Empty) throw new ArgumentException("Student is required.");
+        if (registration.ClassId == Guid.Empty) throw new ArgumentException("Class is required.");
+        if (string.IsNullOrWhiteSpace(registration.Status)) throw new ArgumentException("Status is required.");
     }
 }

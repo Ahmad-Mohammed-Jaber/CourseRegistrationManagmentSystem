@@ -1,10 +1,10 @@
 using Microsoft.Data.SqlClient;
 
-namespace DAL.Database;
+namespace CourseRegistrationManagmentSystem.Data.Database;
 
 public static class DBConnectionFactory
 {
-    private const string ConnectionString = "Server=Ahmad;Database=CourseManagementDB;Trusted_Connection=True;TrustServerCertificate=True;";
+    private const string ConnectionString = "Server=localhost;Database=CourseManagementDB;User Id=sa;Password=P@ssw0rd;TrustServerCertificate=True;";
 
     public static SqlConnection CreateConnection()
     {

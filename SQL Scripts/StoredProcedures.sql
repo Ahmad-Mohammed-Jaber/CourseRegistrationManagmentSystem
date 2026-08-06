@@ -511,14 +511,16 @@ BEGIN
     SELECT 
         r.Id,
         r.StudentId,
-        s.FullName,
+        u.UserName,
         r.ClassId,
         c.ClassName,
+        co.Id,
         co.CourseName,
         r.RegistrationDate,
         r.Status
     FROM Registrations r
     INNER JOIN Student s ON r.StudentId = s.Id
+    INNER JOIN [User] u ON s.UserId = u.Id
     INNER JOIN Class c ON r.ClassId = c.Id
     INNER JOIN Course co ON c.CourseId = co.Id;
 END
@@ -532,17 +534,20 @@ BEGIN
     SELECT 
         r.Id,
         r.StudentId,
-        s.FullName,
+        u.UserName,
         r.ClassId,
         c.ClassName,
+        co.Id,
         co.CourseName,
         r.RegistrationDate,
         r.Status
     FROM Registrations r
     INNER JOIN Student s ON r.StudentId = s.Id
+    INNER JOIN [User] u ON s.UserId = u.Id
     INNER JOIN Class c ON r.ClassId = c.Id
     INNER JOIN Course co ON c.CourseId = co.Id
-    WHERE s.FullName LIKE '%' + @regex + '%'
+    WHERE u.UserName LIKE '%' + @regex + '%'
+       OR s.FullName LIKE '%' + @regex + '%'
        OR c.ClassName LIKE '%' + @regex + '%'
        OR co.CourseName LIKE '%' + @regex + '%'
        OR r.Status LIKE '%' + @regex + '%';

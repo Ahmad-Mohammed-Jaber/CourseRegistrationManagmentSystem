@@ -106,7 +106,8 @@ namespace CourseRegistrationManagmentSystem.View
         private async Task LoadClassesAsync()
         {
             dgvClasses.DataSource = null;
-            dgvClasses.DataSource = await _classService.GetAllAsync();
+            var classes = await _classService.GetAllAsync();
+            dgvClasses.DataSource = classes.Select(c => c.ToDto()).ToList();
             if (dgvClasses.Columns["Schedule"] != null) dgvClasses.Columns["Schedule"].Visible = false;
 
             if (dgvClasses.Columns["ScheduleString"] != null)
@@ -128,7 +129,8 @@ namespace CourseRegistrationManagmentSystem.View
             if (!string.IsNullOrWhiteSpace(txtSearch.Text))
             {
                 dgvClasses.DataSource = null;
-                dgvClasses.DataSource = await _classService.SearchAsync(txtSearch.Text);
+                var classes = await _classService.SearchAsync(txtSearch.Text);
+                dgvClasses.DataSource = classes.Select(c => c.ToDto()).ToList();
                 if (dgvClasses.Columns["Schedule"] != null) dgvClasses.Columns["Schedule"].Visible = false;
 
                 if (dgvClasses.Columns["ScheduleString"] != null)

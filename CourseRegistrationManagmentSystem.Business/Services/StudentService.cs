@@ -37,20 +37,18 @@ public class StudentService : ICrudService<Student>
     public void Add(Student student)
     {
         AccessValidator.RequireAdmin();
+        ValidateStudent(student);
 
-        // Business Logic / Validation
         if (student.UserId == Guid.Empty)
         {
-            // In the previous implementation, the service created the user.
-            // We should maintain that logic but use the UserManager.
             var user = new User
             {
                 Id = Guid.NewGuid(),
-                FullName = "Unknown", // Need to handle how we get these from Student if not using DTOs
-                UserName = "Unknown",
-                IsActive = true,
+                FullName = student.FullName,
+                UserName = student.UserName,
+                IsActive = student.IsActive,
                 Role = User.UserRoles.Student,
-                PasswordHash = "TemporaryPassword123!", // Should be handled by a password service/manager
+                PasswordHash = student.PasswordHash,
             };
             _userManager.Add(user);
             student.UserId = user.Id;
@@ -62,17 +60,18 @@ public class StudentService : ICrudService<Student>
     public async Task AddAsync(Student student)
     {
         AccessValidator.RequireAdmin();
+        ValidateStudent(student);
 
         if (student.UserId == Guid.Empty)
         {
             var user = new User
             {
                 Id = Guid.NewGuid(),
-                FullName = "Unknown",
-                UserName = "Unknown",
-                IsActive = true,
+                FullName = student.FullName,
+                UserName = student.UserName,
+                IsActive = student.IsActive,
                 Role = User.UserRoles.Student,
-                PasswordHash = "TemporaryPassword123!",
+                PasswordHash = student.PasswordHash,
             };
             await _userManager.AddAsync(user);
             student.UserId = user.Id;
@@ -84,27 +83,53 @@ public class StudentService : ICrudService<Student>
     public void Update(Guid id, Student student)
     {
         AccessValidator.RequireAdmin();
+        ValidateStudent(student);
 
         var existingStudent = _studentManager.GetById(id);
         if (existingStudent == null)
             throw new KeyNotFoundException($"Student with id {id} not found.");
 
-        // Update student details
         _studentManager.Update(id, student);
 
-        // If the student's associated user needs updating, we'd do it here via _userManager.
-        // Since we are removing DTOs, we assume the caller provides the entity.
+        var existingUser = _userManager.GetById(student.UserId);
+        if (existingUser != null)
+        {
+            existingUser.FullName = student.FullName;
+            existingUser.UserName = student.UserName;
+            existingUser.IsActive = student.IsActive;
+            _userManager.Update(existingUser.Id, existingUser);
+        }
     }
 
     public async Task UpdateAsync(Guid id, Student student)
     {
         AccessValidator.RequireAdmin();
+        ValidateStudent(student);
 
         var existingStudent = await _studentManager.GetByIdAsync(id);
         if (existingStudent == null)
             throw new KeyNotFoundException($"Student with id {id} not found.");
 
         await _studentManager.UpdateAsync(id, student);
+
+        var existingUser = await _userManager.GetByIdAsync(student.UserId);
+        if (existingUser != null)
+        {
+            existingUser.FullName = student.FullName;
+            existingUser.UserName = student.UserName;
+            existingUser.IsActive = student.IsActive;
+            await _userManager.UpdateAsync(existingUser.Id, existingUser);
+        }
+    }
+
+    private static void ValidateStudent(Student student)
+    {
+        if (student == null) throw new ArgumentNullException(nameof(student));
+        AccessValidator.ValidateUserName(student.UserName);
+        AccessValidator.ValidateFullName(student.FullName);
+        AccessValidator.ValidateStudentNumber(student.StudentNumber);
+        AccessValidator.ValidateEmail(student.Email);
+        AccessValidator.ValidatePhone(student.Phone);
     }
 
     public void Delete(Guid id)
