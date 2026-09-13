@@ -36,10 +36,8 @@ public static class StudentDataProvider
         }
         finally
         {
-            reader?.Close();
             reader?.Dispose();
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -73,10 +71,8 @@ public static class StudentDataProvider
         }
         finally
         {
-            reader?.Close();
             reader?.Dispose();
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -110,10 +106,8 @@ public static class StudentDataProvider
         }
         finally
         {
-            reader?.Close();
             reader?.Dispose();
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -147,10 +141,8 @@ public static class StudentDataProvider
         }
         finally
         {
-            reader?.Close();
             reader?.Dispose();
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -184,15 +176,13 @@ public static class StudentDataProvider
         }
         finally
         {
-            reader?.Close();
             reader?.Dispose();
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
 
-    public static void Add(Student entity)
+    public static int Add(Student entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -205,8 +195,22 @@ public static class StudentDataProvider
             {
                 CommandType = CommandType.StoredProcedure
             };
-            AddStudentParameters(command, entity);
+
+            command.Parameters.Add("@UserId", SqlDbType.Int).Value = entity.UserId;
+            command.Parameters.Add("@StudentNumber", SqlDbType.Int).Value = entity.StudentNumber;
+            command.Parameters.Add("@FullName", SqlDbType.NVarChar, 100).Value = (object?)entity.FullName ?? DBNull.Value;
+            command.Parameters.Add("@Email", SqlDbType.NVarChar, 100).Value = entity.Email ?? string.Empty;
+            command.Parameters.Add("@Phone", SqlDbType.NVarChar, 15).Value = entity.Phone ?? string.Empty;
+
+            var newIdParam = new SqlParameter("@Id", SqlDbType.Int)
+            {
+                Direction = ParameterDirection.Output
+            };
+            command.Parameters.Add(newIdParam);
+
             command.ExecuteNonQuery();
+
+            return (int)newIdParam.Value;
         }
         catch
         {
@@ -215,7 +219,6 @@ public static class StudentDataProvider
         finally
         {
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -233,8 +236,22 @@ public static class StudentDataProvider
             {
                 CommandType = CommandType.StoredProcedure
             };
-            AddStudentParameters(command, entity);
+
+            command.Parameters.Add("@UserId", SqlDbType.Int).Value = entity.UserId;
+            command.Parameters.Add("@StudentNumber", SqlDbType.Int).Value = entity.StudentNumber;
+            command.Parameters.Add("@FullName", SqlDbType.NVarChar, 100).Value = (object?)entity.FullName ?? DBNull.Value;
+            command.Parameters.Add("@Email", SqlDbType.NVarChar, 100).Value = entity.Email ?? string.Empty;
+            command.Parameters.Add("@Phone", SqlDbType.NVarChar, 15).Value = entity.Phone ?? string.Empty;
+
+            var newIdParam = new SqlParameter("@Id", SqlDbType.Int)
+            {
+                Direction = ParameterDirection.Output
+            };
+            command.Parameters.Add(newIdParam);
+
             await command.ExecuteNonQueryAsync();
+
+            //return (int)newIdParam.Value;
         }
         catch
         {
@@ -243,7 +260,6 @@ public static class StudentDataProvider
         finally
         {
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -261,7 +277,13 @@ public static class StudentDataProvider
             {
                 CommandType = CommandType.StoredProcedure
             };
-            AddStudentParameters(command, entity, id);
+            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+            command.Parameters.Add("@UserId", SqlDbType.Int).Value = entity.UserId;
+            command.Parameters.Add("@StudentNumber", SqlDbType.Int).Value = entity.StudentNumber;
+            command.Parameters.Add("@FullName", SqlDbType.NVarChar, 100).Value = (object?)entity.FullName ?? DBNull.Value;
+            command.Parameters.Add("@Email", SqlDbType.NVarChar, 100).Value = entity.Email ?? string.Empty;
+            command.Parameters.Add("@Phone", SqlDbType.NVarChar, 15).Value = entity.Phone ?? string.Empty;
+
             command.ExecuteNonQuery();
         }
         catch
@@ -271,7 +293,6 @@ public static class StudentDataProvider
         finally
         {
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -289,7 +310,13 @@ public static class StudentDataProvider
             {
                 CommandType = CommandType.StoredProcedure
             };
-            AddStudentParameters(command, entity, id);
+            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+            command.Parameters.Add("@UserId", SqlDbType.Int).Value = entity.UserId;
+            command.Parameters.Add("@StudentNumber", SqlDbType.Int).Value = entity.StudentNumber;
+            command.Parameters.Add("@FullName", SqlDbType.NVarChar, 100).Value = (object?)entity.FullName ?? DBNull.Value;
+            command.Parameters.Add("@Email", SqlDbType.NVarChar, 100).Value = entity.Email ?? string.Empty;
+            command.Parameters.Add("@Phone", SqlDbType.NVarChar, 15).Value = entity.Phone ?? string.Empty;
+
             await command.ExecuteNonQueryAsync();
         }
         catch
@@ -299,7 +326,6 @@ public static class StudentDataProvider
         finally
         {
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -327,7 +353,6 @@ public static class StudentDataProvider
         finally
         {
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -355,7 +380,6 @@ public static class StudentDataProvider
         finally
         {
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -390,10 +414,8 @@ public static class StudentDataProvider
         }
         finally
         {
-            reader?.Close();
             reader?.Dispose();
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -428,10 +450,8 @@ public static class StudentDataProvider
         }
         finally
         {
-            reader?.Close();
             reader?.Dispose();
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -450,15 +470,5 @@ public static class StudentDataProvider
             Email = reader.GetString(reader.GetOrdinal("Email")),
             Phone = reader.GetString(reader.GetOrdinal("Phone"))
         };
-    }
-
-    private static void AddStudentParameters(SqlCommand command, Student entity, int? explicitId = null)
-    {
-        command.Parameters.Add("@Id", SqlDbType.Int).Value = explicitId ?? entity.Id;
-        command.Parameters.Add("@UserId", SqlDbType.Int).Value = entity.UserId;
-        command.Parameters.Add("@StudentNumber", SqlDbType.Int).Value = entity.StudentNumber;
-        command.Parameters.Add("@FullName", SqlDbType.NVarChar, 100).Value = (object?)entity.FullName ?? DBNull.Value;
-        command.Parameters.Add("@Email", SqlDbType.NVarChar, 100).Value = entity.Email ?? string.Empty;
-        command.Parameters.Add("@Phone", SqlDbType.NVarChar, 15).Value = entity.Phone ?? string.Empty;
     }
 }

@@ -36,10 +36,8 @@ public static class RegistrationDataProvider
         }
         finally
         {
-            reader?.Close();
             reader?.Dispose();
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -73,10 +71,8 @@ public static class RegistrationDataProvider
         }
         finally
         {
-            reader?.Close();
             reader?.Dispose();
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -106,7 +102,6 @@ public static class RegistrationDataProvider
         finally
         {
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -141,10 +136,8 @@ public static class RegistrationDataProvider
         }
         finally
         {
-            reader?.Close();
             reader?.Dispose();
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -179,10 +172,8 @@ public static class RegistrationDataProvider
         }
         finally
         {
-            reader?.Close();
             reader?.Dispose();
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -217,10 +208,8 @@ public static class RegistrationDataProvider
         }
         finally
         {
-            reader?.Close();
             reader?.Dispose();
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -255,10 +244,8 @@ public static class RegistrationDataProvider
         }
         finally
         {
-            reader?.Close();
             reader?.Dispose();
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -292,10 +279,8 @@ public static class RegistrationDataProvider
         }
         finally
         {
-            reader?.Close();
             reader?.Dispose();
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -329,15 +314,13 @@ public static class RegistrationDataProvider
         }
         finally
         {
-            reader?.Close();
             reader?.Dispose();
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
 
-    public static void Add(Registration entity)
+    public static int Add(Registration entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -350,8 +333,21 @@ public static class RegistrationDataProvider
             {
                 CommandType = CommandType.StoredProcedure
             };
-            AddRegistrationParameters(command, entity);
+
+            command.Parameters.Add("@StudentId", SqlDbType.Int).Value = entity.StudentId;
+            command.Parameters.Add("@ClassId", SqlDbType.Int).Value = entity.ClassId;
+            command.Parameters.Add("@RegistrationDate", SqlDbType.DateTime2).Value = entity.RegsitrationDate;
+            command.Parameters.Add("@Status", SqlDbType.NVarChar, 50).Value = entity.Status ?? string.Empty;
+
+            var newIdParam = new SqlParameter("@NewId", SqlDbType.Int)
+            {
+                Direction = ParameterDirection.Output
+            };
+            command.Parameters.Add(newIdParam);
+
             command.ExecuteNonQuery();
+
+            return (int)newIdParam.Value;
         }
         catch
         {
@@ -360,12 +356,11 @@ public static class RegistrationDataProvider
         finally
         {
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
 
-    public static async Task AddAsync(Registration entity)
+    public static async Task<int> AddAsync(Registration entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -378,8 +373,21 @@ public static class RegistrationDataProvider
             {
                 CommandType = CommandType.StoredProcedure
             };
-            AddRegistrationParameters(command, entity);
+
+            command.Parameters.Add("@StudentId", SqlDbType.Int).Value = entity.StudentId;
+            command.Parameters.Add("@ClassId", SqlDbType.Int).Value = entity.ClassId;
+            command.Parameters.Add("@RegistrationDate", SqlDbType.DateTime2).Value = entity.RegsitrationDate;
+            command.Parameters.Add("@Status", SqlDbType.NVarChar, 50).Value = entity.Status ?? string.Empty;
+
+            var newIdParam = new SqlParameter("@NewId", SqlDbType.Int)
+            {
+                Direction = ParameterDirection.Output
+            };
+            command.Parameters.Add(newIdParam);
+
             await command.ExecuteNonQueryAsync();
+
+            return (int)newIdParam.Value;
         }
         catch
         {
@@ -388,7 +396,6 @@ public static class RegistrationDataProvider
         finally
         {
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -406,7 +413,12 @@ public static class RegistrationDataProvider
             {
                 CommandType = CommandType.StoredProcedure
             };
-            AddRegistrationParameters(command, entity, id);
+            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+            command.Parameters.Add("@StudentId", SqlDbType.Int).Value = entity.StudentId;
+            command.Parameters.Add("@ClassId", SqlDbType.Int).Value = entity.ClassId;
+            command.Parameters.Add("@RegistrationDate", SqlDbType.DateTime2).Value = entity.RegsitrationDate;
+            command.Parameters.Add("@Status", SqlDbType.NVarChar, 50).Value = entity.Status ?? string.Empty;
+
             command.ExecuteNonQuery();
         }
         catch
@@ -416,7 +428,6 @@ public static class RegistrationDataProvider
         finally
         {
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -434,7 +445,12 @@ public static class RegistrationDataProvider
             {
                 CommandType = CommandType.StoredProcedure
             };
-            AddRegistrationParameters(command, entity, id);
+            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+            command.Parameters.Add("@StudentId", SqlDbType.Int).Value = entity.StudentId;
+            command.Parameters.Add("@ClassId", SqlDbType.Int).Value = entity.ClassId;
+            command.Parameters.Add("@RegistrationDate", SqlDbType.DateTime2).Value = entity.RegsitrationDate;
+            command.Parameters.Add("@Status", SqlDbType.NVarChar, 50).Value = entity.Status ?? string.Empty;
+
             await command.ExecuteNonQueryAsync();
         }
         catch
@@ -444,7 +460,6 @@ public static class RegistrationDataProvider
         finally
         {
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -472,7 +487,6 @@ public static class RegistrationDataProvider
         finally
         {
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -500,7 +514,6 @@ public static class RegistrationDataProvider
         finally
         {
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -535,10 +548,8 @@ public static class RegistrationDataProvider
         }
         finally
         {
-            reader?.Close();
             reader?.Dispose();
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -573,10 +584,8 @@ public static class RegistrationDataProvider
         }
         finally
         {
-            reader?.Close();
             reader?.Dispose();
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -637,10 +646,8 @@ public static class RegistrationDataProvider
         }
         finally
         {
-            reader?.Close();
             reader?.Dispose();
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -677,10 +684,8 @@ public static class RegistrationDataProvider
         }
         finally
         {
-            reader?.Close();
             reader?.Dispose();
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -718,10 +723,8 @@ public static class RegistrationDataProvider
         }
         finally
         {
-            reader?.Close();
             reader?.Dispose();
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -768,14 +771,5 @@ public static class RegistrationDataProvider
             RegsitrationDate = reader.GetDateTime(reader.GetOrdinal("RegistrationDate")),
             Status = reader.GetString(reader.GetOrdinal("Status"))
         };
-    }
-
-    private static void AddRegistrationParameters(SqlCommand command, Registration entity, int? explicitId = null)
-    {
-        command.Parameters.Add("@Id", SqlDbType.Int).Value = explicitId ?? entity.Id;
-        command.Parameters.Add("@StudentId", SqlDbType.Int).Value = entity.StudentId;
-        command.Parameters.Add("@ClassId", SqlDbType.Int).Value = entity.ClassId;
-        command.Parameters.Add("@RegistrationDate", SqlDbType.DateTime2).Value = entity.RegsitrationDate;
-        command.Parameters.Add("@Status", SqlDbType.NVarChar, 50).Value = entity.Status ?? string.Empty;
     }
 }

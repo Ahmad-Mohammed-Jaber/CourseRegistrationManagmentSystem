@@ -39,19 +39,17 @@ public class StudentService : ICrudService<Student>
         AccessValidator.RequireAdmin();
         ValidateStudent(student);
 
-        if (student.UserId <= 0)
+        var user = new User
         {
-            var user = new User
-            {
-                FullName = student.FullName,
-                UserName = student.UserName,
-                IsActive = student.IsActive,
-                Role = User.UserRoles.Student,
-                PasswordHash = student.PasswordHash,
-            };
-            _userManager.Add(user);
-            student.UserId = user.Id;
-        }
+            FullName = student.FullName,
+            UserName = student.UserName,
+            IsActive = student.IsActive,
+            Role = User.UserRoles.Student,
+            PasswordHash = student.PasswordHash,
+        };
+
+        _userManager.Add(user);
+        student.UserId = user.Id;
 
         _studentManager.Add(student);
     }
@@ -61,19 +59,16 @@ public class StudentService : ICrudService<Student>
         AccessValidator.RequireAdmin();
         ValidateStudent(student);
 
-        if (student.UserId <= 0)
+        var user = new User
         {
-            var user = new User
-            {
-                FullName = student.FullName,
-                UserName = student.UserName,
-                IsActive = student.IsActive,
-                Role = User.UserRoles.Student,
-                PasswordHash = student.PasswordHash,
-            };
-            await _userManager.AddAsync(user);
-            student.UserId = user.Id;
-        }
+            FullName = student.FullName,
+            UserName = student.UserName,
+            IsActive = student.IsActive,
+            Role = User.UserRoles.Student,
+            PasswordHash = student.PasswordHash,
+        };
+        await _userManager.AddAsync(user);
+        student.UserId = user.Id;
 
         await _studentManager.AddAsync(student);
     }

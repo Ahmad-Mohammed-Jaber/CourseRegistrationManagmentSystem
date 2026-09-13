@@ -36,10 +36,8 @@ public static class CourseDataProvider
         }
         finally
         {
-            reader?.Close();
             reader?.Dispose();
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -73,10 +71,8 @@ public static class CourseDataProvider
         }
         finally
         {
-            reader?.Close();
             reader?.Dispose();
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -110,10 +106,8 @@ public static class CourseDataProvider
         }
         finally
         {
-            reader?.Close();
             reader?.Dispose();
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -147,15 +141,13 @@ public static class CourseDataProvider
         }
         finally
         {
-            reader?.Close();
             reader?.Dispose();
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
 
-    public static void Add(Course entity)
+    public static int Add(Course entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -168,8 +160,22 @@ public static class CourseDataProvider
             {
                 CommandType = CommandType.StoredProcedure
             };
-            AddCourseParameters(command, entity);
+
+            command.Parameters.Add("@CourseCode", SqlDbType.NVarChar, 6).Value = entity.CourseCode ?? string.Empty;
+            command.Parameters.Add("@CourseName", SqlDbType.NVarChar, 100).Value = entity.CourseName ?? string.Empty;
+            command.Parameters.Add("@CreditHours", SqlDbType.Decimal).Value = (decimal)entity.CreditHours;
+            command.Parameters.Add("@Description", SqlDbType.NVarChar, -1).Value = entity.Description ?? string.Empty;
+            command.Parameters.Add("@IsActive", SqlDbType.Bit).Value = entity.IsActive;
+
+            var newIdParam = new SqlParameter("@NewId", SqlDbType.Int)
+            {
+                Direction = ParameterDirection.Output
+            };
+            command.Parameters.Add(newIdParam);
+
             command.ExecuteNonQuery();
+
+            return (int)newIdParam.Value;
         }
         catch
         {
@@ -178,12 +184,11 @@ public static class CourseDataProvider
         finally
         {
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
 
-    public static async Task AddAsync(Course entity)
+    public static async Task<int> AddAsync(Course entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -196,8 +201,22 @@ public static class CourseDataProvider
             {
                 CommandType = CommandType.StoredProcedure
             };
-            AddCourseParameters(command, entity);
+
+            command.Parameters.Add("@CourseCode", SqlDbType.NVarChar, 6).Value = entity.CourseCode ?? string.Empty;
+            command.Parameters.Add("@CourseName", SqlDbType.NVarChar, 100).Value = entity.CourseName ?? string.Empty;
+            command.Parameters.Add("@CreditHours", SqlDbType.Decimal).Value = (decimal)entity.CreditHours;
+            command.Parameters.Add("@Description", SqlDbType.NVarChar, -1).Value = entity.Description ?? string.Empty;
+            command.Parameters.Add("@IsActive", SqlDbType.Bit).Value = entity.IsActive;
+
+            var newIdParam = new SqlParameter("@NewId", SqlDbType.Int)
+            {
+                Direction = ParameterDirection.Output
+            };
+            command.Parameters.Add(newIdParam);
+
             await command.ExecuteNonQueryAsync();
+
+            return (int)newIdParam.Value;
         }
         catch
         {
@@ -206,7 +225,6 @@ public static class CourseDataProvider
         finally
         {
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -224,7 +242,13 @@ public static class CourseDataProvider
             {
                 CommandType = CommandType.StoredProcedure
             };
-            AddCourseParameters(command, entity, id);
+            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+            command.Parameters.Add("@CourseCode", SqlDbType.NVarChar, 6).Value = entity.CourseCode ?? string.Empty;
+            command.Parameters.Add("@CourseName", SqlDbType.NVarChar, 100).Value = entity.CourseName ?? string.Empty;
+            command.Parameters.Add("@CreditHours", SqlDbType.Decimal).Value = (decimal)entity.CreditHours;
+            command.Parameters.Add("@Description", SqlDbType.NVarChar, -1).Value = entity.Description ?? string.Empty;
+            command.Parameters.Add("@IsActive", SqlDbType.Bit).Value = entity.IsActive;
+
             command.ExecuteNonQuery();
         }
         catch
@@ -234,7 +258,6 @@ public static class CourseDataProvider
         finally
         {
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -252,7 +275,13 @@ public static class CourseDataProvider
             {
                 CommandType = CommandType.StoredProcedure
             };
-            AddCourseParameters(command, entity, id);
+            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+            command.Parameters.Add("@CourseCode", SqlDbType.NVarChar, 6).Value = entity.CourseCode ?? string.Empty;
+            command.Parameters.Add("@CourseName", SqlDbType.NVarChar, 100).Value = entity.CourseName ?? string.Empty;
+            command.Parameters.Add("@CreditHours", SqlDbType.Decimal).Value = (decimal)entity.CreditHours;
+            command.Parameters.Add("@Description", SqlDbType.NVarChar, -1).Value = entity.Description ?? string.Empty;
+            command.Parameters.Add("@IsActive", SqlDbType.Bit).Value = entity.IsActive;
+
             await command.ExecuteNonQueryAsync();
         }
         catch
@@ -262,7 +291,6 @@ public static class CourseDataProvider
         finally
         {
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -290,7 +318,6 @@ public static class CourseDataProvider
         finally
         {
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -318,7 +345,6 @@ public static class CourseDataProvider
         finally
         {
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -353,10 +379,8 @@ public static class CourseDataProvider
         }
         finally
         {
-            reader?.Close();
             reader?.Dispose();
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -391,10 +415,8 @@ public static class CourseDataProvider
         }
         finally
         {
-            reader?.Close();
             reader?.Dispose();
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -410,15 +432,5 @@ public static class CourseDataProvider
             Description = reader.GetString(reader.GetOrdinal("Description")),
             IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive"))
         };
-    }
-
-    private static void AddCourseParameters(SqlCommand command, Course entity, int? explicitId = null)
-    {
-        command.Parameters.Add("@Id", SqlDbType.Int).Value = explicitId ?? entity.Id;
-        command.Parameters.Add("@CourseCode", SqlDbType.NVarChar, 6).Value = entity.CourseCode ?? string.Empty;
-        command.Parameters.Add("@CourseName", SqlDbType.NVarChar, 100).Value = entity.CourseName ?? string.Empty;
-        command.Parameters.Add("@CreditHours", SqlDbType.Decimal).Value = (decimal)entity.CreditHours;
-        command.Parameters.Add("@Description", SqlDbType.NVarChar, -1).Value = entity.Description ?? string.Empty;
-        command.Parameters.Add("@IsActive", SqlDbType.Bit).Value = entity.IsActive;
     }
 }

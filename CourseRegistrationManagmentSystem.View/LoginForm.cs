@@ -1,4 +1,5 @@
 using BL.Services;
+using Shared.Exceptions;
 using Shared.Session;
 using System.Windows.Forms;
 
@@ -38,12 +39,13 @@ namespace CourseRegistrationManagmentSystem.View
                     this.Close();
                 }
             }
-            catch (InvalidOperationException ex)
+            catch (BussinessException ex)
             {
-                lblErrorMessage.Text = ex.Message;
+                lblErrorMessage.Text = "An error ";
             }
             catch (Exception)
             {
+                // Must use Logger here, as exception wasnt logged before hand
                 lblErrorMessage.Text = "An unexpected error occurred. Please try again.";
             }
         }

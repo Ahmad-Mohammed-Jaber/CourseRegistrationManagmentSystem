@@ -36,10 +36,8 @@ public static class ClassDataProvider
         }
         finally
         {
-            reader?.Close();
             reader?.Dispose();
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -73,10 +71,8 @@ public static class ClassDataProvider
         }
         finally
         {
-            reader?.Close();
             reader?.Dispose();
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -111,10 +107,8 @@ public static class ClassDataProvider
         }
         finally
         {
-            reader?.Close();
             reader?.Dispose();
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -149,10 +143,8 @@ public static class ClassDataProvider
         }
         finally
         {
-            reader?.Close();
             reader?.Dispose();
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -186,10 +178,8 @@ public static class ClassDataProvider
         }
         finally
         {
-            reader?.Close();
             reader?.Dispose();
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -223,15 +213,13 @@ public static class ClassDataProvider
         }
         finally
         {
-            reader?.Close();
             reader?.Dispose();
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
 
-    public static void Add(Class entity)
+    public static int Add(Class entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -244,8 +232,26 @@ public static class ClassDataProvider
             {
                 CommandType = CommandType.StoredProcedure
             };
-            AddClassParameters(command, entity);
+
+            command.Parameters.Add("@CourseId", SqlDbType.Int).Value = entity.CourseId;
+            command.Parameters.Add("@ClassName", SqlDbType.NVarChar, 50).Value = entity.ClassName ?? string.Empty;
+            command.Parameters.Add("@Instructor", SqlDbType.NVarChar, 50).Value = entity.Instructor ?? string.Empty;
+            command.Parameters.Add("@MaxCapacity", SqlDbType.Int).Value = entity.MaxCapacity;
+            command.Parameters.Add("@CurrentCapacity", SqlDbType.Int).Value = entity.CurrentCapacity;
+            command.Parameters.Add("@StartDate", SqlDbType.DateTime2).Value = entity.StartDate;
+            command.Parameters.Add("@EndDate", SqlDbType.DateTime2).Value = entity.EndDate;
+            command.Parameters.Add("@Schedule", SqlDbType.Int).Value = (int)entity.Schedule;
+            command.Parameters.Add("@IsActive", SqlDbType.Bit).Value = entity.IsActive;
+
+            var newIdParam = new SqlParameter("@NewId", SqlDbType.Int)
+            {
+                Direction = ParameterDirection.Output
+            };
+            command.Parameters.Add(newIdParam);
+
             command.ExecuteNonQuery();
+
+            return (int)newIdParam.Value;
         }
         catch
         {
@@ -254,12 +260,11 @@ public static class ClassDataProvider
         finally
         {
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
 
-    public static async Task AddAsync(Class entity)
+    public static async Task<int> AddAsync(Class entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -272,8 +277,26 @@ public static class ClassDataProvider
             {
                 CommandType = CommandType.StoredProcedure
             };
-            AddClassParameters(command, entity);
+
+            command.Parameters.Add("@CourseId", SqlDbType.Int).Value = entity.CourseId;
+            command.Parameters.Add("@ClassName", SqlDbType.NVarChar, 50).Value = entity.ClassName ?? string.Empty;
+            command.Parameters.Add("@Instructor", SqlDbType.NVarChar, 50).Value = entity.Instructor ?? string.Empty;
+            command.Parameters.Add("@MaxCapacity", SqlDbType.Int).Value = entity.MaxCapacity;
+            command.Parameters.Add("@CurrentCapacity", SqlDbType.Int).Value = entity.CurrentCapacity;
+            command.Parameters.Add("@StartDate", SqlDbType.DateTime2).Value = entity.StartDate;
+            command.Parameters.Add("@EndDate", SqlDbType.DateTime2).Value = entity.EndDate;
+            command.Parameters.Add("@Schedule", SqlDbType.Int).Value = (int)entity.Schedule;
+            command.Parameters.Add("@IsActive", SqlDbType.Bit).Value = entity.IsActive;
+
+            var newIdParam = new SqlParameter("@NewId", SqlDbType.Int)
+            {
+                Direction = ParameterDirection.Output
+            };
+            command.Parameters.Add(newIdParam);
+
             await command.ExecuteNonQueryAsync();
+
+            return (int)newIdParam.Value;
         }
         catch
         {
@@ -282,7 +305,6 @@ public static class ClassDataProvider
         finally
         {
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -300,7 +322,17 @@ public static class ClassDataProvider
             {
                 CommandType = CommandType.StoredProcedure
             };
-            AddClassParameters(command, entity, id);
+            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+            command.Parameters.Add("@CourseId", SqlDbType.Int).Value = entity.CourseId;
+            command.Parameters.Add("@ClassName", SqlDbType.NVarChar, 50).Value = entity.ClassName ?? string.Empty;
+            command.Parameters.Add("@Instructor", SqlDbType.NVarChar, 50).Value = entity.Instructor ?? string.Empty;
+            command.Parameters.Add("@MaxCapacity", SqlDbType.Int).Value = entity.MaxCapacity;
+            command.Parameters.Add("@CurrentCapacity", SqlDbType.Int).Value = entity.CurrentCapacity;
+            command.Parameters.Add("@StartDate", SqlDbType.DateTime2).Value = entity.StartDate;
+            command.Parameters.Add("@EndDate", SqlDbType.DateTime2).Value = entity.EndDate;
+            command.Parameters.Add("@Schedule", SqlDbType.Int).Value = (int)entity.Schedule;
+            command.Parameters.Add("@IsActive", SqlDbType.Bit).Value = entity.IsActive;
+
             command.ExecuteNonQuery();
         }
         catch
@@ -310,7 +342,6 @@ public static class ClassDataProvider
         finally
         {
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -328,7 +359,17 @@ public static class ClassDataProvider
             {
                 CommandType = CommandType.StoredProcedure
             };
-            AddClassParameters(command, entity, id);
+            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+            command.Parameters.Add("@CourseId", SqlDbType.Int).Value = entity.CourseId;
+            command.Parameters.Add("@ClassName", SqlDbType.NVarChar, 50).Value = entity.ClassName ?? string.Empty;
+            command.Parameters.Add("@Instructor", SqlDbType.NVarChar, 50).Value = entity.Instructor ?? string.Empty;
+            command.Parameters.Add("@MaxCapacity", SqlDbType.Int).Value = entity.MaxCapacity;
+            command.Parameters.Add("@CurrentCapacity", SqlDbType.Int).Value = entity.CurrentCapacity;
+            command.Parameters.Add("@StartDate", SqlDbType.DateTime2).Value = entity.StartDate;
+            command.Parameters.Add("@EndDate", SqlDbType.DateTime2).Value = entity.EndDate;
+            command.Parameters.Add("@Schedule", SqlDbType.Int).Value = (int)entity.Schedule;
+            command.Parameters.Add("@IsActive", SqlDbType.Bit).Value = entity.IsActive;
+
             await command.ExecuteNonQueryAsync();
         }
         catch
@@ -338,7 +379,6 @@ public static class ClassDataProvider
         finally
         {
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -366,7 +406,6 @@ public static class ClassDataProvider
         finally
         {
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -394,7 +433,6 @@ public static class ClassDataProvider
         finally
         {
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -429,10 +467,8 @@ public static class ClassDataProvider
         }
         finally
         {
-            reader?.Close();
             reader?.Dispose();
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -467,10 +503,8 @@ public static class ClassDataProvider
         }
         finally
         {
-            reader?.Close();
             reader?.Dispose();
             command?.Dispose();
-            connection?.Close();
             connection?.Dispose();
         }
     }
@@ -490,19 +524,5 @@ public static class ClassDataProvider
             Schedule = (Class.DaysOfWeek)reader.GetInt32(reader.GetOrdinal("Schedule")),
             IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive"))
         };
-    }
-
-    private static void AddClassParameters(SqlCommand command, Class entity, int? explicitId = null)
-    {
-        command.Parameters.Add("@Id", SqlDbType.Int).Value = explicitId ?? entity.Id;
-        command.Parameters.Add("@CourseId", SqlDbType.Int).Value = entity.CourseId;
-        command.Parameters.Add("@ClassName", SqlDbType.NVarChar, 50).Value = entity.ClassName ?? string.Empty;
-        command.Parameters.Add("@Instructor", SqlDbType.NVarChar, 50).Value = entity.Instructor ?? string.Empty;
-        command.Parameters.Add("@MaxCapacity", SqlDbType.Int).Value = entity.MaxCapacity;
-        command.Parameters.Add("@CurrentCapacity", SqlDbType.Int).Value = entity.CurrentCapacity;
-        command.Parameters.Add("@StartDate", SqlDbType.DateTime2).Value = entity.StartDate;
-        command.Parameters.Add("@EndDate", SqlDbType.DateTime2).Value = entity.EndDate;
-        command.Parameters.Add("@Schedule", SqlDbType.Int).Value = (int)entity.Schedule;
-        command.Parameters.Add("@IsActive", SqlDbType.Bit).Value = entity.IsActive;
     }
 }

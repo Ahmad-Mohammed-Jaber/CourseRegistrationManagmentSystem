@@ -19,4 +19,13 @@ public class User
     public UserRoles Role { get; set; } = UserRoles.Admin;
 
     public bool IsActive { get; set; }
+
+    public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
+
+
+    public DateTime ModifiedOn { get; set; } = DateTime.UtcNow;
+
+    public int ModifiedBy { get; set; }
+
+    public int CreatedBy { get; set; }
 }

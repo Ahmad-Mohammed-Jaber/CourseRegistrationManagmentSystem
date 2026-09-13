@@ -1,6 +1,8 @@
 using static BCrypt.Net.BCrypt;
 using Shared.Session;
 using Shared.Entities;
+using Shared.Exceptions;
+
 using BL.Managers;
 using BL.Validation;
 
@@ -9,40 +11,50 @@ public class AuthService
     private readonly UserManager _userManager = new UserManager();
     private readonly StudentManager _studentManager = new StudentManager();
 
+                // Return should be flag: (Success, Failed, etc.)
     public async Task<(UserSession?, StudentSession?)> LoginAsync(string userName, string password)
     {
-        User? userRes = await _userManager.GetByUserNameAsync(userName);
-
-        if (userRes == null)
+        try
         {
-            throw new InvalidOperationException("User not found!");
+            User? userRes = await _userManager.GetByUserNameAsync(userName);
+
+            if (userRes == null)
+            {
+
+                throw new InvalidOperationException("User not found!");
+            }
+
+            // Verify Hash
+            bool validPassword = Verify(password, userRes.PasswordHash);
+
+            if (!validPassword)
+            {
+                throw new InvalidOperationException("Incorrect password!");
+            }
+
+            UserSession? userSession = new UserSession(userRes.Id, userRes.UserName, userRes.FullName, userRes.IsActive)
+            {
+                Role = userRes.Role,
+            };
+
+            if (userRes.Role == User.UserRoles.Admin)
+            {
+                return (userSession, null);
+            }
+
+            Student? studentRes = await _studentManager.GetByUserIdAsync(userRes.Id);
+
+            StudentSession? studentSession = studentRes == null
+                ? null
+                : new StudentSession(studentRes.Id, studentRes.UserId, studentRes.FullName, studentRes.StudentNumber, studentRes.Email, studentRes.Phone);
+
+            return (userSession, studentSession);
         }
-
-        // Verify Hash
-        bool validPassword = Verify(password, userRes.PasswordHash);
-
-        if (!validPassword)
+        catch (Exception ex)
         {
-            throw new InvalidOperationException("Incorrect password!");
+            // Use serilog here to log exceptions
+            throw new BussinessException("An error occured while trying LoginAsync()");
         }
-
-        UserSession? userSession = new UserSession(userRes.Id, userRes.UserName, userRes.FullName, userRes.IsActive)
-        {
-            Role = userRes.Role,
-        };
-
-        if (userRes.Role == User.UserRoles.Admin)
-        {
-            return (userSession, null);
-        }
-
-        Student? studentRes = await _studentManager.GetByUserIdAsync(userRes.Id);
-
-        StudentSession? studentSession = studentRes == null
-            ? null
-            : new StudentSession(studentRes.Id, studentRes.UserId, studentRes.FullName, studentRes.StudentNumber, studentRes.Email, studentRes.Phone);
-
-        return (userSession, studentSession);
     }
 
     public async Task RegisterAdminAsync(string userName, string fullName, bool isActive, string password)
@@ -81,11 +93,10 @@ public class AuthService
         AccessValidator.ValidatePhone(phone);
 
         string passwordHash = HashPassword(password);
-
         User user = new User
         {
             UserName = userName,
-            FullName = fullName,
+            FullName = userName,
             IsActive = isActive,
             PasswordHash = passwordHash,
             Role = User.UserRoles.Student,
@@ -93,9 +104,11 @@ public class AuthService
 
         await _userManager.AddAsync(user);
 
+        user = await _userManager.GetByUserNameAsync(userName);
+
         Student student = new Student
         {
-            UserId = user.Id,
+            UserId = user!.Id,
             UserName = userName,
             FullName = fullName,
             Email = email,
