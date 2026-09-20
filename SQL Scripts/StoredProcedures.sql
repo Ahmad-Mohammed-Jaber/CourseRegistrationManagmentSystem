@@ -812,3 +812,28 @@ BEGIN
     WHERE Id = @Id;
 END
 GO
+/****** Object:  StoredProcedure [dbo].[usp_GetStudentProfileByUserId]    Script Date: 8/9/2026 8:28:02 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- Get Student Profile by UserId (single auth session: student data fetched fresh from DB)
+CREATE   PROCEDURE [dbo].[usp_GetStudentProfileByUserId]
+    @UserId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT
+        u.Id,
+        u.UserName,
+        u.FullName,
+        u.Role,
+        s.StudentNumber,
+        s.Email,
+        s.Phone
+    FROM [User] u
+    INNER JOIN [Student] s ON s.UserId = u.Id
+    WHERE u.Id = @UserId;
+END
+GO

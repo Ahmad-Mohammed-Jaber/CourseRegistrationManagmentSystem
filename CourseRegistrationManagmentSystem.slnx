@@ -1,7 +1,7 @@
 <Solution>
-  <Project Path="CourseRegistrationManagmentSystem.Business/BL.csproj" Id="856b44d8-17ac-431b-8271-aba6130fc19d" />
-  <Project Path="CourseRegistrationManagmentSystem.Console/Console.csproj" Id="cc72ea80-c69f-46d0-b19c-77fdcfab296a" />
-  <Project Path="CourseRegistrationManagmentSystem.Data/DAL.csproj" Id="f0089564-19b6-4a89-b171-19cfcb506a8b" />
-  <Project Path="CourseRegistrationManagmentSystem.Shared/Shared.csproj" Id="3c081474-1f47-41cd-9885-186e2db8ea8f" />
-  <Project Path="CourseRegistrationManagmentSystem.View/View.csproj" Id="b40ed3f6-1900-4156-96d7-50514a1bb980" />
+  <Project Path="BL/BL.csproj" Id="856b44d8-17ac-431b-8271-aba6130fc19d" />
+  <Project Path="Console/Console.csproj" Id="cc72ea80-c69f-46d0-b19c-77fdcfab296a" />
+  <Project Path="DAL/DAL.csproj" Id="f0089564-19b6-4a89-b171-19cfcb506a8b" />
+  <Project Path="Shared/Shared.csproj" Id="3c081474-1f47-41cd-9885-186e2db8ea8f" />
+  <Project Path="View/View.csproj" Id="b40ed3f6-1900-4156-96d7-50514a1bb980" />DAL/
 </Solution>
