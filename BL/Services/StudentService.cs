@@ -1,7 +1,10 @@
 using BL.Interfaces;
 using BL.Managers;
 using BL.Validation;
+using Shared.DTOs;
 using Shared.Entities;
+using Shared.Exceptions;
+using Shared.Logging;
 
 namespace BL.Services;
 
@@ -36,232 +39,610 @@ public class StudentService : ICrudService<Student>
         }
     }
 
-    public Student? GetById(int id)
+    public Result<Student?> GetById(int id)
     {
-        AccessValidator.RequireAdmin();
-        var student = _studentManager.GetById(id);
-        if (student != null) EnrichSync(student);
-        return student;
-    }
-
-    public async Task<Student?> GetByIdAsync(int id)
-    {
-        AccessValidator.RequireAdmin();
-        var student = await _studentManager.GetByIdAsync(id);
-        if (student != null) await EnrichAsync(student);
-        return student;
-    }
-
-    public List<Student> GetAll()
-    {
-        AccessValidator.RequireAdmin();
-        var list = _studentManager.GetAll();
-        foreach (var s in list) EnrichSync(s);
-        return list;
-    }
-
-    public async Task<List<Student>> GetAllAsync()
-    {
-        AccessValidator.RequireAdmin();
-        var list = await _studentManager.GetAllAsync();
-        foreach (var s in list) await EnrichAsync(s);
-        return list;
-    }
-
-    public void Add(Student student)
-    {
-        AccessValidator.RequireAdmin();
-        ValidateStudent(student);
-        EnsureUniqueUserNameSync(student.UserName);
-
-        var user = new User
+        try
         {
-            FullName = student.FullName,
-            UserName = student.UserName,
-            IsActive = student.IsActive,
-            Role = User.UserRoles.Student,
-            PasswordHash = student.PasswordHash,
-        };
+            var auth = AccessValidator.RequireAdmin();
+            if (!auth.IsSuccess)
+            {
+                return new Result<Student?>(auth.Status, auth.Errors, default);
+            }
 
-        _userManager.Add(user);
-        // User Id is populated after Add via output param? Assume provider sets it.
-        // If not, fetch by username
-        if (user.Id == 0)
-        {
-            var created = _userManager.GetAll().FirstOrDefault(u => u.UserName == student.UserName);
-            if (created != null) user.Id = created.Id;
+            var student = _studentManager.GetById(id);
+            if (student != null)
+            {
+                EnrichSync(student);
+            }
+
+            return new Result<Student?>(ValidationStatus.Success, Array.Empty<ValidationError>(), student);
         }
-        student.UserId = user.Id;
-
-        _studentManager.Add(student);
-    }
-
-    public async Task AddAsync(Student student)
-    {
-        AccessValidator.RequireAdmin();
-        ValidateStudent(student);
-        await EnsureUniqueUserNameAsync(student.UserName);
-
-        var user = new User
+        catch (Exception ex)
         {
-            FullName = student.FullName,
-            UserName = student.UserName,
-            IsActive = student.IsActive,
-            Role = User.UserRoles.Student,
-            PasswordHash = student.PasswordHash,
-        };
-        await _userManager.AddAsync(user);
-        // fetch created user id
-        var created = await _userManager.GetByUserNameAsync(user.UserName);
-        student.UserId = created!.Id;
-
-        await _studentManager.AddAsync(student);
-    }
-
-    public void Update(int id, Student student)
-    {
-        AccessValidator.RequireAdmin();
-        ValidateStudent(student);
-
-        var existingStudent = _studentManager.GetById(id);
-        if (existingStudent == null)
-            throw new KeyNotFoundException($"Student with id {id} not found.");
-
-        // check username uniqueness excluding current user
-        var userByName = _userManager.GetAll().FirstOrDefault(u => u.UserName == student.UserName);
-        if (userByName != null && userByName.Id != existingStudent.UserId)
-            throw new InvalidOperationException($"A user with username '{student.UserName}' already exists.");
-
-        _studentManager.Update(id, student);
-
-        var existingUser = _userManager.GetById(existingStudent.UserId);
-        if (existingUser != null)
-        {
-            existingUser.FullName = student.FullName;
-            existingUser.UserName = student.UserName;
-            existingUser.IsActive = student.IsActive;
-            if (!string.IsNullOrWhiteSpace(student.PasswordHash))
-                existingUser.PasswordHash = student.PasswordHash;
-            _userManager.Update(existingUser.Id, existingUser);
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while retrieving student.", ex);
         }
     }
 
-    public async Task UpdateAsync(int id, Student student)
+    public async Task<Result<Student?>> GetByIdAsync(int id)
     {
-        AccessValidator.RequireAdmin();
-        ValidateStudent(student);
-
-        var existingStudent = await _studentManager.GetByIdAsync(id);
-        if (existingStudent == null)
-            throw new KeyNotFoundException($"Student with id {id} not found.");
-
-        await EnsureUniqueUserNameAsync(student.UserName, existingStudent.UserId);
-
-        await _studentManager.UpdateAsync(id, student);
-
-        var existingUser = await _userManager.GetByIdAsync(existingStudent.UserId);
-        if (existingUser != null)
+        try
         {
-            existingUser.FullName = student.FullName;
-            existingUser.UserName = student.UserName;
-            existingUser.IsActive = student.IsActive;
-            if (!string.IsNullOrWhiteSpace(student.PasswordHash))
-                existingUser.PasswordHash = student.PasswordHash;
-            await _userManager.UpdateAsync(existingUser.Id, existingUser);
+            var auth = AccessValidator.RequireAdmin();
+            if (!auth.IsSuccess)
+            {
+                return new Result<Student?>(auth.Status, auth.Errors, default);
+            }
+
+            var student = await _studentManager.GetByIdAsync(id);
+            if (student != null)
+            {
+                await EnrichAsync(student);
+            }
+
+            return new Result<Student?>(ValidationStatus.Success, Array.Empty<ValidationError>(), student);
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while retrieving student.", ex);
         }
     }
 
-    private void EnsureUniqueUserNameSync(string userName)
+    public Result<List<Student>> GetAll()
+    {
+        try
+        {
+            var auth = AccessValidator.RequireAdmin();
+            if (!auth.IsSuccess)
+            {
+                return new Result<List<Student>>(auth.Status, auth.Errors, default);
+            }
+
+            var list = _studentManager.GetAll();
+            foreach (var s in list)
+            {
+                EnrichSync(s);
+            }
+
+            return new Result<List<Student>>(ValidationStatus.Success, Array.Empty<ValidationError>(), list);
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while retrieving students.", ex);
+        }
+    }
+
+    public async Task<Result<List<Student>>> GetAllAsync()
+    {
+        try
+        {
+            var auth = AccessValidator.RequireAdmin();
+            if (!auth.IsSuccess)
+            {
+                return new Result<List<Student>>(auth.Status, auth.Errors, default);
+            }
+
+            var list = await _studentManager.GetAllAsync();
+            foreach (var s in list)
+            {
+                await EnrichAsync(s);
+            }
+
+            return new Result<List<Student>>(ValidationStatus.Success, Array.Empty<ValidationError>(), list);
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while retrieving students.", ex);
+        }
+    }
+
+    public ValidationResult Add(Student student)
+    {
+        try
+        {
+            var auth = AccessValidator.RequireAdmin();
+            if (!auth.IsSuccess)
+            {
+                return auth;
+            }
+
+            var valid = StudentValidator.ValidateStudent(student);
+            if (!valid.IsSuccess)
+            {
+                return valid;
+            }
+
+            if (student != null && string.IsNullOrWhiteSpace(student.PasswordHash))
+            {
+                return new ValidationResult(
+                    ValidationStatus.Invalid,
+                    new[] { new ValidationError(nameof(Student.PasswordHash), "Password is required for a new student.") });
+            }
+
+            var unique = EnsureUniqueUserNameSync(student!.UserName);
+            if (!unique.IsSuccess)
+            {
+                return unique;
+            }
+
+            var user = new User
+            {
+                FullName = student.FullName,
+                UserName = student.UserName,
+                IsActive = student.IsActive,
+                Role = User.UserRoles.Student,
+                PasswordHash = student.PasswordHash,
+            };
+
+            _userManager.Add(user);
+            if (user.Id == 0)
+            {
+                var created = _userManager.GetAll().FirstOrDefault(u => u.UserName == student.UserName);
+                if (created != null)
+                {
+                    user.Id = created.Id;
+                }
+            }
+            if (user.Id == 0)
+            {
+                throw new BusinessException("Failed to create user account for student.");
+            }
+
+            student.UserId = user.Id;
+
+            try
+            {
+                _studentManager.Add(student);
+            }
+            catch
+            {
+                try
+                {
+                    _userManager.Delete(user.Id);
+                }
+                catch (Exception ex)
+                {
+                    AppLogger.LogCaught(ex);
+                }
+
+                throw;
+            }
+            return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
+        }
+        catch (BusinessException ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while adding student.", ex);
+        }
+    }
+
+    public async Task<ValidationResult> AddAsync(Student student)
+    {
+        try
+        {
+            var auth = AccessValidator.RequireAdmin();
+            if (!auth.IsSuccess)
+            {
+                return auth;
+            }
+
+            var valid = StudentValidator.ValidateStudent(student);
+            if (!valid.IsSuccess)
+            {
+                return valid;
+            }
+
+            if (student != null && string.IsNullOrWhiteSpace(student.PasswordHash))
+            {
+                return new ValidationResult(
+                    ValidationStatus.Invalid,
+                    new[] { new ValidationError(nameof(Student.PasswordHash), "Password is required for a new student.") });
+            }
+
+            var unique = await EnsureUniqueUserNameAsync(student!.UserName);
+            if (!unique.IsSuccess)
+            {
+                return unique;
+            }
+
+            var user = new User
+            {
+                FullName = student.FullName,
+                UserName = student.UserName,
+                IsActive = student.IsActive,
+                Role = User.UserRoles.Student,
+                PasswordHash = student.PasswordHash,
+            };
+            await _userManager.AddAsync(user);
+            var created = await _userManager.GetByUserNameAsync(user.UserName);
+            if (created == null)
+            {
+                throw new BusinessException("Failed to create user account for student.");
+            }
+
+            student.UserId = created.Id;
+
+            try
+            {
+                await _studentManager.AddAsync(student);
+            }
+            catch
+            {
+                try
+                {
+                    await _userManager.DeleteAsync(created.Id);
+                }
+                catch (Exception ex)
+                {
+                    AppLogger.LogCaught(ex);
+                }
+
+                throw;
+            }
+            return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
+        }
+        catch (BusinessException ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw;
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while adding student.", ex);
+        }
+    }
+
+    public ValidationResult Update(int id, Student student)
+    {
+        try
+        {
+            var auth = AccessValidator.RequireAdmin();
+            if (!auth.IsSuccess)
+            {
+                return auth;
+            }
+
+            var valid = StudentValidator.ValidateStudent(student);
+            if (!valid.IsSuccess)
+            {
+                return valid;
+            }
+
+            var existingStudent = _studentManager.GetById(id);
+            var exists = StudentValidator.RequireExists(existingStudent, id);
+            if (!exists.IsSuccess)
+            {
+                return exists;
+            }
+
+            var userByName = _userManager.GetAll().FirstOrDefault(u => u.UserName == student!.UserName);
+            var unique = UserValidator.RequireUniqueUserName(
+                userByName != null && userByName.Id != existingStudent!.UserId, student.UserName);
+            if (!unique.IsSuccess)
+            {
+                return unique;
+            }
+
+            _studentManager.Update(id, student);
+
+            var existingUser = _userManager.GetById(existingStudent.UserId);
+            if (existingUser != null)
+            {
+                existingUser.FullName = student.FullName;
+                existingUser.UserName = student.UserName;
+                existingUser.IsActive = student.IsActive;
+                if (!string.IsNullOrWhiteSpace(student.PasswordHash))
+                {
+                    existingUser.PasswordHash = student.PasswordHash;
+                }
+
+                _userManager.Update(existingUser.Id, existingUser);
+            }
+            return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while updating student.", ex);
+        }
+    }
+
+    public async Task<ValidationResult> UpdateAsync(int id, Student student)
+    {
+        try
+        {
+            var auth = AccessValidator.RequireAdmin();
+            if (!auth.IsSuccess)
+            {
+                return auth;
+            }
+
+            var valid = StudentValidator.ValidateStudent(student);
+            if (!valid.IsSuccess)
+            {
+                return valid;
+            }
+
+            var existingStudent = await _studentManager.GetByIdAsync(id);
+            var exists = StudentValidator.RequireExists(existingStudent, id);
+            if (!exists.IsSuccess)
+            {
+                return exists;
+            }
+
+            var unique = await EnsureUniqueUserNameAsync(student!.UserName, existingStudent!.UserId);
+            if (!unique.IsSuccess)
+            {
+                return unique;
+            }
+
+            await _studentManager.UpdateAsync(id, student);
+
+            var existingUser = await _userManager.GetByIdAsync(existingStudent.UserId);
+            if (existingUser != null)
+            {
+                existingUser.FullName = student.FullName;
+                existingUser.UserName = student.UserName;
+                existingUser.IsActive = student.IsActive;
+                if (!string.IsNullOrWhiteSpace(student.PasswordHash))
+                {
+                    existingUser.PasswordHash = student.PasswordHash;
+                }
+
+                await _userManager.UpdateAsync(existingUser.Id, existingUser);
+            }
+            return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while updating student.", ex);
+        }
+    }
+
+    private ValidationResult EnsureUniqueUserNameSync(string userName)
     {
         var existing = _userManager.GetAll().FirstOrDefault(u => u.UserName.Equals(userName, StringComparison.OrdinalIgnoreCase));
-        if (existing != null)
-            throw new InvalidOperationException($"A user with username '{userName}' already exists.");
+        return UserValidator.RequireUniqueUserName(existing != null, userName);
     }
 
-    private async Task EnsureUniqueUserNameAsync(string userName, int? excludeUserId = null)
+    private async Task<ValidationResult> EnsureUniqueUserNameAsync(string userName, int? excludeUserId = null)
     {
         var existingUser = await _userManager.GetByUserNameAsync(userName);
-        if (existingUser != null && existingUser.Id != (excludeUserId ?? 0))
+        return UserValidator.RequireUniqueUserName(
+            existingUser != null && existingUser.Id != (excludeUserId ?? 0), userName);
+    }
+
+    public ValidationResult Delete(int id)
+    {
+        try
         {
-            throw new InvalidOperationException($"A user with username '{userName}' already exists.");
+            var auth = AccessValidator.RequireAdmin();
+            if (!auth.IsSuccess)
+            {
+                return auth;
+            }
+
+            var student = _studentManager.GetById(id);
+            var exists = StudentValidator.RequireExists(student, id);
+            if (!exists.IsSuccess)
+            {
+                return exists;
+            }
+
+            _studentManager.Delete(id);
+            _userManager.Delete(student!.UserId);
+            return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while deleting student.", ex);
         }
     }
 
-    private static void ValidateStudent(Student student)
+    public async Task<ValidationResult> DeleteAsync(int id)
     {
-        if (student == null) throw new ArgumentNullException(nameof(student));
-        AccessValidator.ValidateUserName(student.UserName);
-        AccessValidator.ValidateFullName(student.FullName);
-        AccessValidator.ValidateStudentNumber(student.StudentNumber);
-        AccessValidator.ValidateEmail(student.Email);
-        AccessValidator.ValidatePhone(student.Phone);
-        if (string.IsNullOrWhiteSpace(student.PasswordHash))
+        try
         {
-            // For updates password may be preserved from existing, but for adds it must be present.
-            // Allow empty here; caller ensures hashing. If empty and it's an Add, enrichment will catch.
+            var auth = AccessValidator.RequireAdmin();
+            if (!auth.IsSuccess)
+            {
+                return auth;
+            }
+
+            var student = await _studentManager.GetByIdAsync(id);
+            var exists = StudentValidator.RequireExists(student, id);
+            if (!exists.IsSuccess)
+            {
+                return exists;
+            }
+
+            await _studentManager.DeleteAsync(id);
+            await _userManager.DeleteAsync(student!.UserId);
+            return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while deleting student.", ex);
         }
     }
 
-    public void Delete(int id)
+    public Result<List<Student>> Search(string regex)
     {
-        AccessValidator.RequireAdmin();
+        try
+        {
+            var auth = AccessValidator.RequireAdmin();
+            if (!auth.IsSuccess)
+            {
+                return new Result<List<Student>>(auth.Status, auth.Errors, default);
+            }
 
-        var student = _studentManager.GetById(id);
-        if (student == null)
-            throw new KeyNotFoundException($"Student with id {id} not found.");
+            var pattern = SearchValidator.ValidateSearchPattern(regex);
+            if (!pattern.IsSuccess)
+            {
+                return new Result<List<Student>>(pattern.Status, pattern.Errors, default);
+            }
 
-        _studentManager.Delete(id);
-        _userManager.Delete(student.UserId);
+            var result = _studentManager.Search(regex);
+            foreach (var s in result)
+            {
+                EnrichSync(s);
+            }
+
+            return new Result<List<Student>>(ValidationStatus.Success, Array.Empty<ValidationError>(), result);
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while searching students.", ex);
+        }
     }
 
-    public async Task DeleteAsync(int id)
+    public async Task<Result<List<Student>>> SearchAsync(string regex)
     {
-        AccessValidator.RequireAdmin();
+        try
+        {
+            var auth = AccessValidator.RequireAdmin();
+            if (!auth.IsSuccess)
+            {
+                return new Result<List<Student>>(auth.Status, auth.Errors, default);
+            }
 
-        var student = await _studentManager.GetByIdAsync(id);
-        if (student == null)
-            throw new KeyNotFoundException($"Student with id {id} not found.");
+            var pattern = SearchValidator.ValidateSearchPattern(regex);
+            if (!pattern.IsSuccess)
+            {
+                return new Result<List<Student>>(pattern.Status, pattern.Errors, default);
+            }
 
-        await _studentManager.DeleteAsync(id);
-        await _userManager.DeleteAsync(student.UserId);
+            var result = await _studentManager.SearchAsync(regex);
+            foreach (var s in result)
+            {
+                await EnrichAsync(s);
+            }
+
+            return new Result<List<Student>>(ValidationStatus.Success, Array.Empty<ValidationError>(), result);
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while searching students.", ex);
+        }
     }
 
-    public List<Student> Search(string regex)
+
+    public async Task<Result<Student?>> GetByUserIdAsync(int userId)
     {
-        AccessValidator.RequireAdmin();
-        var result = _studentManager.Search(regex);
-        foreach (var s in result) EnrichSync(s);
-        return result;
+        try
+        {
+            var auth = AccessValidator.RequireOwnerOrAdmin(userId);
+            if (!auth.IsSuccess)
+            {
+                throw new BusinessException(auth.Message);
+            }
+
+            var student = await _studentManager.GetByUserIdAsync(userId);
+            if (student != null)
+            {
+                await EnrichAsync(student);
+            }
+
+            return new Result<Student?>(ValidationStatus.Success, Array.Empty<ValidationError>(), student);
+        }
+        catch (BusinessException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while retrieving student profile.", ex);
+        }
     }
 
-    public async Task<List<Student>> SearchAsync(string regex)
+    public async Task<Result<Student?>> GetCurrentStudentAsync()
     {
-        AccessValidator.RequireAdmin();
-        var result = await _studentManager.SearchAsync(regex);
-        foreach (var s in result) await EnrichAsync(s);
-        return result;
+        try
+        {
+            var auth = AccessValidator.RequireStudent();
+            if (!auth.IsSuccess)
+            {
+                return new Result<Student?>(auth.Status, auth.Errors, default);
+            }
+
+            var current = Shared.Session.SessionManager.Current!;
+            var student = await _studentManager.GetByUserIdAsync(current.UserId);
+            if (student != null)
+            {
+                await EnrichAsync(student);
+            }
+
+            return new Result<Student?>(ValidationStatus.Success, Array.Empty<ValidationError>(), student);
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while retrieving current student profile.", ex);
+        }
     }
 
-    // ---- Current student helpers (auth: self or admin) ----
 
-    public async Task<Student?> GetByUserIdAsync(int userId)
+    public async Task<Result<StudentProfile?>> GetProfileByUserIdAsync(int userId)
     {
-        AccessValidator.RequireLogin();
-        var current = Shared.Session.SessionManager.Current!;
-        if (current.Role != User.UserRoles.Admin && current.UserId != userId)
-            throw new UnauthorizedAccessException("You can only view your own student profile.");
+        try
+        {
+            var auth = AccessValidator.RequireOwnerOrAdmin(userId);
+            if (!auth.IsSuccess)
+            {
+                throw new BusinessException(auth.Message);
+            }
 
-        var student = await _studentManager.GetByUserIdAsync(userId);
-        if (student != null) await EnrichAsync(student);
-        return student;
+            return new Result<StudentProfile?>(
+                ValidationStatus.Success,
+                Array.Empty<ValidationError>(),
+                await _studentManager.GetProfileByUserIdAsync(userId));
+        }
+        catch (BusinessException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while retrieving student profile.", ex);
+        }
     }
 
-    public async Task<Student?> GetCurrentStudentAsync()
+    public async Task<Result<StudentProfile?>> GetCurrentProfileAsync()
     {
-        AccessValidator.RequireStudent();
-        var current = Shared.Session.SessionManager.Current!;
-        var student = await _studentManager.GetByUserIdAsync(current.UserId);
-        if (student != null) await EnrichAsync(student);
-        return student;
+        try
+        {
+            var auth = AccessValidator.RequireStudent();
+            if (!auth.IsSuccess)
+            {
+                return new Result<StudentProfile?>(auth.Status, auth.Errors, default);
+            }
+
+            var current = Shared.Session.SessionManager.Current!;
+            return new Result<StudentProfile?>(
+                ValidationStatus.Success,
+                Array.Empty<ValidationError>(),
+                await _studentManager.GetProfileByUserIdAsync(current.UserId));
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while retrieving current student profile.", ex);
+        }
     }
 }

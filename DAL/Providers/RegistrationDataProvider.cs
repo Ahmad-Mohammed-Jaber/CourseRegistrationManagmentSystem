@@ -337,7 +337,7 @@ public static class RegistrationDataProvider
 
             command.Parameters.Add("@StudentId", SqlDbType.Int).Value = entity.StudentId;
             command.Parameters.Add("@ClassId", SqlDbType.Int).Value = entity.ClassId;
-            command.Parameters.Add("@RegistrationDate", SqlDbType.DateTime2).Value = entity.RegsitrationDate;
+            command.Parameters.Add("@RegistrationDate", SqlDbType.DateTime2).Value = entity.RegistrationDate;
             command.Parameters.Add("@Status", SqlDbType.NVarChar, 50).Value = entity.Status ?? string.Empty;
 
             var newIdParam = new SqlParameter("@NewId", SqlDbType.Int)
@@ -348,7 +348,8 @@ public static class RegistrationDataProvider
 
             command.ExecuteNonQuery();
 
-            return (int)newIdParam.Value;
+            entity.Id = (int)newIdParam.Value;
+            return entity.Id;
         }
         catch (Exception ex)
         {
@@ -377,7 +378,7 @@ public static class RegistrationDataProvider
 
             command.Parameters.Add("@StudentId", SqlDbType.Int).Value = entity.StudentId;
             command.Parameters.Add("@ClassId", SqlDbType.Int).Value = entity.ClassId;
-            command.Parameters.Add("@RegistrationDate", SqlDbType.DateTime2).Value = entity.RegsitrationDate;
+            command.Parameters.Add("@RegistrationDate", SqlDbType.DateTime2).Value = entity.RegistrationDate;
             command.Parameters.Add("@Status", SqlDbType.NVarChar, 50).Value = entity.Status ?? string.Empty;
 
             var newIdParam = new SqlParameter("@NewId", SqlDbType.Int)
@@ -388,7 +389,8 @@ public static class RegistrationDataProvider
 
             await command.ExecuteNonQueryAsync();
 
-            return (int)newIdParam.Value;
+            entity.Id = (int)newIdParam.Value;
+            return entity.Id;
         }
         catch (Exception ex)
         {
@@ -417,7 +419,7 @@ public static class RegistrationDataProvider
             command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
             command.Parameters.Add("@StudentId", SqlDbType.Int).Value = entity.StudentId;
             command.Parameters.Add("@ClassId", SqlDbType.Int).Value = entity.ClassId;
-            command.Parameters.Add("@RegistrationDate", SqlDbType.DateTime2).Value = entity.RegsitrationDate;
+            command.Parameters.Add("@RegistrationDate", SqlDbType.DateTime2).Value = entity.RegistrationDate;
             command.Parameters.Add("@Status", SqlDbType.NVarChar, 50).Value = entity.Status ?? string.Empty;
 
             command.ExecuteNonQuery();
@@ -449,7 +451,7 @@ public static class RegistrationDataProvider
             command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
             command.Parameters.Add("@StudentId", SqlDbType.Int).Value = entity.StudentId;
             command.Parameters.Add("@ClassId", SqlDbType.Int).Value = entity.ClassId;
-            command.Parameters.Add("@RegistrationDate", SqlDbType.DateTime2).Value = entity.RegsitrationDate;
+            command.Parameters.Add("@RegistrationDate", SqlDbType.DateTime2).Value = entity.RegistrationDate;
             command.Parameters.Add("@Status", SqlDbType.NVarChar, 50).Value = entity.Status ?? string.Empty;
 
             await command.ExecuteNonQueryAsync();
@@ -615,25 +617,26 @@ public static class RegistrationDataProvider
             {
                 var registration = new Registration
                 {
-                    Id = reader.GetInt32(0),
-                    StudentId = reader.GetInt32(1),
-                    ClassId = reader.GetInt32(2),
-                    RegsitrationDate = reader.GetDateTime(3),
-                    Status = reader.GetString(4)
+                    Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                    StudentId = reader.GetInt32(reader.GetOrdinal("StudentId")),
+                    ClassId = reader.GetInt32(reader.GetOrdinal("ClassId")),
+                    RegistrationDate = reader.GetDateTime(reader.GetOrdinal("RegistrationDate")),
+                    Status = reader.GetString(reader.GetOrdinal("Status"))
                 };
 
                 var cls = new Class
                 {
-                    Id = reader.GetInt32(5),
-                    CourseId = reader.GetInt32(6),
-                    ClassName = reader.GetString(7),
-                    Instructor = reader.GetString(8),
-                    MaxCapacity = reader.GetInt32(9),
-                    CurrentCapacity = reader.GetInt32(10),
-                    StartDate = reader.GetDateTime(11),
-                    EndDate = reader.GetDateTime(12),
-                    Schedule = (Class.DaysOfWeek)reader.GetInt32(13),
-                    IsActive = reader.GetBoolean(14)
+                    // SP aliases Class PK as Class_Id to avoid collision with Registration Id (r.Id).
+                    Id = reader.GetInt32(reader.GetOrdinal("Class_Id")),
+                    CourseId = reader.GetInt32(reader.GetOrdinal("CourseId")),
+                    ClassName = reader.GetString(reader.GetOrdinal("ClassName")),
+                    Instructor = reader.GetString(reader.GetOrdinal("Instructor")),
+                    MaxCapacity = reader.GetInt32(reader.GetOrdinal("MaxCapacity")),
+                    CurrentCapacity = reader.GetInt32(reader.GetOrdinal("CurrentCapacity")),
+                    StartDate = reader.GetDateTime(reader.GetOrdinal("StartDate")),
+                    EndDate = reader.GetDateTime(reader.GetOrdinal("EndDate")),
+                    Schedule = (Class.DaysOfWeek)reader.GetInt32(reader.GetOrdinal("Schedule")),
+                    IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive"))
                 };
 
                 list.Add((registration, cls));
@@ -643,7 +646,7 @@ public static class RegistrationDataProvider
         }
         catch (Exception ex)
         {
-            throw new DatabaseException("An error occured in ", ex);
+            throw new DatabaseException("An error occured while GetStudentRegistrationsWithClassesAsync()", ex);
         }
         finally
         {
@@ -734,29 +737,33 @@ public static class RegistrationDataProvider
     {
         var registration = new Registration
         {
-            Id = reader.GetInt32(0),
-            StudentId = reader.GetInt32(1),
-            ClassId = reader.GetInt32(3),
-            RegsitrationDate = reader.GetDateTime(7),
-            Status = reader.GetString(8)
+            Id = reader.GetInt32(reader.GetOrdinal("Id")),
+            StudentId = reader.GetInt32(reader.GetOrdinal("StudentId")),
+            ClassId = reader.GetInt32(reader.GetOrdinal("ClassId")),
+            RegistrationDate = reader.GetDateTime(reader.GetOrdinal("RegistrationDate")),
+            Status = reader.GetString(reader.GetOrdinal("Status")),
+            CreatedOn = HasColumn(reader, "CreatedOn") && !reader.IsDBNull(reader.GetOrdinal("CreatedOn")) ? reader.GetFieldValue<DateTimeOffset>(reader.GetOrdinal("CreatedOn")) : default,
+            ModifiedOn = HasColumn(reader, "ModifiedOn") && !reader.IsDBNull(reader.GetOrdinal("ModifiedOn")) ? reader.GetFieldValue<DateTimeOffset>(reader.GetOrdinal("ModifiedOn")) : default,
+            CreatedBy = HasColumn(reader, "CreatedBy") && !reader.IsDBNull(reader.GetOrdinal("CreatedBy")) ? reader.GetInt32(reader.GetOrdinal("CreatedBy")) : 0,
+            ModifiedBy = HasColumn(reader, "ModifiedBy") && !reader.IsDBNull(reader.GetOrdinal("ModifiedBy")) ? reader.GetInt32(reader.GetOrdinal("ModifiedBy")) : 0
         };
 
         var student = new Student
         {
-            Id = reader.GetInt32(1),
-            UserName = reader.IsDBNull(2) ? string.Empty : reader.GetString(2)
+            Id = reader.GetInt32(reader.GetOrdinal("StudentId")),
+            UserName = reader.IsDBNull(reader.GetOrdinal("UserName")) ? string.Empty : reader.GetString(reader.GetOrdinal("UserName"))
         };
 
         var cls = new Class
         {
-            Id = reader.GetInt32(3),
-            ClassName = reader.IsDBNull(4) ? string.Empty : reader.GetString(4)
+            Id = reader.GetInt32(reader.GetOrdinal("ClassId")),
+            ClassName = reader.IsDBNull(reader.GetOrdinal("ClassName")) ? string.Empty : reader.GetString(reader.GetOrdinal("ClassName"))
         };
 
         var course = new Course
         {
-            Id = reader.GetInt32(5),
-            CourseName = reader.IsDBNull(6) ? string.Empty : reader.GetString(6)
+            Id = reader.GetInt32(reader.GetOrdinal("CourseId")),
+            CourseName = reader.IsDBNull(reader.GetOrdinal("CourseName")) ? string.Empty : reader.GetString(reader.GetOrdinal("CourseName"))
         };
 
         return (registration, student, cls, course);
@@ -769,8 +776,25 @@ public static class RegistrationDataProvider
             Id = reader.GetInt32(reader.GetOrdinal("Id")),
             StudentId = reader.GetInt32(reader.GetOrdinal("StudentId")),
             ClassId = reader.GetInt32(reader.GetOrdinal("ClassId")),
-            RegsitrationDate = reader.GetDateTime(reader.GetOrdinal("RegistrationDate")),
-            Status = reader.GetString(reader.GetOrdinal("Status"))
+            RegistrationDate = reader.GetDateTime(reader.GetOrdinal("RegistrationDate")),
+            Status = reader.GetString(reader.GetOrdinal("Status")),
+            CreatedOn = HasColumn(reader, "CreatedOn") && !reader.IsDBNull(reader.GetOrdinal("CreatedOn")) ? reader.GetFieldValue<DateTimeOffset>(reader.GetOrdinal("CreatedOn")) : default,
+            ModifiedOn = HasColumn(reader, "ModifiedOn") && !reader.IsDBNull(reader.GetOrdinal("ModifiedOn")) ? reader.GetFieldValue<DateTimeOffset>(reader.GetOrdinal("ModifiedOn")) : default,
+            CreatedBy = HasColumn(reader, "CreatedBy") && !reader.IsDBNull(reader.GetOrdinal("CreatedBy")) ? reader.GetInt32(reader.GetOrdinal("CreatedBy")) : 0,
+            ModifiedBy = HasColumn(reader, "ModifiedBy") && !reader.IsDBNull(reader.GetOrdinal("ModifiedBy")) ? reader.GetInt32(reader.GetOrdinal("ModifiedBy")) : 0
         };
+    }
+
+    private static bool HasColumn(SqlDataReader reader, string name)
+    {
+        for (int i = 0; i < reader.FieldCount; i++)
+        {
+            if (reader.GetName(i).Equals(name, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

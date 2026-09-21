@@ -1,28 +1,30 @@
-﻿namespace BL.Interfaces;
+﻿using Shared.Entities;
+
+namespace BL.Interfaces;
 
 public interface ICrudService<TEntity>
 {
-    TEntity? GetById(int id);
+    Result<TEntity?> GetById(int id);
 
-   Task<TEntity?> GetByIdAsync(int id);
+    Task<Result<TEntity?>> GetByIdAsync(int id);
 
-    List<TEntity> GetAll();
+    Result<List<TEntity>> GetAll();
 
-    Task<List<TEntity>> GetAllAsync();
+    Task<Result<List<TEntity>>> GetAllAsync();
 
-    void Add(TEntity entity);
+    ValidationResult Add(TEntity entity);
 
-    Task AddAsync(TEntity entity);
+    Task<ValidationResult> AddAsync(TEntity entity);
 
-    void Update(int id, TEntity entity);
+    ValidationResult Update(int id, TEntity entity);
 
-    Task UpdateAsync(int id, TEntity entity);
+    Task<ValidationResult> UpdateAsync(int id, TEntity entity);
 
-    void Delete(int id);
+    ValidationResult Delete(int id);
 
-    Task DeleteAsync(int id);
+    Task<ValidationResult> DeleteAsync(int id);
 
-    List<TEntity> Search(string regex);
+    Result<List<TEntity>> Search(string regex);
 
-    Task<List<TEntity>> SearchAsync(string regex);
+    Task<Result<List<TEntity>>> SearchAsync(string regex);
 }

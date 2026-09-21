@@ -8,7 +8,7 @@ public class Registration
 
     public int ClassId { get; set; }
 
-    public DateTime RegsitrationDate { get; set; }
+    public DateTime RegistrationDate { get; set; }
 
     public string Status { get; set; } = string.Empty;
 

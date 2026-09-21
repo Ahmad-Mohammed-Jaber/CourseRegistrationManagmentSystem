@@ -8,7 +8,7 @@ namespace Shared.Exceptions
     {
         public DatabaseException(string message, Exception exception) : base(message, exception)
         {
-            
+
         }
     }
 }

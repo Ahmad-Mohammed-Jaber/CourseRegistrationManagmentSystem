@@ -21,12 +21,10 @@ namespace CourseRegistrationManagmentSystem.View
         {
             await LoadWelcomeTextAsync();
 
-            // Fix welcome label overlapping with logout button
             lblWelcome.AutoSize = false;
             lblWelcome.Left = 20;
             lblWelcome.Top = 20;
 
-            // Leave space for logout button
             lblWelcome.Width = this.ClientSize.Width - btnLogout.Width - 60;
             lblWelcome.Height = 35;
 
@@ -47,26 +45,19 @@ namespace CourseRegistrationManagmentSystem.View
                 return;
             }
 
-            // Base auth info from single UserSession (no student data cached)
             string baseText = $"Welcome, {session.FullName} ({session.UserName})";
 
-            // Student specifics are fetched fresh from DB — authorization checked in BL (RequireStudent)
             try
             {
-                var student = await _studentService.GetCurrentStudentAsync();
-                if (student != null)
+                var profileResult = await _studentService.GetCurrentProfileAsync();
+                if (profileResult.IsSuccess && profileResult.Value != null)
                 {
-                    lblWelcome.Text = $"{baseText} - Student #{student.StudentNumber}";
+                    lblWelcome.Text = $"{baseText} - Student #{profileResult.Value.StudentNumber}";
                     return;
                 }
             }
-            catch (UnauthorizedAccessException)
-            {
-                // Not a student or not authorized — fallback to base text
-            }
             catch
             {
-                // DB fetch failed — fallback to base text
             }
 
             lblWelcome.Text = baseText;

@@ -23,44 +23,37 @@ namespace CourseRegistrationManagmentSystem.View
             this.lblErrorMessage = new System.Windows.Forms.Label();
             this.SuspendLayout();
 
-            // txtUsername
             this.txtUsername.Location = new System.Drawing.Point(120, 30);
             this.txtUsername.Name = "txtUsername";
             this.txtUsername.Size = new System.Drawing.Size(200, 25);
 
-            // txtPassword
             this.txtPassword.Location = new System.Drawing.Point(120, 70);
             this.txtPassword.Name = "txtPassword";
             this.txtPassword.PasswordChar = '*';
             this.txtPassword.Size = new System.Drawing.Size(200, 25);
 
-            // btnLogin
             this.btnLogin.Location = new System.Drawing.Point(120, 110);
             this.btnLogin.Name = "btnLogin";
             this.btnLogin.Size = new System.Drawing.Size(100, 35);
             this.btnLogin.Text = "Login";
             this.btnLogin.Click += new System.EventHandler(this.btnLogin_Click);
 
-            // lblUsername
             this.lblUsername.AutoSize = true;
             this.lblUsername.Location = new System.Drawing.Point(30, 33);
             this.lblUsername.Name = "lblUsername";
             this.lblUsername.Text = "Username:";
 
-            // lblPassword
             this.lblPassword.AutoSize = true;
             this.lblPassword.Location = new System.Drawing.Point(30, 73);
             this.lblPassword.Name = "lblPassword";
             this.lblPassword.Text = "Password:";
 
-            // lblErrorMessage
             this.lblErrorMessage.AutoSize = true;
             this.lblErrorMessage.ForeColor = System.Drawing.Color.Red;
             this.lblErrorMessage.Location = new System.Drawing.Point(30, 160);
             this.lblErrorMessage.Name = "lblErrorMessage";
             this.lblErrorMessage.Size = new System.Drawing.Size(0, 15);
 
-            // LoginForm
             this.ClientSize = new System.Drawing.Size(350, 200);
             this.Controls.Add(this.lblErrorMessage);
             this.Controls.Add(this.lblPassword);

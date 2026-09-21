@@ -2,113 +2,368 @@ using BL.Interfaces;
 using BL.Managers;
 using BL.Validation;
 using Shared.Entities;
+using Shared.Exceptions;
 using System.Text.RegularExpressions;
+using Shared.Logging;
 
 namespace BL.Services;
 
 public class ClassService : ICrudService<Class>
 {
     private readonly ClassManager _classManager = new ClassManager();
+    private readonly CourseManager _courseManager = new CourseManager();
 
-    public Class? GetById(int id)
+    public Result<Class?> GetById(int id)
     {
-        AccessValidator.RequireLogin();
-        return _classManager.GetById(id);
+        try
+        {
+            var auth = AccessValidator.RequireLogin();
+            if (!auth.IsSuccess)
+            {
+                return new Result<Class?>(auth.Status, auth.Errors, default);
+            }
+
+            return new Result<Class?>(ValidationStatus.Success, Array.Empty<ValidationError>(), _classManager.GetById(id));
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while retrieving class.", ex);
+        }
     }
 
-    public async Task<Class?> GetByIdAsync(int id)
+    public async Task<Result<Class?>> GetByIdAsync(int id)
     {
-        AccessValidator.RequireLogin();
-        return await _classManager.GetByIdAsync(id);
+        try
+        {
+            var auth = AccessValidator.RequireLogin();
+            if (!auth.IsSuccess)
+            {
+                return new Result<Class?>(auth.Status, auth.Errors, default);
+            }
+
+            return new Result<Class?>(ValidationStatus.Success, Array.Empty<ValidationError>(), await _classManager.GetByIdAsync(id));
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while retrieving class.", ex);
+        }
     }
 
-    public List<Class> GetAll()
+    public Result<List<Class>> GetAll()
     {
-        AccessValidator.RequireLogin();
-        return _classManager.GetAll();
+        try
+        {
+            var auth = AccessValidator.RequireLogin();
+            if (!auth.IsSuccess)
+            {
+                return new Result<List<Class>>(auth.Status, auth.Errors, default);
+            }
+
+            return new Result<List<Class>>(ValidationStatus.Success, Array.Empty<ValidationError>(), _classManager.GetAll());
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while retrieving classes.", ex);
+        }
     }
 
-    public async Task<List<Class>> GetAllAsync()
+    public async Task<Result<List<Class>>> GetAllAsync()
     {
-        AccessValidator.RequireLogin();
-        return await _classManager.GetAllAsync();
+        try
+        {
+            var auth = AccessValidator.RequireLogin();
+            if (!auth.IsSuccess)
+            {
+                return new Result<List<Class>>(auth.Status, auth.Errors, default);
+            }
+
+            return new Result<List<Class>>(ValidationStatus.Success, Array.Empty<ValidationError>(), await _classManager.GetAllAsync());
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while retrieving classes.", ex);
+        }
     }
 
-    public void Add(Class classEntity)
+    public ValidationResult Add(Class classEntity)
     {
-        AccessValidator.RequireAdmin();
-        // Validation
-        if (string.IsNullOrWhiteSpace(classEntity.ClassName)) throw new ArgumentException("Class name is required.");
-        if (classEntity.MaxCapacity <= 0) throw new ArgumentException("Max capacity must be greater than 0.");
+        try
+        {
+            var auth = AccessValidator.RequireAdmin();
+            if (!auth.IsSuccess)
+            {
+                return auth;
+            }
 
-        _classManager.Add(classEntity);
+            var valid = ClassValidator.ValidateClass(classEntity);
+            if (!valid.IsSuccess)
+            {
+                return valid;
+            }
+
+            var course = EnsureCourseExistsSync(classEntity.CourseId);
+            if (!course.IsSuccess)
+            {
+                return course;
+            }
+
+            _classManager.Add(classEntity);
+            return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while adding class.", ex);
+        }
     }
 
-    public async Task AddAsync(Class classEntity)
+    public async Task<ValidationResult> AddAsync(Class classEntity)
     {
-        AccessValidator.RequireAdmin();
-        // Validation
-        if (string.IsNullOrWhiteSpace(classEntity.ClassName)) throw new ArgumentException("Class name is required.");
-        if (classEntity.MaxCapacity <= 0) throw new ArgumentException("Max capacity must be greater than 0.");
+        try
+        {
+            var auth = AccessValidator.RequireAdmin();
+            if (!auth.IsSuccess)
+            {
+                return auth;
+            }
 
-        await _classManager.AddAsync(classEntity);
+            var valid = ClassValidator.ValidateClass(classEntity);
+            if (!valid.IsSuccess)
+            {
+                return valid;
+            }
+
+            var course = await EnsureCourseExistsAsync(classEntity.CourseId);
+            if (!course.IsSuccess)
+            {
+                return course;
+            }
+
+            await _classManager.AddAsync(classEntity);
+            return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while adding class.", ex);
+        }
     }
 
-    public void Update(int id, Class classEntity)
+    public ValidationResult Update(int id, Class classEntity)
     {
-        AccessValidator.RequireAdmin();
-        var existingClass = _classManager.GetById(id);
-        if (existingClass == null) throw new KeyNotFoundException($"Class with id {id} not found.");
+        try
+        {
+            var auth = AccessValidator.RequireAdmin();
+            if (!auth.IsSuccess)
+            {
+                return auth;
+            }
 
-        // Validation
-        if (string.IsNullOrWhiteSpace(classEntity.ClassName)) throw new ArgumentException("Class name is required.");
-        if (classEntity.MaxCapacity <= 0) throw new ArgumentException("Max capacity must be greater than 0.");
+            var existingClass = _classManager.GetById(id);
+            var exists = ClassValidator.RequireExists(existingClass, id);
+            if (!exists.IsSuccess)
+            {
+                return exists;
+            }
 
-        _classManager.Update(id, classEntity);
+            var valid = ClassValidator.ValidateClass(classEntity);
+            if (!valid.IsSuccess)
+            {
+                return valid;
+            }
+
+            var course = EnsureCourseExistsSync(classEntity.CourseId);
+            if (!course.IsSuccess)
+            {
+                return course;
+            }
+
+            var capacity = ClassValidator.ValidateMaxCapacityNotBelowEnrollment(
+                classEntity.MaxCapacity, existingClass!.CurrentCapacity);
+            if (!capacity.IsSuccess)
+            {
+                return capacity;
+            }
+
+            _classManager.Update(id, classEntity);
+            return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while updating class.", ex);
+        }
     }
 
-    public async Task UpdateAsync(int id, Class classEntity)
+    public async Task<ValidationResult> UpdateAsync(int id, Class classEntity)
     {
-        AccessValidator.RequireAdmin();
-        var existingClass = await _classManager.GetByIdAsync(id);
-        if (existingClass == null) throw new KeyNotFoundException($"Class with id {id} not found.");
+        try
+        {
+            var auth = AccessValidator.RequireAdmin();
+            if (!auth.IsSuccess)
+            {
+                return auth;
+            }
 
-        // Validation
-        if (string.IsNullOrWhiteSpace(classEntity.ClassName)) throw new ArgumentException("Class name is required.");
-        if (classEntity.MaxCapacity <= 0) throw new ArgumentException("Max capacity must be greater than 0.");
+            var existingClass = await _classManager.GetByIdAsync(id);
+            var exists = ClassValidator.RequireExists(existingClass, id);
+            if (!exists.IsSuccess)
+            {
+                return exists;
+            }
 
-        await _classManager.UpdateAsync(id, classEntity);
+            var valid = ClassValidator.ValidateClass(classEntity);
+            if (!valid.IsSuccess)
+            {
+                return valid;
+            }
+
+            var course = await EnsureCourseExistsAsync(classEntity.CourseId);
+            if (!course.IsSuccess)
+            {
+                return course;
+            }
+
+            var capacity = ClassValidator.ValidateMaxCapacityNotBelowEnrollment(
+                classEntity.MaxCapacity, existingClass!.CurrentCapacity);
+            if (!capacity.IsSuccess)
+            {
+                return capacity;
+            }
+
+            await _classManager.UpdateAsync(id, classEntity);
+            return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while updating class.", ex);
+        }
     }
 
-    public void Delete(int id)
+    public ValidationResult Delete(int id)
     {
-        AccessValidator.RequireAdmin();
-        _classManager.Delete(id);
+        try
+        {
+            var auth = AccessValidator.RequireAdmin();
+            if (!auth.IsSuccess)
+            {
+                return auth;
+            }
+
+            var existingClass = _classManager.GetById(id);
+            var exists = ClassValidator.RequireExists(existingClass, id);
+            if (!exists.IsSuccess)
+            {
+                return exists;
+            }
+
+            _classManager.Delete(id);
+            return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while deleting class.", ex);
+        }
     }
 
-    public async Task DeleteAsync(int id)
+    public async Task<ValidationResult> DeleteAsync(int id)
     {
-        AccessValidator.RequireAdmin();
-        await _classManager.DeleteAsync(id);
+        try
+        {
+            var auth = AccessValidator.RequireAdmin();
+            if (!auth.IsSuccess)
+            {
+                return auth;
+            }
+
+            var existingClass = await _classManager.GetByIdAsync(id);
+            var exists = ClassValidator.RequireExists(existingClass, id);
+            if (!exists.IsSuccess)
+            {
+                return exists;
+            }
+
+            await _classManager.DeleteAsync(id);
+            return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while deleting class.", ex);
+        }
     }
 
-    public List<Class> Search(string regex)
+    public Result<List<Class>> Search(string regex)
     {
-        AccessValidator.RequireLogin();
-        var classes = _classManager.GetAll();
-        return classes
-            .Where(classEntity => Regex.IsMatch(classEntity.ClassName, regex, RegexOptions.IgnoreCase) ||
-                                  Regex.IsMatch(classEntity.Instructor, regex, RegexOptions.IgnoreCase))
-            .ToList();
+        try
+        {
+            var auth = AccessValidator.RequireLogin();
+            if (!auth.IsSuccess)
+            {
+                return new Result<List<Class>>(auth.Status, auth.Errors, default);
+            }
+
+            var pattern = SearchValidator.ValidateSearchPattern(regex);
+            if (!pattern.IsSuccess)
+            {
+                return new Result<List<Class>>(pattern.Status, pattern.Errors, default);
+            }
+
+            var classes = _classManager.GetAll();
+            return new Result<List<Class>>(ValidationStatus.Success, Array.Empty<ValidationError>(), classes
+                .Where(classEntity => Regex.IsMatch(classEntity.ClassName, regex, RegexOptions.IgnoreCase) ||
+                                      Regex.IsMatch(classEntity.Instructor, regex, RegexOptions.IgnoreCase))
+                .ToList());
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while searching classes.", ex);
+        }
     }
 
-    public async Task<List<Class>> SearchAsync(string regex)
+    public async Task<Result<List<Class>>> SearchAsync(string regex)
     {
-        AccessValidator.RequireLogin();
-        var classes = await _classManager.GetAllAsync();
-        return classes
-            .Where(classEntity => Regex.IsMatch(classEntity.ClassName, regex, RegexOptions.IgnoreCase) ||
-                                  Regex.IsMatch(classEntity.Instructor, regex, RegexOptions.IgnoreCase))
-            .ToList();
+        try
+        {
+            var auth = AccessValidator.RequireLogin();
+            if (!auth.IsSuccess)
+            {
+                return new Result<List<Class>>(auth.Status, auth.Errors, default);
+            }
+
+            var pattern = SearchValidator.ValidateSearchPattern(regex);
+            if (!pattern.IsSuccess)
+            {
+                return new Result<List<Class>>(pattern.Status, pattern.Errors, default);
+            }
+
+            var classes = await _classManager.GetAllAsync();
+            return new Result<List<Class>>(ValidationStatus.Success, Array.Empty<ValidationError>(), classes
+                .Where(classEntity => Regex.IsMatch(classEntity.ClassName, regex, RegexOptions.IgnoreCase) ||
+                                      Regex.IsMatch(classEntity.Instructor, regex, RegexOptions.IgnoreCase))
+                .ToList());
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while searching classes.", ex);
+        }
+    }
+
+    private ValidationResult EnsureCourseExistsSync(int courseId)
+    {
+        return CourseValidator.RequireExists(_courseManager.GetById(courseId), courseId);
+    }
+
+    private async Task<ValidationResult> EnsureCourseExistsAsync(int courseId)
+    {
+        return CourseValidator.RequireExists(await _courseManager.GetByIdAsync(courseId), courseId);
     }
 }

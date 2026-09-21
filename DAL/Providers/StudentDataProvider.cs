@@ -22,7 +22,11 @@ public static class StudentDataProvider
             command.Parameters.Add("@UserId", SqlDbType.Int).Value = userId;
 
             using var reader = command.ExecuteReader();
-            if (reader.Read()) return MapStudentProfile(reader);
+            if (reader.Read())
+            {
+                return MapStudentProfile(reader);
+            }
+
             return null;
         }
         catch (Exception ex)
@@ -44,7 +48,11 @@ public static class StudentDataProvider
             command.Parameters.Add("@UserId", SqlDbType.Int).Value = userId;
 
             using var reader = await command.ExecuteReaderAsync();
-            if (await reader.ReadAsync()) return MapStudentProfile(reader);
+            if (await reader.ReadAsync())
+            {
+                return MapStudentProfile(reader);
+            }
+
             return null;
         }
         catch (Exception ex)
@@ -58,8 +66,17 @@ public static class StudentDataProvider
         object roleVal = reader.GetValue(reader.GetOrdinal("Role"));
         string roleStr = roleVal is int i ? ((User.UserRoles)i).ToString() : roleVal?.ToString() ?? string.Empty;
 
+        // Canonical columns: StudentId + UserId. Fall back to legacy "Id" (StudentId).
+        int studentId = HasColumn(reader, "StudentId") && !reader.IsDBNull(reader.GetOrdinal("StudentId"))
+            ? reader.GetInt32(reader.GetOrdinal("StudentId"))
+            : reader.GetInt32(reader.GetOrdinal("Id"));
+        int userId = HasColumn(reader, "UserId") && !reader.IsDBNull(reader.GetOrdinal("UserId"))
+            ? reader.GetInt32(reader.GetOrdinal("UserId"))
+            : studentId;
+
         return new StudentProfile(
-            reader.GetInt32(reader.GetOrdinal("Id")),
+            studentId,
+            userId,
             reader.GetString(reader.GetOrdinal("UserName")),
             reader.GetString(reader.GetOrdinal("FullName")),
             roleStr,
@@ -69,9 +86,6 @@ public static class StudentDataProvider
         );
     }
 
-    // ─────────────────────────────────────────────────────────────────
-    // CRUD — all via SPs
-    // ─────────────────────────────────────────────────────────────────
 
     public static Student? GetById(int id)
     {
@@ -86,7 +100,11 @@ public static class StudentDataProvider
             command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
 
             using var reader = command.ExecuteReader();
-            if (reader.Read()) return MapStudent(reader);
+            if (reader.Read())
+            {
+                return MapStudent(reader);
+            }
+
             return null;
         }
         catch (Exception ex)
@@ -108,7 +126,11 @@ public static class StudentDataProvider
             command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
 
             using var reader = await command.ExecuteReaderAsync();
-            if (await reader.ReadAsync()) return MapStudent(reader);
+            if (await reader.ReadAsync())
+            {
+                return MapStudent(reader);
+            }
+
             return null;
         }
         catch (Exception ex)
@@ -130,7 +152,11 @@ public static class StudentDataProvider
             command.Parameters.Add("@UserId", SqlDbType.Int).Value = userId;
 
             using var reader = command.ExecuteReader();
-            if (reader.Read()) return MapStudent(reader);
+            if (reader.Read())
+            {
+                return MapStudent(reader);
+            }
+
             return null;
         }
         catch (Exception ex)
@@ -152,7 +178,11 @@ public static class StudentDataProvider
             command.Parameters.Add("@UserId", SqlDbType.Int).Value = userId;
 
             using var reader = await command.ExecuteReaderAsync();
-            if (await reader.ReadAsync()) return MapStudent(reader);
+            if (await reader.ReadAsync())
+            {
+                return MapStudent(reader);
+            }
+
             return null;
         }
         catch (Exception ex)
@@ -173,7 +203,11 @@ public static class StudentDataProvider
             };
             using var reader = command.ExecuteReader();
             var list = new List<Student>();
-            while (reader.Read()) list.Add(MapStudent(reader));
+            while (reader.Read())
+            {
+                list.Add(MapStudent(reader));
+            }
+
             return list;
         }
         catch (Exception ex)
@@ -194,7 +228,11 @@ public static class StudentDataProvider
             };
             using var reader = await command.ExecuteReaderAsync();
             var list = new List<Student>();
-            while (await reader.ReadAsync()) list.Add(MapStudent(reader));
+            while (await reader.ReadAsync())
+            {
+                list.Add(MapStudent(reader));
+            }
+
             return list;
         }
         catch (Exception ex)
@@ -215,10 +253,8 @@ public static class StudentDataProvider
             };
             command.Parameters.Add("@UserId", SqlDbType.Int).Value = entity.UserId;
             command.Parameters.Add("@StudentNumber", SqlDbType.Int).Value = entity.StudentNumber;
-            command.Parameters.Add("@FullName", SqlDbType.NVarChar, 100).Value =
-                string.IsNullOrWhiteSpace(entity.FullName) ? (object)DBNull.Value : entity.FullName;
             command.Parameters.Add("@Email", SqlDbType.NVarChar, 100).Value = (object?)entity.Email ?? string.Empty;
-            command.Parameters.Add("@Phone", SqlDbType.NVarChar, 15).Value = (object?)entity.Phone ?? string.Empty;
+            command.Parameters.Add("@Phone", SqlDbType.NVarChar, 20).Value = (object?)entity.Phone ?? string.Empty;
 
             var outId = new SqlParameter("@Id", SqlDbType.Int) { Direction = ParameterDirection.Output };
             command.Parameters.Add(outId);
@@ -233,7 +269,7 @@ public static class StudentDataProvider
         }
     }
 
-    public static async Task AddAsync(Student entity)
+    public static async Task<int> AddAsync(Student entity)
     {
         try
         {
@@ -245,16 +281,18 @@ public static class StudentDataProvider
             };
             command.Parameters.Add("@UserId", SqlDbType.Int).Value = entity.UserId;
             command.Parameters.Add("@StudentNumber", SqlDbType.Int).Value = entity.StudentNumber;
-            command.Parameters.Add("@FullName", SqlDbType.NVarChar, 100).Value =
-                string.IsNullOrWhiteSpace(entity.FullName) ? (object)DBNull.Value : entity.FullName;
             command.Parameters.Add("@Email", SqlDbType.NVarChar, 100).Value = (object?)entity.Email ?? string.Empty;
-            command.Parameters.Add("@Phone", SqlDbType.NVarChar, 15).Value = (object?)entity.Phone ?? string.Empty;
+            command.Parameters.Add("@Phone", SqlDbType.NVarChar, 20).Value = (object?)entity.Phone ?? string.Empty;
 
             var outId = new SqlParameter("@Id", SqlDbType.Int) { Direction = ParameterDirection.Output };
             command.Parameters.Add(outId);
 
             await command.ExecuteNonQueryAsync();
-            if (outId.Value is int id && id != 0) entity.Id = id;
+            if (outId.Value is int id && id != 0)
+            {
+                entity.Id = id;
+            }
+            return entity.Id;
         }
         catch (Exception ex)
         {
@@ -275,10 +313,8 @@ public static class StudentDataProvider
             command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
             command.Parameters.Add("@UserId", SqlDbType.Int).Value = entity.UserId;
             command.Parameters.Add("@StudentNumber", SqlDbType.Int).Value = entity.StudentNumber;
-            command.Parameters.Add("@FullName", SqlDbType.NVarChar, 100).Value =
-                string.IsNullOrWhiteSpace(entity.FullName) ? (object)DBNull.Value : entity.FullName;
             command.Parameters.Add("@Email", SqlDbType.NVarChar, 100).Value = (object?)entity.Email ?? string.Empty;
-            command.Parameters.Add("@Phone", SqlDbType.NVarChar, 15).Value = (object?)entity.Phone ?? string.Empty;
+            command.Parameters.Add("@Phone", SqlDbType.NVarChar, 20).Value = (object?)entity.Phone ?? string.Empty;
 
             command.ExecuteNonQuery();
         }
@@ -301,10 +337,8 @@ public static class StudentDataProvider
             command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
             command.Parameters.Add("@UserId", SqlDbType.Int).Value = entity.UserId;
             command.Parameters.Add("@StudentNumber", SqlDbType.Int).Value = entity.StudentNumber;
-            command.Parameters.Add("@FullName", SqlDbType.NVarChar, 100).Value =
-                string.IsNullOrWhiteSpace(entity.FullName) ? (object)DBNull.Value : entity.FullName;
             command.Parameters.Add("@Email", SqlDbType.NVarChar, 100).Value = (object?)entity.Email ?? string.Empty;
-            command.Parameters.Add("@Phone", SqlDbType.NVarChar, 15).Value = (object?)entity.Phone ?? string.Empty;
+            command.Parameters.Add("@Phone", SqlDbType.NVarChar, 20).Value = (object?)entity.Phone ?? string.Empty;
 
             await command.ExecuteNonQueryAsync();
         }
@@ -366,7 +400,11 @@ public static class StudentDataProvider
 
             using var reader = command.ExecuteReader();
             var list = new List<Student>();
-            while (reader.Read()) list.Add(MapStudent(reader));
+            while (reader.Read())
+            {
+                list.Add(MapStudent(reader));
+            }
+
             return list;
         }
         catch (Exception ex)
@@ -389,7 +427,11 @@ public static class StudentDataProvider
 
             using var reader = await command.ExecuteReaderAsync();
             var list = new List<Student>();
-            while (await reader.ReadAsync()) list.Add(MapStudent(reader));
+            while (await reader.ReadAsync())
+            {
+                list.Add(MapStudent(reader));
+            }
+
             return list;
         }
         catch (Exception ex)
@@ -409,15 +451,45 @@ public static class StudentDataProvider
             Phone = reader.IsDBNull(reader.GetOrdinal("Phone")) ? string.Empty : reader.GetString(reader.GetOrdinal("Phone"))
         };
 
-        // Joined User fields (usp_GetAllStudents / GetById / GetByUserId / Search) — optional
         if (HasColumn(reader, "UserName") && !reader.IsDBNull(reader.GetOrdinal("UserName")))
+        {
             student.UserName = reader.GetString(reader.GetOrdinal("UserName"));
+        }
+
         if (HasColumn(reader, "FullName") && !reader.IsDBNull(reader.GetOrdinal("FullName")))
+        {
             student.FullName = reader.GetString(reader.GetOrdinal("FullName"));
+        }
+
         if (HasColumn(reader, "IsActive") && !reader.IsDBNull(reader.GetOrdinal("IsActive")))
+        {
             student.IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive"));
+        }
+
         if (HasColumn(reader, "Role") && !reader.IsDBNull(reader.GetOrdinal("Role")))
+        {
             student.Role = (User.UserRoles)reader.GetInt32(reader.GetOrdinal("Role"));
+        }
+
+        if (HasColumn(reader, "CreatedOn") && !reader.IsDBNull(reader.GetOrdinal("CreatedOn")))
+        {
+            student.CreatedOn = reader.GetFieldValue<DateTimeOffset>(reader.GetOrdinal("CreatedOn"));
+        }
+
+        if (HasColumn(reader, "ModifiedOn") && !reader.IsDBNull(reader.GetOrdinal("ModifiedOn")))
+        {
+            student.ModifiedOn = reader.GetFieldValue<DateTimeOffset>(reader.GetOrdinal("ModifiedOn"));
+        }
+
+        if (HasColumn(reader, "CreatedBy") && !reader.IsDBNull(reader.GetOrdinal("CreatedBy")))
+        {
+            student.CreatedBy = reader.GetInt32(reader.GetOrdinal("CreatedBy"));
+        }
+
+        if (HasColumn(reader, "ModifiedBy") && !reader.IsDBNull(reader.GetOrdinal("ModifiedBy")))
+        {
+            student.ModifiedBy = reader.GetInt32(reader.GetOrdinal("ModifiedBy"));
+        }
 
         return student;
     }
@@ -425,7 +497,13 @@ public static class StudentDataProvider
     private static bool HasColumn(SqlDataReader reader, string name)
     {
         for (int i = 0; i < reader.FieldCount; i++)
-            if (reader.GetName(i).Equals(name, StringComparison.OrdinalIgnoreCase)) return true;
+        {
+            if (reader.GetName(i).Equals(name, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
         return false;
     }
 }

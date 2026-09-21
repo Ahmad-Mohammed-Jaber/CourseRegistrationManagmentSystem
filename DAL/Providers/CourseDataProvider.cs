@@ -162,7 +162,7 @@ public static class CourseDataProvider
                 CommandType = CommandType.StoredProcedure
             };
 
-            command.Parameters.Add("@CourseCode", SqlDbType.NVarChar, 6).Value = entity.CourseCode ?? string.Empty;
+            command.Parameters.Add("@CourseCode", SqlDbType.NVarChar, 20).Value = entity.CourseCode ?? string.Empty;
             command.Parameters.Add("@CourseName", SqlDbType.NVarChar, 100).Value = entity.CourseName ?? string.Empty;
             command.Parameters.Add("@CreditHours", SqlDbType.Decimal).Value = (decimal)entity.CreditHours;
             command.Parameters.Add("@Description", SqlDbType.NVarChar, -1).Value = entity.Description ?? string.Empty;
@@ -176,7 +176,8 @@ public static class CourseDataProvider
 
             command.ExecuteNonQuery();
 
-            return (int)newIdParam.Value;
+            entity.Id = (int)newIdParam.Value;
+            return entity.Id;
         }
         catch (Exception ex)
         {
@@ -203,7 +204,7 @@ public static class CourseDataProvider
                 CommandType = CommandType.StoredProcedure
             };
 
-            command.Parameters.Add("@CourseCode", SqlDbType.NVarChar, 6).Value = entity.CourseCode ?? string.Empty;
+            command.Parameters.Add("@CourseCode", SqlDbType.NVarChar, 20).Value = entity.CourseCode ?? string.Empty;
             command.Parameters.Add("@CourseName", SqlDbType.NVarChar, 100).Value = entity.CourseName ?? string.Empty;
             command.Parameters.Add("@CreditHours", SqlDbType.Decimal).Value = (decimal)entity.CreditHours;
             command.Parameters.Add("@Description", SqlDbType.NVarChar, -1).Value = entity.Description ?? string.Empty;
@@ -217,7 +218,8 @@ public static class CourseDataProvider
 
             await command.ExecuteNonQueryAsync();
 
-            return (int)newIdParam.Value;
+            entity.Id = (int)newIdParam.Value;
+            return entity.Id;
         }
         catch (Exception ex)
         {
@@ -244,7 +246,7 @@ public static class CourseDataProvider
                 CommandType = CommandType.StoredProcedure
             };
             command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
-            command.Parameters.Add("@CourseCode", SqlDbType.NVarChar, 6).Value = entity.CourseCode ?? string.Empty;
+            command.Parameters.Add("@CourseCode", SqlDbType.NVarChar, 20).Value = entity.CourseCode ?? string.Empty;
             command.Parameters.Add("@CourseName", SqlDbType.NVarChar, 100).Value = entity.CourseName ?? string.Empty;
             command.Parameters.Add("@CreditHours", SqlDbType.Decimal).Value = (decimal)entity.CreditHours;
             command.Parameters.Add("@Description", SqlDbType.NVarChar, -1).Value = entity.Description ?? string.Empty;
@@ -277,7 +279,7 @@ public static class CourseDataProvider
                 CommandType = CommandType.StoredProcedure
             };
             command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
-            command.Parameters.Add("@CourseCode", SqlDbType.NVarChar, 6).Value = entity.CourseCode ?? string.Empty;
+            command.Parameters.Add("@CourseCode", SqlDbType.NVarChar, 20).Value = entity.CourseCode ?? string.Empty;
             command.Parameters.Add("@CourseName", SqlDbType.NVarChar, 100).Value = entity.CourseName ?? string.Empty;
             command.Parameters.Add("@CreditHours", SqlDbType.Decimal).Value = (decimal)entity.CreditHours;
             command.Parameters.Add("@Description", SqlDbType.NVarChar, -1).Value = entity.Description ?? string.Empty;
@@ -431,7 +433,24 @@ public static class CourseDataProvider
             CourseName = reader.GetString(reader.GetOrdinal("CourseName")),
             CreditHours = (double)reader.GetDecimal(reader.GetOrdinal("CreditHours")),
             Description = reader.GetString(reader.GetOrdinal("Description")),
-            IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive"))
+            IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
+            CreatedOn = HasColumn(reader, "CreatedOn") && !reader.IsDBNull(reader.GetOrdinal("CreatedOn")) ? reader.GetFieldValue<DateTimeOffset>(reader.GetOrdinal("CreatedOn")) : default,
+            ModifiedOn = HasColumn(reader, "ModifiedOn") && !reader.IsDBNull(reader.GetOrdinal("ModifiedOn")) ? reader.GetFieldValue<DateTimeOffset>(reader.GetOrdinal("ModifiedOn")) : default,
+            CreatedBy = HasColumn(reader, "CreatedBy") && !reader.IsDBNull(reader.GetOrdinal("CreatedBy")) ? reader.GetInt32(reader.GetOrdinal("CreatedBy")) : 0,
+            ModifiedBy = HasColumn(reader, "ModifiedBy") && !reader.IsDBNull(reader.GetOrdinal("ModifiedBy")) ? reader.GetInt32(reader.GetOrdinal("ModifiedBy")) : 0
         };
+    }
+
+    private static bool HasColumn(SqlDataReader reader, string name)
+    {
+        for (int i = 0; i < reader.FieldCount; i++)
+        {
+            if (reader.GetName(i).Equals(name, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

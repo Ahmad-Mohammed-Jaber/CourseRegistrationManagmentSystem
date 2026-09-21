@@ -1,5 +1,6 @@
 using DAL.Interfaces;
 using DAL.Providers;
+using Shared.DTOs;
 using Shared.Entities;
 
 namespace DAL.Repository;
@@ -24,6 +25,16 @@ public class StudentRepository : IGenericRepository<Student>
     public Task<Student?> GetByUserIdAsync(int userId)
     {
         return StudentDataProvider.GetByUserIdAsync(userId);
+    }
+
+    public StudentProfile? GetProfileByUserId(int userId)
+    {
+        return StudentDataProvider.GetProfileByUserId(userId);
+    }
+
+    public Task<StudentProfile?> GetProfileByUserIdAsync(int userId)
+    {
+        return StudentDataProvider.GetProfileByUserIdAsync(userId);
     }
 
     public List<Student> GetAll()

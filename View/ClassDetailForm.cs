@@ -1,8 +1,11 @@
 using Shared.Helpers;
 using Shared.Dtos;
 using Shared.Entities;
+using Shared.Exceptions;
+using Shared.Logging;
 using System.Windows.Forms;
 using BL.Services;
+using BL.Validation;
 
 namespace View
 {
@@ -38,7 +41,10 @@ namespace View
             _isEditMode = cls != null;
             InitializeComponent();
             LoadCourses();
-            if (_isEditMode) LoadData();
+            if (_isEditMode)
+            {
+                LoadData();
+            }
         }
         private void InitializeComponent()
         {
@@ -63,12 +69,10 @@ namespace View
             ((System.ComponentModel.ISupportInitialize)(this.numCapacity)).BeginInit();
             this.SuspendLayout();
 
-            // Form
             this.ClientSize = new Size(420, 520);
             this.StartPosition = FormStartPosition.CenterParent;
             this.Text = _isEditMode ? "Edit Class" : "Add Class";
 
-            // Course
             this.lblCourse.AutoSize = true;
             this.lblCourse.Location = new Point(20, 20);
             this.lblCourse.Text = "Course:";
@@ -77,7 +81,6 @@ namespace View
             this.cmbCourse.Size = new Size(250, 25);
             this.cmbCourse.DropDownStyle = ComboBoxStyle.DropDownList;
 
-            // Class Name
             this.lblName.AutoSize = true;
             this.lblName.Location = new Point(20, 60);
             this.lblName.Text = "Class Name:";
@@ -85,7 +88,6 @@ namespace View
             this.txtName.Location = new Point(120, 58);
             this.txtName.Size = new Size(250, 25);
 
-            // Instructor
             this.lblInstructor.AutoSize = true;
             this.lblInstructor.Location = new Point(20, 100);
             this.lblInstructor.Text = "Instructor:";
@@ -93,7 +95,6 @@ namespace View
             this.txtInstructor.Location = new Point(120, 98);
             this.txtInstructor.Size = new Size(250, 25);
 
-            // Capacity
             this.lblCapacity.AutoSize = true;
             this.lblCapacity.Location = new Point(20, 140);
             this.lblCapacity.Text = "Max Capacity:";
@@ -103,12 +104,10 @@ namespace View
             this.numCapacity.Minimum = 0;
             this.numCapacity.Maximum = 1000;
 
-            // Schedule Label
             this.lblSchedule.AutoSize = true;
             this.lblSchedule.Location = new Point(20, 180);
             this.lblSchedule.Text = "Schedule:";
 
-            // Schedule Table
             this.pnlSchedule.Location = new Point(120, 180);
             this.pnlSchedule.Size = new Size(250, 120);
             this.pnlSchedule.ColumnCount = 2;
@@ -155,7 +154,6 @@ namespace View
                 this.pnlSchedule.Controls.Add(chk, col, row);
             }
 
-            // Start Date
             this.lblStart.AutoSize = true;
             this.lblStart.Location = new Point(20, 320);
             this.lblStart.Text = "Start Date:";
@@ -163,7 +161,6 @@ namespace View
             this.dtStart.Location = new Point(120, 318);
             this.dtStart.Size = new Size(250, 25);
 
-            // End Date
             this.lblEnd.AutoSize = true;
             this.lblEnd.Location = new Point(20, 360);
             this.lblEnd.Text = "End Date:";
@@ -171,24 +168,20 @@ namespace View
             this.dtEnd.Location = new Point(120, 358);
             this.dtEnd.Size = new Size(250, 25);
 
-            // Active
             this.chkActive.AutoSize = true;
             this.chkActive.Location = new Point(120, 400);
             this.chkActive.Text = "Is Active";
 
-            // Save
             this.btnSave.Location = new Point(120, 445);
             this.btnSave.Size = new Size(90, 35);
             this.btnSave.Text = "Save";
             this.btnSave.Click += btnSave_Click;
 
-            // Cancel
             this.btnCancel.Location = new Point(220, 445);
             this.btnCancel.Size = new Size(90, 35);
             this.btnCancel.Text = "Cancel";
             this.btnCancel.Click += (s, e) => this.DialogResult = DialogResult.Cancel;
 
-            // Controls
             this.Controls.Add(this.lblCourse);
             this.Controls.Add(this.cmbCourse);
             this.Controls.Add(this.lblName);
@@ -213,15 +206,24 @@ namespace View
         }
         private async void LoadCourses()
         {
-            var courses = await _courseService.GetAllAsync();
-            cmbCourse.DataSource = courses;
+            var result = await _courseService.GetAllAsync();
+            if (!result.IsSuccess)
+            {
+                MessageBox.Show($"Error loading courses: {result.Message}");
+                return;
+            }
+            cmbCourse.DataSource = result.Value!;
             cmbCourse.DisplayMember = "CourseName";
             cmbCourse.ValueMember = "Id";
         }
 
         private void LoadData()
         {
-            if (_class == null) return;
+            if (_class == null)
+            {
+                return;
+            }
+
             cmbCourse.SelectedValue = _class.CourseId;
             txtName.Text = _class.ClassName;
             txtInstructor.Text = _class.Instructor;
@@ -237,16 +239,10 @@ namespace View
 
         private async void btnSave_Click(object sender, EventArgs e)
         {
-            if (cmbCourse.SelectedValue == null || string.IsNullOrWhiteSpace(txtName.Text))
-            {
-                MessageBox.Show("Course and Class Name are required.");
-                return;
-            }
-
             var dto = new ClassDto
             {
                 Id = _isEditMode ? _class!.Id : 0,
-                CourseId = (int)cmbCourse.SelectedValue!,
+                CourseId = cmbCourse.SelectedValue is int cid ? cid : 0,
                 ClassName = txtName.Text,
                 Instructor = txtInstructor.Text,
                 MaxCapacity = (int)numCapacity.Value,
@@ -257,16 +253,41 @@ namespace View
                 IsActive = chkActive.Checked
             };
 
+            var entity = dto.ToEntity();
+            var validation = ClassValidator.ValidateClass(entity);
+            if (!validation.IsSuccess)
+            {
+                MessageBox.Show(validation.Message);
+                return;
+            }
+
             try
             {
-                var entity = dto.ToEntity();
-                if (_isEditMode) await _classService.UpdateAsync(entity.Id, entity);
-                else await _classService.AddAsync(entity);
+                ValidationResult saveResult;
+                if (_isEditMode)
+                {
+                    saveResult = await _classService.UpdateAsync(entity.Id, entity);
+                }
+                else
+                {
+                    saveResult = await _classService.AddAsync(entity);
+                }
+
+                if (!saveResult.IsSuccess)
+                {
+                    MessageBox.Show($"Error saving class: {saveResult.Message}");
+                    return;
+                }
                 this.DialogResult = DialogResult.OK;
+            }
+            catch (BusinessException ex)
+            {
+                MessageBox.Show(ex.Message);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error saving class: {ex.Message}");
+                AppLogger.LogViewError(ex);
+                MessageBox.Show("Error saving class due to an unexpected error.");
             }
         }
     }

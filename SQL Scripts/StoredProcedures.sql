@@ -1,6 +1,55 @@
 USE [CourseManagementDB]
 GO
-/****** Object:  StoredProcedure [dbo].[usp_CreateClass]    Script Date: 8/9/2026 8:28:02 AM ******/
+
+-- =============================================
+-- DROP ALL STORED PROCEDURES (safe re-run)
+-- =============================================
+IF OBJECT_ID('dbo.usp_GetStudentProfileByUserId', 'P') IS NOT NULL DROP PROCEDURE [dbo].[usp_GetStudentProfileByUserId];
+IF OBJECT_ID('dbo.usp_UpdateUser', 'P') IS NOT NULL DROP PROCEDURE [dbo].[usp_UpdateUser];
+IF OBJECT_ID('dbo.usp_UpdateStudent', 'P') IS NOT NULL DROP PROCEDURE [dbo].[usp_UpdateStudent];
+IF OBJECT_ID('dbo.usp_UpdateRegistration', 'P') IS NOT NULL DROP PROCEDURE [dbo].[usp_UpdateRegistration];
+IF OBJECT_ID('dbo.usp_UpdateCourse', 'P') IS NOT NULL DROP PROCEDURE [dbo].[usp_UpdateCourse];
+IF OBJECT_ID('dbo.usp_UpdateClass', 'P') IS NOT NULL DROP PROCEDURE [dbo].[usp_UpdateClass];
+IF OBJECT_ID('dbo.usp_SearchUsers', 'P') IS NOT NULL DROP PROCEDURE [dbo].[usp_SearchUsers];
+IF OBJECT_ID('dbo.usp_SearchStudents', 'P') IS NOT NULL DROP PROCEDURE [dbo].[usp_SearchStudents];
+IF OBJECT_ID('dbo.usp_SearchRegistrationsDetailed', 'P') IS NOT NULL DROP PROCEDURE [dbo].[usp_SearchRegistrationsDetailed];
+IF OBJECT_ID('dbo.usp_SearchRegistrations', 'P') IS NOT NULL DROP PROCEDURE [dbo].[usp_SearchRegistrations];
+IF OBJECT_ID('dbo.usp_SearchCourses', 'P') IS NOT NULL DROP PROCEDURE [dbo].[usp_SearchCourses];
+IF OBJECT_ID('dbo.usp_SearchClasses', 'P') IS NOT NULL DROP PROCEDURE [dbo].[usp_SearchClasses];
+IF OBJECT_ID('dbo.usp_RegistrationExists', 'P') IS NOT NULL DROP PROCEDURE [dbo].[usp_RegistrationExists];
+IF OBJECT_ID('dbo.usp_GetUserByUserName', 'P') IS NOT NULL DROP PROCEDURE [dbo].[usp_GetUserByUserName];
+IF OBJECT_ID('dbo.usp_GetUserById', 'P') IS NOT NULL DROP PROCEDURE [dbo].[usp_GetUserById];
+IF OBJECT_ID('dbo.usp_GetStudentRegistrationsWithClasses', 'P') IS NOT NULL DROP PROCEDURE [dbo].[usp_GetStudentRegistrationsWithClasses];
+IF OBJECT_ID('dbo.usp_GetStudentByUserId', 'P') IS NOT NULL DROP PROCEDURE [dbo].[usp_GetStudentByUserId];
+IF OBJECT_ID('dbo.usp_GetStudentById', 'P') IS NOT NULL DROP PROCEDURE [dbo].[usp_GetStudentById];
+IF OBJECT_ID('dbo.usp_GetRegistrationsByStudentId', 'P') IS NOT NULL DROP PROCEDURE [dbo].[usp_GetRegistrationsByStudentId];
+IF OBJECT_ID('dbo.usp_GetRegistrationsByClassId', 'P') IS NOT NULL DROP PROCEDURE [dbo].[usp_GetRegistrationsByClassId];
+IF OBJECT_ID('dbo.usp_GetRegistrationById', 'P') IS NOT NULL DROP PROCEDURE [dbo].[usp_GetRegistrationById];
+IF OBJECT_ID('dbo.usp_GetCourseById', 'P') IS NOT NULL DROP PROCEDURE [dbo].[usp_GetCourseById];
+IF OBJECT_ID('dbo.usp_GetClassesByCourseId', 'P') IS NOT NULL DROP PROCEDURE [dbo].[usp_GetClassesByCourseId];
+IF OBJECT_ID('dbo.usp_GetClassById', 'P') IS NOT NULL DROP PROCEDURE [dbo].[usp_GetClassById];
+IF OBJECT_ID('dbo.usp_GetAllUsers', 'P') IS NOT NULL DROP PROCEDURE [dbo].[usp_GetAllUsers];
+IF OBJECT_ID('dbo.usp_GetAllStudents', 'P') IS NOT NULL DROP PROCEDURE [dbo].[usp_GetAllStudents];
+IF OBJECT_ID('dbo.usp_GetAllRegistrationsDetailed', 'P') IS NOT NULL DROP PROCEDURE [dbo].[usp_GetAllRegistrationsDetailed];
+IF OBJECT_ID('dbo.usp_GetAllRegistrations', 'P') IS NOT NULL DROP PROCEDURE [dbo].[usp_GetAllRegistrations];
+IF OBJECT_ID('dbo.usp_GetAllCourses', 'P') IS NOT NULL DROP PROCEDURE [dbo].[usp_GetAllCourses];
+IF OBJECT_ID('dbo.usp_GetAllClasses', 'P') IS NOT NULL DROP PROCEDURE [dbo].[usp_GetAllClasses];
+IF OBJECT_ID('dbo.usp_DeleteUser', 'P') IS NOT NULL DROP PROCEDURE [dbo].[usp_DeleteUser];
+IF OBJECT_ID('dbo.usp_DeleteStudent', 'P') IS NOT NULL DROP PROCEDURE [dbo].[usp_DeleteStudent];
+IF OBJECT_ID('dbo.usp_DeleteRegistration', 'P') IS NOT NULL DROP PROCEDURE [dbo].[usp_DeleteRegistration];
+IF OBJECT_ID('dbo.usp_DeleteCourse', 'P') IS NOT NULL DROP PROCEDURE [dbo].[usp_DeleteCourse];
+IF OBJECT_ID('dbo.usp_DeleteClass', 'P') IS NOT NULL DROP PROCEDURE [dbo].[usp_DeleteClass];
+IF OBJECT_ID('dbo.usp_CreateUser', 'P') IS NOT NULL DROP PROCEDURE [dbo].[usp_CreateUser];
+IF OBJECT_ID('dbo.usp_CreateStudent', 'P') IS NOT NULL DROP PROCEDURE [dbo].[usp_CreateStudent];
+IF OBJECT_ID('dbo.usp_CreateRegistration', 'P') IS NOT NULL DROP PROCEDURE [dbo].[usp_CreateRegistration];
+IF OBJECT_ID('dbo.usp_CreateCourse', 'P') IS NOT NULL DROP PROCEDURE [dbo].[usp_CreateCourse];
+IF OBJECT_ID('dbo.usp_CreateClass', 'P') IS NOT NULL DROP PROCEDURE [dbo].[usp_CreateClass];
+GO
+
+-- =============================================
+-- CREATE ALL STORED PROCEDURES
+-- =============================================
+
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -11,7 +60,7 @@ GO
 -- =============================================
 
 -- Create Class (returns generated ID)
-CREATE   PROCEDURE [dbo].[usp_CreateClass]
+CREATE PROCEDURE [dbo].[usp_CreateClass]
     @CourseId INT,
     @ClassName NVARCHAR(50),
     @Instructor NVARCHAR(50),
@@ -31,19 +80,14 @@ BEGIN
     SET @NewId = SCOPE_IDENTITY();
 END
 GO
-/****** Object:  StoredProcedure [dbo].[usp_CreateCourse]    Script Date: 8/9/2026 8:28:02 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 
 -- =============================================
 -- COURSE Stored Procedures
 -- =============================================
 
 -- Create Course (returns generated ID)
-CREATE   PROCEDURE [dbo].[usp_CreateCourse]
-    @CourseCode NVARCHAR(6),
+CREATE PROCEDURE [dbo].[usp_CreateCourse]
+    @CourseCode NVARCHAR(20),
     @CourseName NVARCHAR(100),
     @CreditHours DECIMAL(4, 2),
     @Description NVARCHAR(MAX),
@@ -58,18 +102,13 @@ BEGIN
     SET @NewId = SCOPE_IDENTITY();
 END
 GO
-/****** Object:  StoredProcedure [dbo].[usp_CreateRegistration]    Script Date: 8/9/2026 8:28:02 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 
 -- =============================================
 -- REGISTRATION Stored Procedures
 -- =============================================
 
 -- Create Registration (returns generated ID)
-CREATE   PROCEDURE [dbo].[usp_CreateRegistration]
+CREATE PROCEDURE [dbo].[usp_CreateRegistration]
     @StudentId INT,
     @ClassId INT,
     @RegistrationDate DATETIME2,
@@ -84,37 +123,29 @@ BEGIN
     SET @NewId = SCOPE_IDENTITY();
 END
 GO
-/****** Object:  StoredProcedure [dbo].[usp_CreateStudent]    Script Date: 8/9/2026 8:28:02 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 
 -- =============================================
 -- STUDENT Stored Procedures
 -- =============================================
 
 -- Create Student (returns generated ID)
-CREATE   PROCEDURE [dbo].[usp_CreateStudent]
+-- NOTE: Student has no FullName column (TablesV2 removed it; identity lives in [User]).
+-- @FullName is accepted for DAL backward-compat and ignored.
+CREATE PROCEDURE [dbo].[usp_CreateStudent]
     @UserId INT,
     @StudentNumber INT,
     @FullName NVARCHAR(100) = NULL,
     @Email NVARCHAR(100),
-    @Phone NVARCHAR(15),
+    @Phone NVARCHAR(20),
     @Id INT OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
-    INSERT INTO Student (UserId, StudentNumber, FullName, Email, Phone)
-    VALUES (@UserId, @StudentNumber, ISNULL(@FullName, ''), @Email, @Phone);
+    INSERT INTO Student (UserId, StudentNumber, Email, Phone)
+    VALUES (@UserId, @StudentNumber, @Email, @Phone);
     
     SET @Id = SCOPE_IDENTITY();
 END
-GO
-/****** Object:  StoredProcedure [dbo].[usp_CreateUser]    Script Date: 8/9/2026 8:28:02 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
 GO
 
 -- =============================================
@@ -122,30 +153,29 @@ GO
 -- =============================================
 
 -- Create User (returns generated ID)
-CREATE   PROCEDURE [dbo].[usp_CreateUser]
+CREATE PROCEDURE [dbo].[usp_CreateUser]
     @UserName NVARCHAR(100),
     @PasswordHash NVARCHAR(255),
     @FullName NVARCHAR(100),
     @Role INT,
     @IsActive BIT,
+    @CreatedBy INT = 0,
     @Id INT OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
-    INSERT INTO [User] (UserName, PasswordHash, FullName, Role, IsActive)
-    VALUES (@UserName, @PasswordHash, @FullName, @Role, @IsActive);
-    
+    IF EXISTS (SELECT 1 FROM [dbo].[User] WHERE [UserName] = @UserName)
+        THROW 50009, 'UserName already exists.', 1;
+
+    INSERT INTO [User] (UserName, PasswordHash, FullName, Role, IsActive, CreatedBy, ModifiedBy)
+    VALUES (@UserName, @PasswordHash, @FullName, @Role, @IsActive, @CreatedBy, @CreatedBy);
+
     SET @Id = SCOPE_IDENTITY();
 END
 GO
-/****** Object:  StoredProcedure [dbo].[usp_DeleteClass]    Script Date: 8/9/2026 8:28:02 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 
 -- Delete Class
-CREATE   PROCEDURE [dbo].[usp_DeleteClass]
+CREATE PROCEDURE [dbo].[usp_DeleteClass]
     @Id INT
 AS
 BEGIN
@@ -153,14 +183,9 @@ BEGIN
     DELETE FROM Class WHERE Id = @Id;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[usp_DeleteCourse]    Script Date: 8/9/2026 8:28:02 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 
 -- Delete Course
-CREATE   PROCEDURE [dbo].[usp_DeleteCourse]
+CREATE PROCEDURE [dbo].[usp_DeleteCourse]
     @Id INT
 AS
 BEGIN
@@ -168,14 +193,9 @@ BEGIN
     DELETE FROM Course WHERE Id = @Id;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[usp_DeleteRegistration]    Script Date: 8/9/2026 8:28:02 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 
 -- Delete Registration
-CREATE   PROCEDURE [dbo].[usp_DeleteRegistration]
+CREATE PROCEDURE [dbo].[usp_DeleteRegistration]
     @Id INT
 AS
 BEGIN
@@ -183,14 +203,9 @@ BEGIN
     DELETE FROM Registrations WHERE Id = @Id;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[usp_DeleteStudent]    Script Date: 8/9/2026 8:28:02 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 
 -- Delete Student
-CREATE   PROCEDURE [dbo].[usp_DeleteStudent]
+CREATE PROCEDURE [dbo].[usp_DeleteStudent]
     @Id INT
 AS
 BEGIN
@@ -198,14 +213,9 @@ BEGIN
     DELETE FROM Student WHERE Id = @Id;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[usp_DeleteUser]    Script Date: 8/9/2026 8:28:02 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 
 -- Delete User
-CREATE   PROCEDURE [dbo].[usp_DeleteUser]
+CREATE PROCEDURE [dbo].[usp_DeleteUser]
     @Id INT
 AS
 BEGIN
@@ -213,59 +223,40 @@ BEGIN
     DELETE FROM [User] WHERE Id = @Id;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[usp_GetAllClasses]    Script Date: 8/9/2026 8:28:02 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 
 -- Get All Classes
-CREATE   PROCEDURE [dbo].[usp_GetAllClasses]
+CREATE PROCEDURE [dbo].[usp_GetAllClasses]
 AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT Id, CourseId, ClassName, Instructor, CurrentCapacity, MaxCapacity, StartDate, EndDate, Schedule, IsActive 
+    SELECT Id, CourseId, ClassName, Instructor, MaxCapacity, CurrentCapacity, StartDate, EndDate, Schedule, IsActive, CreatedOn, ModifiedOn, CreatedBy, ModifiedBy
     FROM Class;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[usp_GetAllCourses]    Script Date: 8/9/2026 8:28:02 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 
 -- Get All Courses
-CREATE   PROCEDURE [dbo].[usp_GetAllCourses]
+CREATE PROCEDURE [dbo].[usp_GetAllCourses]
 AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT Id, CourseCode, CourseName, CreditHours, Description, IsActive 
+    SELECT Id, CourseCode, CourseName, CreditHours, Description, IsActive, CreatedOn, ModifiedOn, CreatedBy, ModifiedBy
     FROM Course;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[usp_GetAllRegistrations]    Script Date: 8/9/2026 8:28:02 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 
 -- Get All Registrations
-CREATE   PROCEDURE [dbo].[usp_GetAllRegistrations]
+CREATE PROCEDURE [dbo].[usp_GetAllRegistrations]
 AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT Id, StudentId, ClassId, RegistrationDate, Status 
+    SELECT Id, StudentId, ClassId, RegistrationDate, Status, CreatedOn, ModifiedOn, CreatedBy, ModifiedBy
     FROM Registrations;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[usp_GetAllRegistrationsDetailed]    Script Date: 8/9/2026 8:28:02 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 
 -- Get All Registrations Detailed
-CREATE   PROCEDURE [dbo].[usp_GetAllRegistrationsDetailed]
+-- NOTE: co.Id aliased as CourseId to avoid duplicate "Id" column (r.Id).
+CREATE PROCEDURE [dbo].[usp_GetAllRegistrationsDetailed]
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -275,7 +266,7 @@ BEGIN
         u.UserName,
         r.ClassId,
         c.ClassName,
-        co.Id,
+        co.Id AS CourseId,
         co.CourseName,
         r.RegistrationDate,
         r.Status
@@ -286,14 +277,9 @@ BEGIN
     INNER JOIN Course co ON c.CourseId = co.Id;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[usp_GetAllStudents]    Script Date: 8/9/2026 8:28:02 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 
 -- Get All Students
-CREATE   PROCEDURE [dbo].[usp_GetAllStudents]
+CREATE PROCEDURE [dbo].[usp_GetAllStudents]
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -306,131 +292,91 @@ BEGIN
     JOIN [User] u ON s.UserId = u.Id;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[usp_GetAllUsers]    Script Date: 8/9/2026 8:28:02 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 
 -- Get All Users
-CREATE   PROCEDURE [dbo].[usp_GetAllUsers]
+CREATE PROCEDURE [dbo].[usp_GetAllUsers]
 AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT Id, UserName, PasswordHash, FullName, Role, IsActive 
+    SELECT Id, UserName, PasswordHash, FullName, Role, IsActive, CreatedOn, ModifiedOn, CreatedBy, ModifiedBy
     FROM [User];
 END
 GO
-/****** Object:  StoredProcedure [dbo].[usp_GetClassById]    Script Date: 8/9/2026 8:28:02 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 
 -- Get Class by ID
-CREATE   PROCEDURE [dbo].[usp_GetClassById]
+CREATE PROCEDURE [dbo].[usp_GetClassById]
     @Id INT
 AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT Id, CourseId, ClassName, Instructor, MaxCapacity, CurrentCapacity, StartDate, EndDate, Schedule, IsActive 
+    SELECT Id, CourseId, ClassName, Instructor, MaxCapacity, CurrentCapacity, StartDate, EndDate, Schedule, IsActive, CreatedOn, ModifiedOn, CreatedBy, ModifiedBy
     FROM Class 
     WHERE Id = @Id;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[usp_GetClassesByCourseId]    Script Date: 8/9/2026 8:28:02 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 
 -- Get Classes by Course ID
-CREATE   PROCEDURE [dbo].[usp_GetClassesByCourseId]
+CREATE PROCEDURE [dbo].[usp_GetClassesByCourseId]
     @CourseId INT
 AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT Id, CourseId, ClassName, Instructor, MaxCapacity, CurrentCapacity, StartDate, EndDate, Schedule, IsActive 
+    SELECT Id, CourseId, ClassName, Instructor, MaxCapacity, CurrentCapacity, StartDate, EndDate, Schedule, IsActive, CreatedOn, ModifiedOn, CreatedBy, ModifiedBy
     FROM Class 
     WHERE CourseId = @CourseId;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[usp_GetCourseById]    Script Date: 8/9/2026 8:28:02 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 
 -- Get Course by ID
-CREATE   PROCEDURE [dbo].[usp_GetCourseById]
+CREATE PROCEDURE [dbo].[usp_GetCourseById]
     @Id INT
 AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT Id, CourseCode, CourseName, CreditHours, Description, IsActive 
+    SELECT Id, CourseCode, CourseName, CreditHours, Description, IsActive, CreatedOn, ModifiedOn, CreatedBy, ModifiedBy
     FROM Course 
     WHERE Id = @Id;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[usp_GetRegistrationById]    Script Date: 8/9/2026 8:28:02 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 
 -- Get Registration by ID
-CREATE   PROCEDURE [dbo].[usp_GetRegistrationById]
+CREATE PROCEDURE [dbo].[usp_GetRegistrationById]
     @Id INT
 AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT Id, StudentId, ClassId, RegistrationDate, Status 
+    SELECT Id, StudentId, ClassId, RegistrationDate, Status, CreatedOn, ModifiedOn, CreatedBy, ModifiedBy
     FROM Registrations 
     WHERE Id = @Id;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[usp_GetRegistrationsByClassId]    Script Date: 8/9/2026 8:28:02 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 
 -- Get Registrations by Class ID
-CREATE   PROCEDURE [dbo].[usp_GetRegistrationsByClassId]
+CREATE PROCEDURE [dbo].[usp_GetRegistrationsByClassId]
     @ClassId INT
 AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT Id, StudentId, ClassId, RegistrationDate, Status 
+    SELECT Id, StudentId, ClassId, RegistrationDate, Status, CreatedOn, ModifiedOn, CreatedBy, ModifiedBy
     FROM Registrations 
     WHERE ClassId = @ClassId;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[usp_GetRegistrationsByStudentId]    Script Date: 8/9/2026 8:28:02 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 
 -- Get Registrations by Student ID
-CREATE   PROCEDURE [dbo].[usp_GetRegistrationsByStudentId]
+CREATE PROCEDURE [dbo].[usp_GetRegistrationsByStudentId]
     @StudentId INT
 AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT Id, StudentId, ClassId, RegistrationDate, Status 
+    SELECT Id, StudentId, ClassId, RegistrationDate, Status, CreatedOn, ModifiedOn, CreatedBy, ModifiedBy
     FROM Registrations 
     WHERE StudentId = @StudentId;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[usp_GetStudentById]    Script Date: 8/9/2026 8:28:02 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 
 -- Get Student by ID
-CREATE   PROCEDURE [dbo].[usp_GetStudentById]
+CREATE PROCEDURE [dbo].[usp_GetStudentById]
     @Id INT
 AS
 BEGIN
@@ -445,14 +391,9 @@ BEGIN
     WHERE s.Id = @Id;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[usp_GetStudentByUserId]    Script Date: 8/9/2026 8:28:02 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 
 -- Get Student by User ID
-CREATE   PROCEDURE [dbo].[usp_GetStudentByUserId]
+CREATE PROCEDURE [dbo].[usp_GetStudentByUserId]
     @UserId INT
 AS
 BEGIN
@@ -467,14 +408,9 @@ BEGIN
     WHERE s.UserId = @UserId;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[usp_GetStudentRegistrationsWithClasses]    Script Date: 8/9/2026 8:28:02 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 
 -- Get Student Registrations with Classes
-CREATE   PROCEDURE [dbo].[usp_GetStudentRegistrationsWithClasses]
+CREATE PROCEDURE [dbo].[usp_GetStudentRegistrationsWithClasses]
     @StudentId INT
 AS
 BEGIN
@@ -500,117 +436,84 @@ BEGIN
     WHERE r.StudentId = @StudentId;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[usp_GetUserById]    Script Date: 8/9/2026 8:28:02 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 
 -- Get User by ID
-CREATE   PROCEDURE [dbo].[usp_GetUserById]
+CREATE PROCEDURE [dbo].[usp_GetUserById]
     @Id INT
 AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT Id, UserName, PasswordHash, FullName, Role, IsActive 
+    SELECT Id, UserName, PasswordHash, FullName, Role, IsActive, CreatedOn, ModifiedOn, CreatedBy, ModifiedBy
     FROM [User] 
     WHERE Id = @Id;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[usp_GetUserByUserName]    Script Date: 8/9/2026 8:28:02 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 
 -- Get User by Username
-CREATE   PROCEDURE [dbo].[usp_GetUserByUserName]
+CREATE PROCEDURE [dbo].[usp_GetUserByUserName]
     @UserName NVARCHAR(100)
 AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT Id, UserName, PasswordHash, FullName, Role, IsActive 
+    SELECT Id, UserName, PasswordHash, FullName, Role, IsActive, CreatedOn, ModifiedOn, CreatedBy, ModifiedBy
     FROM [User] 
     WHERE UserName = @UserName;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[usp_RegistrationExists]    Script Date: 8/9/2026 8:28:02 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 
--- Check if Registration Exists
-CREATE   PROCEDURE [dbo].[usp_RegistrationExists]
+-- Check if Registration Exists (result column aliased for safe mapping)
+CREATE PROCEDURE [dbo].[usp_RegistrationExists]
     @StudentId INT,
     @ClassId INT
 AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT 1 
+    SELECT 1 AS [Exists]
     FROM Registrations 
     WHERE StudentId = @StudentId AND ClassId = @ClassId;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[usp_SearchClasses]    Script Date: 8/9/2026 8:28:02 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 
 -- Search Classes
-CREATE   PROCEDURE [dbo].[usp_SearchClasses]
+CREATE PROCEDURE [dbo].[usp_SearchClasses]
     @regex NVARCHAR(100)
 AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT Id, CourseId, ClassName, Instructor, MaxCapacity, CurrentCapacity, StartDate, EndDate, Schedule, IsActive 
+    SELECT Id, CourseId, ClassName, Instructor, MaxCapacity, CurrentCapacity, StartDate, EndDate, Schedule, IsActive, CreatedOn, ModifiedOn, CreatedBy, ModifiedBy
     FROM Class 
     WHERE ClassName LIKE '%' + @regex + '%' OR Instructor LIKE '%' + @regex + '%';
 END
 GO
-/****** Object:  StoredProcedure [dbo].[usp_SearchCourses]    Script Date: 8/9/2026 8:28:02 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 
 -- Search Courses
-CREATE   PROCEDURE [dbo].[usp_SearchCourses]
+CREATE PROCEDURE [dbo].[usp_SearchCourses]
     @regex NVARCHAR(100)
 AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT Id, CourseCode, CourseName, CreditHours, Description, IsActive 
+    SELECT Id, CourseCode, CourseName, CreditHours, Description, IsActive, CreatedOn, ModifiedOn, CreatedBy, ModifiedBy
     FROM Course 
     WHERE CourseCode LIKE '%' + @regex + '%' OR CourseName LIKE '%' + @regex + '%';
 END
 GO
-/****** Object:  StoredProcedure [dbo].[usp_SearchRegistrations]    Script Date: 8/9/2026 8:28:02 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 
 -- Search Registrations
-CREATE   PROCEDURE [dbo].[usp_SearchRegistrations]
+CREATE PROCEDURE [dbo].[usp_SearchRegistrations]
     @regex NVARCHAR(100)
 AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT Id, StudentId, ClassId, RegistrationDate, Status 
+    SELECT Id, StudentId, ClassId, RegistrationDate, Status, CreatedOn, ModifiedOn, CreatedBy, ModifiedBy
     FROM Registrations 
     WHERE Status LIKE '%' + @regex + '%';
 END
 GO
-/****** Object:  StoredProcedure [dbo].[usp_SearchRegistrationsDetailed]    Script Date: 8/9/2026 8:28:02 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 
 -- Search Registrations Detailed
-CREATE   PROCEDURE [dbo].[usp_SearchRegistrationsDetailed]
+-- FIX: Student.FullName was dropped in TablesV2; filter on [User].FullName.
+-- FIX: co.Id aliased as CourseId to avoid duplicate "Id" column.
+CREATE PROCEDURE [dbo].[usp_SearchRegistrationsDetailed]
     @regex NVARCHAR(100)
 AS
 BEGIN
@@ -621,7 +524,7 @@ BEGIN
         u.UserName,
         r.ClassId,
         c.ClassName,
-        co.Id,
+        co.Id AS CourseId,
         co.CourseName,
         r.RegistrationDate,
         r.Status
@@ -631,20 +534,15 @@ BEGIN
     INNER JOIN Class c ON r.ClassId = c.Id
     INNER JOIN Course co ON c.CourseId = co.Id
     WHERE u.UserName LIKE '%' + @regex + '%'
-       OR s.FullName LIKE '%' + @regex + '%'
+       OR u.FullName LIKE '%' + @regex + '%'
        OR c.ClassName LIKE '%' + @regex + '%'
        OR co.CourseName LIKE '%' + @regex + '%'
        OR r.Status LIKE '%' + @regex + '%';
 END
 GO
-/****** Object:  StoredProcedure [dbo].[usp_SearchStudents]    Script Date: 8/9/2026 8:28:02 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 
 -- Search Students
-CREATE   PROCEDURE [dbo].[usp_SearchStudents]
+CREATE PROCEDURE [dbo].[usp_SearchStudents]
     @regex NVARCHAR(100)
 AS
 BEGIN
@@ -659,31 +557,21 @@ BEGIN
     WHERE u.FullName LIKE '%' + @regex + '%' OR s.Email LIKE '%' + @regex + '%';
 END
 GO
-/****** Object:  StoredProcedure [dbo].[usp_SearchUsers]    Script Date: 8/9/2026 8:28:02 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 
 -- Search Users
-CREATE   PROCEDURE [dbo].[usp_SearchUsers]
+CREATE PROCEDURE [dbo].[usp_SearchUsers]
     @regex NVARCHAR(100)
 AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT Id, UserName, PasswordHash, FullName, Role, IsActive 
+    SELECT Id, UserName, PasswordHash, FullName, Role, IsActive, CreatedOn, ModifiedOn, CreatedBy, ModifiedBy
     FROM [User] 
     WHERE UserName LIKE '%' + @regex + '%' OR FullName LIKE '%' + @regex + '%';
 END
 GO
-/****** Object:  StoredProcedure [dbo].[usp_UpdateClass]    Script Date: 8/9/2026 8:28:02 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 
 -- Update Class
-CREATE   PROCEDURE [dbo].[usp_UpdateClass]
+CREATE PROCEDURE [dbo].[usp_UpdateClass]
     @Id INT,
     @CourseId INT,
     @ClassName NVARCHAR(50),
@@ -710,16 +598,11 @@ BEGIN
     WHERE Id = @Id;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[usp_UpdateCourse]    Script Date: 8/9/2026 8:28:02 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 
 -- Update Course
-CREATE   PROCEDURE [dbo].[usp_UpdateCourse]
+CREATE PROCEDURE [dbo].[usp_UpdateCourse]
     @Id INT,
-    @CourseCode NVARCHAR(6),
+    @CourseCode NVARCHAR(20),
     @CourseName NVARCHAR(100),
     @CreditHours DECIMAL(4, 2),
     @Description NVARCHAR(MAX),
@@ -736,14 +619,9 @@ BEGIN
     WHERE Id = @Id;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[usp_UpdateRegistration]    Script Date: 8/9/2026 8:28:02 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 
 -- Update Registration
-CREATE   PROCEDURE [dbo].[usp_UpdateRegistration]
+CREATE PROCEDURE [dbo].[usp_UpdateRegistration]
     @Id INT,
     @StudentId INT,
     @ClassId INT,
@@ -760,72 +638,72 @@ BEGIN
     WHERE Id = @Id;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[usp_UpdateStudent]    Script Date: 8/9/2026 8:28:02 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 
 -- Update Student
-CREATE   PROCEDURE [dbo].[usp_UpdateStudent]
+-- NOTE: @FullName accepted for DAL backward-compat; propagated to [User].FullName when non-NULL.
+CREATE PROCEDURE [dbo].[usp_UpdateStudent]
     @Id INT,
     @UserId INT,
     @StudentNumber INT,
     @FullName NVARCHAR(100) = NULL,
     @Email NVARCHAR(100),
-    @Phone NVARCHAR(15)
+    @Phone NVARCHAR(20)
 AS
 BEGIN
     SET NOCOUNT ON;
     UPDATE Student 
     SET UserId = @UserId, 
         StudentNumber = @StudentNumber, 
-        FullName = ISNULL(@FullName, FullName),
         Email = @Email, 
         Phone = @Phone 
     WHERE Id = @Id;
+
+    IF @FullName IS NOT NULL
+        UPDATE [User]
+        SET [FullName] = @FullName
+        WHERE [Id] = @UserId;
 END
-GO
-/****** Object:  StoredProcedure [dbo].[usp_UpdateUser]    Script Date: 8/9/2026 8:28:02 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
 GO
 
 -- Update User
-CREATE   PROCEDURE [dbo].[usp_UpdateUser]
+CREATE PROCEDURE [dbo].[usp_UpdateUser]
     @Id INT,
     @UserName NVARCHAR(100),
     @PasswordHash NVARCHAR(255),
     @FullName NVARCHAR(100),
     @Role INT,
-    @IsActive BIT
+    @IsActive BIT,
+    @ModifiedBy INT = 0
 AS
 BEGIN
     SET NOCOUNT ON;
-    UPDATE [User] 
-    SET UserName = @UserName, 
-        PasswordHash = @PasswordHash, 
-        FullName = @FullName, 
-        Role = @Role, 
-        IsActive = @IsActive 
+    IF EXISTS (SELECT 1 FROM [dbo].[User]
+               WHERE [UserName] = @UserName AND [Id] <> @Id)
+        THROW 50009, 'UserName already exists on another user.', 1;
+
+    UPDATE [User]
+    SET UserName = @UserName,
+        PasswordHash = @PasswordHash,
+        FullName = @FullName,
+        Role = @Role,
+        IsActive = @IsActive,
+        ModifiedBy = @ModifiedBy,
+        ModifiedOn = SYSDATETIMEOFFSET()
     WHERE Id = @Id;
 END
 GO
-/****** Object:  StoredProcedure [dbo].[usp_GetStudentProfileByUserId]    Script Date: 8/9/2026 8:28:02 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 
 -- Get Student Profile by UserId (single auth session: student data fetched fresh from DB)
-CREATE   PROCEDURE [dbo].[usp_GetStudentProfileByUserId]
+-- Canonical columns: StudentId + UserId (provider falls back to legacy Id = StudentId).
+CREATE PROCEDURE [dbo].[usp_GetStudentProfileByUserId]
     @UserId INT
 AS
 BEGIN
     SET NOCOUNT ON;
     SELECT
-        u.Id,
+        s.Id AS StudentId,
+        u.Id AS UserId,
+        s.Id AS Id,
         u.UserName,
         u.FullName,
         u.Role,

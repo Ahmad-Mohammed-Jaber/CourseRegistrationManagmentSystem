@@ -252,7 +252,8 @@ public static class ClassDataProvider
 
             command.ExecuteNonQuery();
 
-            return (int)newIdParam.Value;
+            entity.Id = (int)newIdParam.Value;
+            return entity.Id;
         }
         catch (Exception ex)
         {
@@ -297,7 +298,8 @@ public static class ClassDataProvider
 
             await command.ExecuteNonQueryAsync();
 
-            return (int)newIdParam.Value;
+            entity.Id = (int)newIdParam.Value;
+            return entity.Id;
         }
         catch (Exception ex)
         {
@@ -523,7 +525,24 @@ public static class ClassDataProvider
             StartDate = reader.GetDateTime(reader.GetOrdinal("StartDate")),
             EndDate = reader.GetDateTime(reader.GetOrdinal("EndDate")),
             Schedule = (Class.DaysOfWeek)reader.GetInt32(reader.GetOrdinal("Schedule")),
-            IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive"))
+            IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
+            CreatedOn = HasColumn(reader, "CreatedOn") && !reader.IsDBNull(reader.GetOrdinal("CreatedOn")) ? reader.GetFieldValue<DateTimeOffset>(reader.GetOrdinal("CreatedOn")) : default,
+            ModifiedOn = HasColumn(reader, "ModifiedOn") && !reader.IsDBNull(reader.GetOrdinal("ModifiedOn")) ? reader.GetFieldValue<DateTimeOffset>(reader.GetOrdinal("ModifiedOn")) : default,
+            CreatedBy = HasColumn(reader, "CreatedBy") && !reader.IsDBNull(reader.GetOrdinal("CreatedBy")) ? reader.GetInt32(reader.GetOrdinal("CreatedBy")) : 0,
+            ModifiedBy = HasColumn(reader, "ModifiedBy") && !reader.IsDBNull(reader.GetOrdinal("ModifiedBy")) ? reader.GetInt32(reader.GetOrdinal("ModifiedBy")) : 0
         };
+    }
+
+    private static bool HasColumn(SqlDataReader reader, string name)
+    {
+        for (int i = 0; i < reader.FieldCount; i++)
+        {
+            if (reader.GetName(i).Equals(name, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

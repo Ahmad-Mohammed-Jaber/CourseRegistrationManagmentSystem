@@ -1,5 +1,9 @@
 using BL.Services;
+using BL.Validation;
 using Shared.Dtos;
+using Shared.Entities;
+using Shared.Exceptions;
+using Shared.Logging;
 using System.Windows.Forms;
 
 namespace View
@@ -57,7 +61,6 @@ namespace View
             SuspendLayout();
 
 
-            // Student
             lblStudent.Text = "Student:";
             lblStudent.Location = new Point(20, 20);
             lblStudent.AutoSize = true;
@@ -67,7 +70,6 @@ namespace View
             cmbStudent.DropDownStyle = ComboBoxStyle.DropDownList;
 
 
-            // Class
             lblClass.Text = "Class:";
             lblClass.Location = new Point(20, 60);
             lblClass.AutoSize = true;
@@ -77,7 +79,6 @@ namespace View
             cmbClass.DropDownStyle = ComboBoxStyle.DropDownList;
 
 
-            // Status
             lblStatus.Text = "Status:";
             lblStatus.Location = new Point(20, 100);
             lblStatus.AutoSize = true;
@@ -98,7 +99,6 @@ namespace View
             cmbStatus.SelectedItem = "Registered";
 
 
-            // Date
             lblDate.Text = "Date:";
             lblDate.Location = new Point(20, 140);
             lblDate.AutoSize = true;
@@ -107,14 +107,12 @@ namespace View
             dtRegDate.Size = new Size(200, 25);
 
 
-            // Save
             btnSave.Text = "Save";
             btnSave.Location = new Point(120, 180);
             btnSave.Size = new Size(80, 30);
             btnSave.Click += btnSave_Click;
 
 
-            // Cancel
             btnCancel.Text = "Cancel";
             btnCancel.Location = new Point(210, 180);
             btnCancel.Size = new Size(80, 30);
@@ -158,14 +156,26 @@ namespace View
 
         private async void LoadDataAsync()
         {
-            var students = await _studentService.GetAllAsync();
+            var studentsResult = await _studentService.GetAllAsync();
+            if (!studentsResult.IsSuccess)
+            {
+                MessageBox.Show($"Error loading students: {studentsResult.Message}");
+                return;
+            }
+            var students = studentsResult.Value!;
 
             cmbStudent.DataSource = students;
             cmbStudent.DisplayMember = "FullName";
             cmbStudent.ValueMember = "Id";
 
 
-            var classes = await _classService.GetAllAsync();
+            var classesResult = await _classService.GetAllAsync();
+            if (!classesResult.IsSuccess)
+            {
+                MessageBox.Show($"Error loading classes: {classesResult.Message}");
+                return;
+            }
+            var classes = classesResult.Value!;
 
             cmbClass.DataSource = classes;
             cmbClass.DisplayMember = "ClassName";
@@ -183,8 +193,9 @@ namespace View
         private void LoadExistingRegistration()
         {
             if (_reg == null)
+            {
                 return;
-
+            }
 
             cmbStudent.SelectedValue = _reg.StudentId;
 
@@ -208,24 +219,15 @@ namespace View
 
         private async void btnSave_Click(object sender, EventArgs e)
         {
-            if (cmbStudent.SelectedValue == null ||
-                cmbClass.SelectedValue == null)
-            {
-                MessageBox.Show(
-                    "Student and Class are required.");
-                return;
-            }
-
-
             var dto = new RegistrationDto
             {
                 Id = _isEditMode
                     ? _reg!.Id
                     : 0,
 
-                StudentId = (int)cmbStudent.SelectedValue,
+                StudentId = cmbStudent.SelectedValue is int sid ? sid : 0,
 
-                ClassId = (int)cmbClass.SelectedValue,
+                ClassId = cmbClass.SelectedValue is int cid ? cid : 0,
 
                 Status = cmbStatus.SelectedItem?.ToString()
                          ?? "Registered",
@@ -233,26 +235,42 @@ namespace View
                 RegistrationDate = dtRegDate.Value
             };
 
+            var entity = dto.ToEntity();
+            var validation = RegistrationValidator.ValidateRegistration(entity);
+            if (!validation.IsSuccess)
+            {
+                MessageBox.Show(validation.Message);
+                return;
+            }
 
             try
             {
-                var entity = dto.ToEntity();
+                ValidationResult saveResult;
                 if (_isEditMode)
                 {
-                    await _regService.UpdateAsync(entity.Id, entity);
+                    saveResult = await _regService.UpdateAsync(entity.Id, entity);
                 }
                 else
                 {
-                    await _regService.AddAsync(entity);
+                    saveResult = await _regService.AddAsync(entity);
                 }
 
+                if (!saveResult.IsSuccess)
+                {
+                    MessageBox.Show($"Error saving registration: {saveResult.Message}");
+                    return;
+                }
 
                 DialogResult = DialogResult.OK;
             }
+            catch (BusinessException ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
             catch (Exception ex)
             {
-                MessageBox.Show(
-                    $"Error saving registration: {ex.Message}");
+                AppLogger.LogViewError(ex);
+                MessageBox.Show("Error saving registration due to an unexpected error.");
             }
         }
     }

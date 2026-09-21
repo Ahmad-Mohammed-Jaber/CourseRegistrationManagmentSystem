@@ -18,12 +18,10 @@ namespace CourseRegistrationManagmentSystem.View
         {
             LoadWelcomeText();
 
-            // Fix welcome label overlapping with logout button
             lblWelcome.AutoSize = false;
             lblWelcome.Left = 20;
             lblWelcome.Top = 20;
 
-            // Keep space for logout button
             lblWelcome.Width = this.ClientSize.Width - btnLogout.Width - 60;
             lblWelcome.Height = 35;
 

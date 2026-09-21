@@ -1,5 +1,6 @@
 using BL.Services;
 using Shared.Exceptions;
+using Shared.Logging;
 using Shared.Session;
 using System.Windows.Forms;
 
@@ -28,25 +29,23 @@ namespace CourseRegistrationManagmentSystem.View
             try
             {
                 lblErrorMessage.Text = "Authenticating...";
-                var loginResult = await _authService.LoginAsync(username, password);
-                if (loginResult.LoginStatus == Shared.Results.LoginStatus.Success)
+                var login = await _authService.LoginAsync(username, password);
+                if (!login.IsSuccess)
                 {
-                    SessionManager.Login(loginResult.UserSession!);
-                    this.DialogResult = DialogResult.OK;
-                    this.Close();
+                    lblErrorMessage.Text = login.Message;
+                    return;
                 }
-                else
-                {
-                    lblErrorMessage.Text = "Invalid username or password.";
-                }
+                SessionManager.Login(login.Value!);
+                this.DialogResult = DialogResult.OK;
+                this.Close();
             }
-            catch (BussinessException ex)
+            catch (BusinessException ex)
             {
-                lblErrorMessage.Text = "An error ";
+                lblErrorMessage.Text = ex.Message;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // Must use Logger here, as exception wasnt logged before hand
+                AppLogger.LogViewError(ex);
                 lblErrorMessage.Text = "An unexpected error occurred. Please try again.";
             }
         }

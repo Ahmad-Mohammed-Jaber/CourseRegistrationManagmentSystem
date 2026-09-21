@@ -18,10 +18,6 @@ namespace Shared.Helpers
             { Class.DaysOfWeek.Saturday, "Sat" }
         };
 
-        /// <summary>
-        /// Converts the DaysOfWeek flags enum to a human-readable abbreviated string.
-        /// Example: "Mon, Wed, Fri"
-        /// </summary>
         public static string GetScheduleString(Class.DaysOfWeek schedule)
         {
             if (schedule == Class.DaysOfWeek.None)
@@ -36,10 +32,6 @@ namespace Shared.Helpers
             return string.Join(", ", days);
         }
 
-        /// <summary>
-        /// Converts a string of days back into DaysOfWeek flags.
-        /// Accepts both full names ("Monday") and abbreviations ("Mon").
-        /// </summary>
         public static Class.DaysOfWeek ParseScheduleString(string scheduleString)
         {
             if (string.IsNullOrWhiteSpace(scheduleString))
@@ -52,14 +44,12 @@ namespace Shared.Helpers
             foreach (var day in scheduleString.Split(',', StringSplitOptions.RemoveEmptyEntries)
                                               .Select(d => d.Trim()))
             {
-                // Full enum name
                 if (Enum.TryParse(day, true, out Class.DaysOfWeek parsed))
                 {
                     result |= parsed;
                     continue;
                 }
 
-                // Abbreviation
                 var match = DayAbbreviations.FirstOrDefault(x =>
                     x.Value.Equals(day, StringComparison.OrdinalIgnoreCase));
 

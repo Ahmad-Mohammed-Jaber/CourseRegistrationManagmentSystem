@@ -1,5 +1,7 @@
 using BL.Services;
 using Shared.Dtos;
+using Shared.Exceptions;
+using Shared.Logging;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -37,39 +39,32 @@ namespace View
 
             SuspendLayout();
 
-            // topPanel
             topPanel.Dock = DockStyle.Top;
             topPanel.Height = 50;
 
-            // btnBack
             btnBack.Location = new Point(10, 10);
             btnBack.Size = new Size(80, 30);
             btnBack.Text = "Back";
             btnBack.Click += (s, e) => Close();
 
-            // btnAdd
             btnAdd.Location = new Point(100, 10);
             btnAdd.Size = new Size(100, 30);
             btnAdd.Text = "Add Student";
             btnAdd.Click += btnAdd_Click;
 
-            // btnEdit
             btnEdit.Location = new Point(210, 10);
             btnEdit.Size = new Size(100, 30);
             btnEdit.Text = "Edit Student";
             btnEdit.Click += btnEdit_Click;
 
-            // btnDelete
             btnDelete.Location = new Point(320, 10);
             btnDelete.Size = new Size(110, 30);
             btnDelete.Text = "Delete Student";
             btnDelete.Click += btnDelete_Click;
 
-            // txtSearch
             txtSearch.Location = new Point(450, 12);
             txtSearch.Size = new Size(150, 25);
 
-            // btnSearch
             btnSearch.Location = new Point(610, 10);
             btnSearch.Size = new Size(70, 30);
             btnSearch.Text = "Search";
@@ -85,7 +80,6 @@ namespace View
                 btnSearch
             });
 
-            // dgvStudents
             dgvStudents.Dock = DockStyle.Fill;
             dgvStudents.ReadOnly = true;
             dgvStudents.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
@@ -96,7 +90,6 @@ namespace View
 
             dgvStudents.DataBindingComplete += dgvStudents_DataBindingComplete;
 
-            // StudentListForm
             ClientSize = new Size(1500, 800);
             Controls.Add(dgvStudents);
             Controls.Add(topPanel);
@@ -110,30 +103,69 @@ namespace View
         private void dgvStudents_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
         {
             if (dgvStudents.Columns.Count == 0)
+            {
                 return;
+            }
 
             if (dgvStudents.Columns.Contains("Id"))
+            {
                 dgvStudents.Columns["Id"].DisplayIndex = 0;
+            }
 
             if (dgvStudents.Columns.Contains("UserName"))
+            {
                 dgvStudents.Columns["UserName"].DisplayIndex = 1;
+            }
 
             if (dgvStudents.Columns.Contains("FullName"))
+            {
                 dgvStudents.Columns["FullName"].DisplayIndex = 2;
+            }
 
             if (dgvStudents.Columns.Contains("Email"))
+            {
                 dgvStudents.Columns["Email"].DisplayIndex = 3;
+            }
 
             if (dgvStudents.Columns.Contains("Phone"))
+            {
                 dgvStudents.Columns["Phone"].DisplayIndex = 4;
+            }
 
             if (dgvStudents.Columns.Contains("Role"))
+            {
                 dgvStudents.Columns["Role"].DisplayIndex = 5;
+            }
 
             if (dgvStudents.Columns.Contains("IsActive"))
+            {
                 dgvStudents.Columns["IsActive"].DisplayIndex = 6;
+            }
 
-            // Give headers enough room without adding padding/centering
+            if (dgvStudents.Columns.Contains("CreatedOn"))
+            {
+                dgvStudents.Columns["CreatedOn"].Visible = true;
+                dgvStudents.Columns["CreatedOn"].HeaderText = "Created On";
+            }
+
+            if (dgvStudents.Columns.Contains("ModifiedOn"))
+            {
+                dgvStudents.Columns["ModifiedOn"].Visible = true;
+                dgvStudents.Columns["ModifiedOn"].HeaderText = "Modified On";
+            }
+
+            if (dgvStudents.Columns.Contains("CreatedBy"))
+            {
+                dgvStudents.Columns["CreatedBy"].Visible = true;
+                dgvStudents.Columns["CreatedBy"].HeaderText = "Created By";
+            }
+
+            if (dgvStudents.Columns.Contains("ModifiedBy"))
+            {
+                dgvStudents.Columns["ModifiedBy"].Visible = true;
+                dgvStudents.Columns["ModifiedBy"].HeaderText = "Modified By";
+            }
+
             foreach (DataGridViewColumn column in dgvStudents.Columns)
             {
                 column.HeaderCell.Style.Alignment = DataGridViewContentAlignment.MiddleLeft;
@@ -142,21 +174,55 @@ namespace View
 
         private async void LoadStudents()
         {
-            dgvStudents.DataSource = null;
-            var students = await _studentService.GetAllAsync();
-            dgvStudents.DataSource = students.Select(s => s.ToDto()).ToList();
+            try
+            {
+                dgvStudents.DataSource = null;
+                var loadResult = await _studentService.GetAllAsync();
+                if (!loadResult.IsSuccess)
+                {
+                    MessageBox.Show($"Error loading students: {loadResult.Message}");
+                    return;
+                }
+                dgvStudents.DataSource = loadResult.Value!.Select(s => s.ToDto()).ToList();
+            }
+            catch (BusinessException ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                AppLogger.LogViewError(ex);
+                MessageBox.Show("Error loading students due to an unexpected error.");
+            }
         }
 
         private async void btnSearch_Click(object sender, EventArgs e)
         {
-            if (!string.IsNullOrWhiteSpace(txtSearch.Text))
+            try
             {
-                var students = await _studentService.SearchAsync(txtSearch.Text);
-                dgvStudents.DataSource = students.Select(s => s.ToDto()).ToList();
+                if (!string.IsNullOrWhiteSpace(txtSearch.Text))
+                {
+                    var searchResult = await _studentService.SearchAsync(txtSearch.Text);
+                    if (!searchResult.IsSuccess)
+                    {
+                        MessageBox.Show($"Error searching students: {searchResult.Message}");
+                        return;
+                    }
+                    dgvStudents.DataSource = searchResult.Value!.Select(s => s.ToDto()).ToList();
+                }
+                else
+                {
+                    LoadStudents();
+                }
             }
-            else
+            catch (BusinessException ex)
             {
-                LoadStudents();
+                MessageBox.Show(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                AppLogger.LogViewError(ex);
+                MessageBox.Show("Error searching students due to an unexpected error.");
             }
         }
 
@@ -199,8 +265,25 @@ namespace View
 
                 if (result == DialogResult.Yes)
                 {
-                    await _studentService.DeleteAsync(student.Id);
-                    LoadStudents();
+                    try
+                    {
+                        var deleteResult = await _studentService.DeleteAsync(student.Id);
+                        if (!deleteResult.IsSuccess)
+                        {
+                            MessageBox.Show($"Error deleting student: {deleteResult.Message}");
+                            return;
+                        }
+                        LoadStudents();
+                    }
+                    catch (BusinessException ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                    }
+                    catch (Exception ex)
+                    {
+                        AppLogger.LogViewError(ex);
+                        MessageBox.Show("Error deleting student due to an unexpected error.");
+                    }
                 }
             }
             else

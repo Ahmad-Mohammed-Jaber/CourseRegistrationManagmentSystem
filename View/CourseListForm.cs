@@ -1,6 +1,8 @@
 using BL.Services;
 using CourseRegistrationManagmentSystem.View;
 using Shared.Dtos;
+using Shared.Exceptions;
+using Shared.Logging;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -38,39 +40,32 @@ namespace View
 
             SuspendLayout();
 
-            // topPanel
             topPanel.Dock = DockStyle.Top;
             topPanel.Height = 50;
 
-            // btnBack
             btnBack.Location = new Point(10, 10);
             btnBack.Size = new Size(80, 30);
             btnBack.Text = "Back";
             btnBack.Click += (s, e) => Close();
 
-            // btnAdd
             btnAdd.Location = new Point(100, 10);
             btnAdd.Size = new Size(110, 30);
             btnAdd.Text = "Add Course";
             btnAdd.Click += btnAdd_Click;
 
-            // btnEdit
             btnEdit.Location = new Point(220, 10);
             btnEdit.Size = new Size(110, 30);
             btnEdit.Text = "Edit Course";
             btnEdit.Click += btnEdit_Click;
 
-            // btnDelete
             btnDelete.Location = new Point(340, 10);
             btnDelete.Size = new Size(120, 30);
             btnDelete.Text = "Delete Course";
             btnDelete.Click += btnDelete_Click;
 
-            // txtSearch
             txtSearch.Location = new Point(480, 12);
             txtSearch.Size = new Size(150, 25);
 
-            // btnSearch
             btnSearch.Location = new Point(640, 10);
             btnSearch.Size = new Size(70, 30);
             btnSearch.Text = "Search";
@@ -86,14 +81,12 @@ namespace View
                 btnSearch
             });
 
-            // dgvCourses
             dgvCourses.Dock = DockStyle.Fill;
             dgvCourses.ReadOnly = true;
             dgvCourses.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgvCourses.MultiSelect = false;
             dgvCourses.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
 
-            // CourseListForm
             ClientSize = new Size(1500, 800);
             Controls.Add(dgvCourses);
             Controls.Add(topPanel);
@@ -106,21 +99,84 @@ namespace View
 
         private async void LoadCourses()
         {
-            dgvCourses.DataSource = null;
-            var courses = await _courseService.GetAllAsync();
-            dgvCourses.DataSource = courses.Select(c => c.ToDto()).ToList();
+            try
+            {
+                dgvCourses.DataSource = null;
+                var loadResult = await _courseService.GetAllAsync();
+                if (!loadResult.IsSuccess)
+                {
+                    MessageBox.Show($"Error loading courses: {loadResult.Message}");
+                    return;
+                }
+                dgvCourses.DataSource = loadResult.Value!.Select(c => c.ToDto()).ToList();
+                ConfigureColumns();
+            }
+            catch (BusinessException ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                AppLogger.LogViewError(ex);
+                MessageBox.Show("Error loading courses due to an unexpected error.");
+            }
+        }
+
+        private void ConfigureColumns()
+        {
+            if (dgvCourses.Columns["CreatedOn"] != null)
+            {
+                dgvCourses.Columns["CreatedOn"].Visible = true;
+                dgvCourses.Columns["CreatedOn"].HeaderText = "Created On";
+            }
+
+            if (dgvCourses.Columns["ModifiedOn"] != null)
+            {
+                dgvCourses.Columns["ModifiedOn"].Visible = true;
+                dgvCourses.Columns["ModifiedOn"].HeaderText = "Modified On";
+            }
+
+            if (dgvCourses.Columns["CreatedBy"] != null)
+            {
+                dgvCourses.Columns["CreatedBy"].Visible = true;
+                dgvCourses.Columns["CreatedBy"].HeaderText = "Created By";
+            }
+
+            if (dgvCourses.Columns["ModifiedBy"] != null)
+            {
+                dgvCourses.Columns["ModifiedBy"].Visible = true;
+                dgvCourses.Columns["ModifiedBy"].HeaderText = "Modified By";
+            }
         }
 
         private async void btnSearch_Click(object sender, EventArgs e)
         {
-            if (!string.IsNullOrWhiteSpace(txtSearch.Text))
+            try
             {
-                var courses = await _courseService.SearchAsync(txtSearch.Text);
-                dgvCourses.DataSource = courses.Select(c => c.ToDto()).ToList();
+                if (!string.IsNullOrWhiteSpace(txtSearch.Text))
+                {
+                    var searchResult = await _courseService.SearchAsync(txtSearch.Text);
+                    if (!searchResult.IsSuccess)
+                    {
+                        MessageBox.Show($"Error searching courses: {searchResult.Message}");
+                        return;
+                    }
+                    dgvCourses.DataSource = searchResult.Value!.Select(c => c.ToDto()).ToList();
+                    ConfigureColumns();
+                }
+                else
+                {
+                    LoadCourses();
+                }
             }
-            else
+            catch (BusinessException ex)
             {
-                LoadCourses();
+                MessageBox.Show(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                AppLogger.LogViewError(ex);
+                MessageBox.Show("Error searching courses due to an unexpected error.");
             }
         }
 
@@ -163,8 +219,25 @@ namespace View
 
                 if (result == DialogResult.Yes)
                 {
-                    await _courseService.DeleteAsync(course.Id);
-                    LoadCourses();
+                    try
+                    {
+                        var deleteResult = await _courseService.DeleteAsync(course.Id);
+                        if (!deleteResult.IsSuccess)
+                        {
+                            MessageBox.Show($"Error deleting course: {deleteResult.Message}");
+                            return;
+                        }
+                        LoadCourses();
+                    }
+                    catch (BusinessException ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                    }
+                    catch (Exception ex)
+                    {
+                        AppLogger.LogViewError(ex);
+                        MessageBox.Show("Error deleting course due to an unexpected error.");
+                    }
                 }
             }
             else

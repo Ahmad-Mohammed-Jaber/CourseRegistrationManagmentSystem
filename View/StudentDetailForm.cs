@@ -1,6 +1,9 @@
 using BL.Services;
+using BL.Validation;
 using Shared.Dtos;
 using Shared.Entities;
+using Shared.Exceptions;
+using Shared.Logging;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -41,7 +44,9 @@ namespace View
             InitializeComponent();
 
             if (_isEditMode)
+            {
                 LoadData();
+            }
         }
 
         private void InitializeComponent()
@@ -153,7 +158,9 @@ namespace View
         private void LoadData()
         {
             if (_student == null)
+            {
                 return;
+            }
 
             txtNumber.Text = _student.StudentNumber.ToString();
             txtUsername.Text = _student.UserName;
@@ -162,7 +169,6 @@ namespace View
             txtPhone.Text = _student.Phone;
             chkActive.Checked = _student.IsActive;
 
-            // Password cannot be edited
             txtPassword.Text = "********";
             txtPassword.Enabled = false;
         }
@@ -170,24 +176,56 @@ namespace View
 
         private async void btnSave_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(txtNumber.Text) ||
-                string.IsNullOrWhiteSpace(txtUsername.Text) ||
-                string.IsNullOrWhiteSpace(txtFullName.Text))
-            {
-                MessageBox.Show("Student Number, Username and Full Name are required.");
-                return;
-            }
-
-
             if (!int.TryParse(txtNumber.Text, out int studentNumber))
             {
-                MessageBox.Show("Invalid student number.");
+                var numValidation = StudentValidator.ValidateStudent(new Student
+                {
+                    StudentNumber = 0,
+                    UserName = txtUsername.Text,
+                    FullName = txtFullName.Text,
+                    Email = txtEmail.Text,
+                    Phone = txtPhone.Text
+                });
+                var errors = numValidation.Errors
+                    .Where(err => err.Field != nameof(Student.StudentNumber))
+                    .Prepend(new Shared.Entities.ValidationError(nameof(Student.StudentNumber), "Invalid student number."))
+                    .ToArray();
+                MessageBox.Show(string.Join(Environment.NewLine, errors.Select(err => $"• {err.Message}")));
                 return;
             }
 
+            Shared.Entities.ValidationResult validation;
+            if (_isEditMode)
+            {
+                validation = StudentValidator.ValidateStudent(new Student
+                {
+                    StudentNumber = studentNumber,
+                    UserName = txtUsername.Text,
+                    FullName = txtFullName.Text,
+                    Email = txtEmail.Text,
+                    Phone = txtPhone.Text
+                });
+            }
+            else
+            {
+                if (string.IsNullOrWhiteSpace(txtPassword.Text))
+                {
+                    MessageBox.Show("Password is required.");
+                    return;
+                }
+                validation = StudentValidator.ValidateStudentRegistration(
+                    txtUsername.Text, studentNumber, txtFullName.Text,
+                    txtEmail.Text, txtPhone.Text, txtPassword.Text);
+            }
+            if (!validation.IsSuccess)
+            {
+                MessageBox.Show(validation.Message);
+                return;
+            }
 
             try
             {
+                ValidationResult saveResult;
                 if (_isEditMode)
                 {
                     var dto = new StudentDto
@@ -204,17 +242,11 @@ namespace View
                     };
 
                     var entity = dto.ToEntity();
-                    await _studentService.UpdateAsync(entity.Id, entity);
+                    saveResult = await _studentService.UpdateAsync(entity.Id, entity);
                 }
                 else
                 {
-                    if (string.IsNullOrWhiteSpace(txtPassword.Text))
-                    {
-                        MessageBox.Show("Password is required.");
-                        return;
-                    }
-
-                    await _authService.RegisterStudentAsync(
+                    saveResult = await _authService.RegisterStudentAsync(
                         txtUsername.Text,
                         studentNumber,
                         txtFullName.Text,
@@ -225,11 +257,21 @@ namespace View
                     );
                 }
 
+                if (!saveResult.IsSuccess)
+                {
+                    MessageBox.Show($"Error saving student: {saveResult.Message}");
+                    return;
+                }
                 DialogResult = DialogResult.OK;
+            }
+            catch (BusinessException ex)
+            {
+                MessageBox.Show(ex.Message);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error saving student: {ex.Message}");
+                AppLogger.LogViewError(ex);
+                MessageBox.Show("Error saving student due to an unexpected error.");
             }
         }
     }

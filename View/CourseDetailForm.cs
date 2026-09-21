@@ -1,5 +1,9 @@
 using BL.Services;
+using BL.Validation;
 using Shared.Dtos;
+using Shared.Entities;
+using Shared.Exceptions;
+using Shared.Logging;
 using System.Windows.Forms;
 
 namespace View
@@ -27,7 +31,10 @@ namespace View
             _course = course;
             _isEditMode = course != null;
             InitializeComponent();
-            if (_isEditMode) LoadData();
+            if (_isEditMode)
+            {
+                LoadData();
+            }
         }
 
         private void InitializeComponent()
@@ -94,7 +101,11 @@ namespace View
 
         private void LoadData()
         {
-            if (_course == null) return;
+            if (_course == null)
+            {
+                return;
+            }
+
             txtCode.Text = _course.CourseCode;
             txtName.Text = _course.CourseName;
             numCredits.Value = (decimal)_course.CreditHours;
@@ -104,12 +115,6 @@ namespace View
 
         private async void btnSave_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(txtCode.Text) || string.IsNullOrWhiteSpace(txtName.Text))
-            {
-                MessageBox.Show("Course Code and Name are required.");
-                return;
-            }
-
             var dto = new CourseDto
             {
                 Id = _isEditMode ? _course!.Id : 0,
@@ -120,16 +125,41 @@ namespace View
                 IsActive = chkActive.Checked
             };
 
+            var entity = dto.ToEntity();
+            var validation = CourseValidator.ValidateCourse(entity);
+            if (!validation.IsSuccess)
+            {
+                MessageBox.Show(validation.Message);
+                return;
+            }
+
             try
             {
-                var entity = dto.ToEntity();
-                if (_isEditMode) await _courseService.UpdateAsync(entity.Id, entity);
-                else await _courseService.AddAsync(entity);
+                ValidationResult saveResult;
+                if (_isEditMode)
+                {
+                    saveResult = await _courseService.UpdateAsync(entity.Id, entity);
+                }
+                else
+                {
+                    saveResult = await _courseService.AddAsync(entity);
+                }
+
+                if (!saveResult.IsSuccess)
+                {
+                    MessageBox.Show($"Error saving course: {saveResult.Message}");
+                    return;
+                }
                 this.DialogResult = DialogResult.OK;
+            }
+            catch (BusinessException ex)
+            {
+                MessageBox.Show(ex.Message);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error saving course: {ex.Message}");
+                AppLogger.LogViewError(ex);
+                MessageBox.Show("Error saving course due to an unexpected error.");
             }
         }
     }

@@ -6,7 +6,10 @@ public static class MappingExtensions
 {
     public static UserDto? ToDto(this User user)
     {
-        if (user == null) return null;
+        if (user == null)
+        {
+            return null;
+        }
 
         return new UserDto
         {
@@ -14,17 +17,24 @@ public static class MappingExtensions
             UserName = user.UserName,
             FullName = user.FullName,
             Role = user.Role,
-            IsActive = user.IsActive
+            IsActive = user.IsActive,
+            CreatedOn = user.CreatedOn,
+            ModifiedOn = user.ModifiedOn,
+            CreatedBy = user.CreatedBy,
+            ModifiedBy = user.ModifiedBy
         };
     }
 
     public static StudentDto? ToDto(this Student student, User user)
     {
-        if (student == null || user == null) return null;
+        if (student == null || user == null)
+        {
+            return null;
+        }
 
         return new StudentDto
         {
-            Id =  student.Id,
+            Id = student.Id,
             UserId = student.UserId,
             StudentNumber = student.StudentNumber,
             Email = student.Email,
@@ -32,13 +42,20 @@ public static class MappingExtensions
             UserName = user.UserName,
             FullName = user.FullName,
             IsActive = user.IsActive,
-            Role = user.Role
+            Role = user.Role,
+            CreatedOn = student.CreatedOn,
+            ModifiedOn = student.ModifiedOn,
+            CreatedBy = student.CreatedBy,
+            ModifiedBy = student.ModifiedBy
         };
     }
 
     public static StudentDto? ToDto(this Student student)
     {
-        if (student == null) return null;
+        if (student == null)
+        {
+            return null;
+        }
 
         return new StudentDto
         {
@@ -50,13 +67,20 @@ public static class MappingExtensions
             UserName = student.UserName,
             FullName = student.FullName,
             IsActive = student.IsActive,
-            Role = student.Role
+            Role = student.Role,
+            CreatedOn = student.CreatedOn,
+            ModifiedOn = student.ModifiedOn,
+            CreatedBy = student.CreatedBy,
+            ModifiedBy = student.ModifiedBy
         };
     }
 
     public static CourseDto? ToDto(this Course course)
     {
-        if (course == null) return null;
+        if (course == null)
+        {
+            return null;
+        }
 
         return new CourseDto
         {
@@ -65,13 +89,20 @@ public static class MappingExtensions
             CourseName = course.CourseName,
             CreditHours = course.CreditHours,
             Description = course.Description,
-            IsActive = course.IsActive
+            IsActive = course.IsActive,
+            CreatedOn = course.CreatedOn,
+            ModifiedOn = course.ModifiedOn,
+            CreatedBy = course.CreatedBy,
+            ModifiedBy = course.ModifiedBy
         };
     }
 
     public static ClassDto? ToDto(this Class cls)
     {
-        if (cls == null) return null;
+        if (cls == null)
+        {
+            return null;
+        }
 
         return new ClassDto
         {
@@ -84,7 +115,11 @@ public static class MappingExtensions
             StartDate = cls.StartDate,
             EndDate = cls.EndDate,
             Schedule = cls.Schedule,
-            IsActive = cls.IsActive
+            IsActive = cls.IsActive,
+            CreatedOn = cls.CreatedOn,
+            ModifiedOn = cls.ModifiedOn,
+            CreatedBy = cls.CreatedBy,
+            ModifiedBy = cls.ModifiedBy
         };
     }
 
@@ -96,7 +131,11 @@ public static class MappingExtensions
             UserName = dto.UserName,
             FullName = dto.FullName,
             Role = dto.Role,
-            IsActive = dto.IsActive
+            IsActive = dto.IsActive,
+            CreatedOn = dto.CreatedOn,
+            ModifiedOn = dto.ModifiedOn,
+            CreatedBy = dto.CreatedBy,
+            ModifiedBy = dto.ModifiedBy
         };
     }
 
@@ -112,7 +151,11 @@ public static class MappingExtensions
             UserName = dto.UserName,
             FullName = dto.FullName,
             IsActive = dto.IsActive,
-            Role = dto.Role
+            Role = dto.Role,
+            CreatedOn = dto.CreatedOn,
+            ModifiedOn = dto.ModifiedOn,
+            CreatedBy = dto.CreatedBy,
+            ModifiedBy = dto.ModifiedBy
         };
     }
 
@@ -129,7 +172,11 @@ public static class MappingExtensions
             StartDate = dto.StartDate,
             EndDate = dto.EndDate,
             Schedule = dto.Schedule,
-            IsActive = dto.IsActive
+            IsActive = dto.IsActive,
+            CreatedOn = dto.CreatedOn,
+            ModifiedOn = dto.ModifiedOn,
+            CreatedBy = dto.CreatedBy,
+            ModifiedBy = dto.ModifiedBy
         };
     }
 
@@ -142,21 +189,32 @@ public static class MappingExtensions
             CourseName = dto.CourseName,
             CreditHours = dto.CreditHours,
             Description = dto.Description,
-            IsActive = dto.IsActive
+            IsActive = dto.IsActive,
+            CreatedOn = dto.CreatedOn,
+            ModifiedOn = dto.ModifiedOn,
+            CreatedBy = dto.CreatedBy,
+            ModifiedBy = dto.ModifiedBy
         };
     }
 
     public static RegistrationDto? ToDto(this Registration registration)
     {
-        if (registration == null) return null;
+        if (registration == null)
+        {
+            return null;
+        }
 
         return new RegistrationDto
         {
             Id = registration.Id,
             StudentId = registration.StudentId,
             ClassId = registration.ClassId,
-            RegistrationDate = registration.RegsitrationDate,
-            Status = registration.Status
+            RegistrationDate = registration.RegistrationDate,
+            Status = registration.Status,
+            CreatedOn = registration.CreatedOn,
+            ModifiedOn = registration.ModifiedOn,
+            CreatedBy = registration.CreatedBy,
+            ModifiedBy = registration.ModifiedBy
         };
     }
 
@@ -167,8 +225,12 @@ public static class MappingExtensions
             Id = registrationDto.Id,
             StudentId = registrationDto.StudentId,
             ClassId = registrationDto.ClassId,
-            RegsitrationDate = registrationDto.RegistrationDate,
-            Status = registrationDto.Status
+            RegistrationDate = registrationDto.RegistrationDate,
+            Status = registrationDto.Status,
+            CreatedOn = registrationDto.CreatedOn,
+            ModifiedOn = registrationDto.ModifiedOn,
+            CreatedBy = registrationDto.CreatedBy,
+            ModifiedBy = registrationDto.ModifiedBy
         };
     }
 
@@ -185,7 +247,7 @@ public static class MappingExtensions
             Schedule = cls.Schedule.ToString(),
             StartDate = cls.StartDate,
             EndDate = cls.EndDate,
-            RegistrationDate = registration.RegsitrationDate,
+            RegistrationDate = registration.RegistrationDate,
             Status = registration.Status
         };
     }

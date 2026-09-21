@@ -2,7 +2,10 @@ using BL.Interfaces;
 using BL.Managers;
 using BL.Validation;
 using Shared.Entities;
+using Shared.Exceptions;
+using Shared.Session;
 using System.Text.RegularExpressions;
+using Shared.Logging;
 
 namespace BL.Services;
 
@@ -10,121 +13,372 @@ public class UserService : ICrudService<User>
 {
     private readonly UserManager _userManager = new UserManager();
 
-    public User? GetById(int id)
+    public Result<User?> GetById(int id)
     {
-        AccessValidator.RequireAdmin();
-        return _userManager.GetById(id);
-    }
-
-    public async Task<User?> GetByIdAsync(int id)
-    {
-        AccessValidator.RequireAdmin();
-        return await _userManager.GetByIdAsync(id);
-    }
-
-    public List<User> GetAll()
-    {
-        AccessValidator.RequireAdmin();
-        return _userManager.GetAll();
-    }
-
-    public async Task<List<User>> GetAllAsync()
-    {
-        AccessValidator.RequireAdmin();
-        return await _userManager.GetAllAsync();
-    }
-
-    public void Add(User user)
-    {
-        AccessValidator.RequireAdmin();
-        ValidateUser(user);
-
-        _userManager.Add(user);
-    }
-
-    public async Task AddAsync(User user)
-    {
-        AccessValidator.RequireAdmin();
-        ValidateUser(user);
-        await EnsureUniqueUserNameAsync(user.UserName);
-
-        await _userManager.AddAsync(user);
-    }
-
-    public void Update(int id, User user)
-    {
-        AccessValidator.RequireAdmin();
-        var existingUser = _userManager.GetById(id);
-        if (existingUser == null) throw new KeyNotFoundException($"User with id {id} not found.");
-
-        ValidateUser(user);
-
-        if (string.IsNullOrEmpty(user.PasswordHash))
-            user.PasswordHash = existingUser.PasswordHash;
-
-        _userManager.Update(id, user);
-    }
-
-    public async Task UpdateAsync(int id, User user)
-    {
-        AccessValidator.RequireAdmin();
-        var existingUser = await _userManager.GetByIdAsync(id);
-        if (existingUser == null) throw new KeyNotFoundException($"User with id {id} not found.");
-
-        ValidateUser(user);
-        await EnsureUniqueUserNameAsync(user.UserName, id);
-
-        if (string.IsNullOrEmpty(user.PasswordHash))
-            user.PasswordHash = existingUser.PasswordHash;
-
-        await _userManager.UpdateAsync(id, user);
-    }
-
-    private async Task EnsureUniqueUserNameAsync(string userName, int? excludeUserId = null)
-    {
-        var existingUser = await _userManager.GetByUserNameAsync(userName);
-        if (existingUser != null && existingUser.Id != (excludeUserId ?? 0))
+        try
         {
-            throw new InvalidOperationException($"A user with username '{userName}' already exists.");
+            var auth = AccessValidator.RequireAdmin();
+            if (!auth.IsSuccess)
+            {
+                return new Result<User?>(auth.Status, auth.Errors, default);
+            }
+
+            return new Result<User?>(ValidationStatus.Success, Array.Empty<ValidationError>(), _userManager.GetById(id));
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while retrieving user.", ex);
         }
     }
 
-    private static void ValidateUser(User user)
+    public async Task<Result<User?>> GetByIdAsync(int id)
     {
-        if (user == null) throw new ArgumentNullException(nameof(user));
-        AccessValidator.ValidateUserName(user.UserName);
-        AccessValidator.ValidateFullName(user.FullName);
+        try
+        {
+            var auth = AccessValidator.RequireAdmin();
+            if (!auth.IsSuccess)
+            {
+                return new Result<User?>(auth.Status, auth.Errors, default);
+            }
+
+            return new Result<User?>(ValidationStatus.Success, Array.Empty<ValidationError>(), await _userManager.GetByIdAsync(id));
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while retrieving user.", ex);
+        }
     }
 
-    public void Delete(int id)
+    public Result<List<User>> GetAll()
     {
-        AccessValidator.RequireAdmin();
-        _userManager.Delete(id);
+        try
+        {
+            var auth = AccessValidator.RequireAdmin();
+            if (!auth.IsSuccess)
+            {
+                return new Result<List<User>>(auth.Status, auth.Errors, default);
+            }
+
+            return new Result<List<User>>(ValidationStatus.Success, Array.Empty<ValidationError>(), _userManager.GetAll());
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while retrieving users.", ex);
+        }
     }
 
-    public async Task DeleteAsync(int id)
+    public async Task<Result<List<User>>> GetAllAsync()
     {
-        AccessValidator.RequireAdmin();
-        await _userManager.DeleteAsync(id);
+        try
+        {
+            var auth = AccessValidator.RequireAdmin();
+            if (!auth.IsSuccess)
+            {
+                return new Result<List<User>>(auth.Status, auth.Errors, default);
+            }
+
+            return new Result<List<User>>(ValidationStatus.Success, Array.Empty<ValidationError>(), await _userManager.GetAllAsync());
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while retrieving users.", ex);
+        }
     }
 
-    public List<User> Search(string regex)
+    public ValidationResult Add(User user)
     {
-        AccessValidator.RequireAdmin();
-        var users = _userManager.GetAll();
-        return users
-            .Where(user => Regex.IsMatch(user.UserName, regex, RegexOptions.IgnoreCase) ||
-                           Regex.IsMatch(user.FullName, regex, RegexOptions.IgnoreCase))
-            .ToList();
+        try
+        {
+            var auth = AccessValidator.RequireAdmin();
+            if (!auth.IsSuccess)
+            {
+                return auth;
+            }
+
+            var valid = UserValidator.ValidateUser(user);
+            if (!valid.IsSuccess)
+            {
+                return valid;
+            }
+
+            var unique = EnsureUniqueUserNameSync(user.UserName);
+            if (!unique.IsSuccess)
+            {
+                return unique;
+            }
+
+            var actorId = SessionManager.Current?.UserId ?? 0;
+            user.CreatedBy = actorId;
+            user.ModifiedBy = actorId;
+
+            _userManager.Add(user);
+            return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while adding user.", ex);
+        }
     }
 
-    public async Task<List<User>> SearchAsync(string regex)
+    public async Task<ValidationResult> AddAsync(User user)
     {
-        AccessValidator.RequireAdmin();
-        var users = await _userManager.GetAllAsync();
-        return users
-            .Where(user => Regex.IsMatch(user.UserName, regex, RegexOptions.IgnoreCase) ||
-                           Regex.IsMatch(user.FullName, regex, RegexOptions.IgnoreCase))
-            .ToList();
+        try
+        {
+            var auth = AccessValidator.RequireAdmin();
+            if (!auth.IsSuccess)
+            {
+                return auth;
+            }
+
+            var valid = UserValidator.ValidateUser(user);
+            if (!valid.IsSuccess)
+            {
+                return valid;
+            }
+
+            var unique = await EnsureUniqueUserNameAsync(user.UserName);
+            if (!unique.IsSuccess)
+            {
+                return unique;
+            }
+
+            var actorId = SessionManager.Current?.UserId ?? 0;
+            user.CreatedBy = actorId;
+            user.ModifiedBy = actorId;
+
+            await _userManager.AddAsync(user);
+            return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while adding user.", ex);
+        }
+    }
+
+    public ValidationResult Update(int id, User user)
+    {
+        try
+        {
+            var auth = AccessValidator.RequireAdmin();
+            if (!auth.IsSuccess)
+            {
+                return auth;
+            }
+
+            var existingUser = _userManager.GetById(id);
+            var exists = UserValidator.RequireExists(existingUser, id);
+            if (!exists.IsSuccess)
+            {
+                return exists;
+            }
+
+            var valid = UserValidator.ValidateUser(user);
+            if (!valid.IsSuccess)
+            {
+                return valid;
+            }
+
+            var unique = EnsureUniqueUserNameSync(user.UserName, id);
+            if (!unique.IsSuccess)
+            {
+                return unique;
+            }
+
+            if (string.IsNullOrEmpty(user.PasswordHash))
+            {
+                user.PasswordHash = existingUser!.PasswordHash;
+            }
+
+            user.CreatedBy = existingUser!.CreatedBy;
+            user.ModifiedBy = SessionManager.Current?.UserId ?? existingUser.ModifiedBy;
+
+            _userManager.Update(id, user);
+            return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while updating user.", ex);
+        }
+    }
+
+    public async Task<ValidationResult> UpdateAsync(int id, User user)
+    {
+        try
+        {
+            var auth = AccessValidator.RequireAdmin();
+            if (!auth.IsSuccess)
+            {
+                return auth;
+            }
+
+            var existingUser = await _userManager.GetByIdAsync(id);
+            var exists = UserValidator.RequireExists(existingUser, id);
+            if (!exists.IsSuccess)
+            {
+                return exists;
+            }
+
+            var valid = UserValidator.ValidateUser(user);
+            if (!valid.IsSuccess)
+            {
+                return valid;
+            }
+
+            var unique = await EnsureUniqueUserNameAsync(user.UserName, id);
+            if (!unique.IsSuccess)
+            {
+                return unique;
+            }
+
+            if (string.IsNullOrEmpty(user.PasswordHash))
+            {
+                user.PasswordHash = existingUser!.PasswordHash;
+            }
+
+            user.CreatedBy = existingUser!.CreatedBy;
+            user.ModifiedBy = SessionManager.Current?.UserId ?? existingUser.ModifiedBy;
+
+            await _userManager.UpdateAsync(id, user);
+            return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while updating user.", ex);
+        }
+    }
+
+    public ValidationResult Delete(int id)
+    {
+        try
+        {
+            var auth = AccessValidator.RequireAdmin();
+            if (!auth.IsSuccess)
+            {
+                return auth;
+            }
+
+            var existingUser = _userManager.GetById(id);
+            var exists = UserValidator.RequireExists(existingUser, id);
+            if (!exists.IsSuccess)
+            {
+                return exists;
+            }
+
+            _userManager.Delete(id);
+            return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while deleting user.", ex);
+        }
+    }
+
+    public async Task<ValidationResult> DeleteAsync(int id)
+    {
+        try
+        {
+            var auth = AccessValidator.RequireAdmin();
+            if (!auth.IsSuccess)
+            {
+                return auth;
+            }
+
+            var existingUser = await _userManager.GetByIdAsync(id);
+            var exists = UserValidator.RequireExists(existingUser, id);
+            if (!exists.IsSuccess)
+            {
+                return exists;
+            }
+
+            await _userManager.DeleteAsync(id);
+            return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while deleting user.", ex);
+        }
+    }
+
+    public Result<List<User>> Search(string regex)
+    {
+        try
+        {
+            var auth = AccessValidator.RequireAdmin();
+            if (!auth.IsSuccess)
+            {
+                return new Result<List<User>>(auth.Status, auth.Errors, default);
+            }
+
+            var pattern = SearchValidator.ValidateSearchPattern(regex);
+            if (!pattern.IsSuccess)
+            {
+                return new Result<List<User>>(pattern.Status, pattern.Errors, default);
+            }
+
+            var users = _userManager.GetAll();
+            return new Result<List<User>>(ValidationStatus.Success, Array.Empty<ValidationError>(), users
+                .Where(user => Regex.IsMatch(user.UserName, regex, RegexOptions.IgnoreCase) ||
+                               Regex.IsMatch(user.FullName, regex, RegexOptions.IgnoreCase))
+                .ToList());
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while searching users.", ex);
+        }
+    }
+
+    public async Task<Result<List<User>>> SearchAsync(string regex)
+    {
+        try
+        {
+            var auth = AccessValidator.RequireAdmin();
+            if (!auth.IsSuccess)
+            {
+                return new Result<List<User>>(auth.Status, auth.Errors, default);
+            }
+
+            var pattern = SearchValidator.ValidateSearchPattern(regex);
+            if (!pattern.IsSuccess)
+            {
+                return new Result<List<User>>(pattern.Status, pattern.Errors, default);
+            }
+
+            var users = await _userManager.GetAllAsync();
+            return new Result<List<User>>(ValidationStatus.Success, Array.Empty<ValidationError>(), users
+                .Where(user => Regex.IsMatch(user.UserName, regex, RegexOptions.IgnoreCase) ||
+                               Regex.IsMatch(user.FullName, regex, RegexOptions.IgnoreCase))
+                .ToList());
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while searching users.", ex);
+        }
+    }
+
+    private ValidationResult EnsureUniqueUserNameSync(string userName, int? excludeUserId = null)
+    {
+        var existing = _userManager.GetAll()
+            .FirstOrDefault(u => u.UserName.Equals(userName, StringComparison.OrdinalIgnoreCase));
+        return UserValidator.RequireUniqueUserName(
+            existing != null && existing.Id != (excludeUserId ?? 0), userName);
+    }
+
+    private async Task<ValidationResult> EnsureUniqueUserNameAsync(string userName, int? excludeUserId = null)
+    {
+        var existingUser = await _userManager.GetByUserNameAsync(userName);
+        return UserValidator.RequireUniqueUserName(
+            existingUser != null && existingUser.Id != (excludeUserId ?? 0), userName);
     }
 }

@@ -69,7 +69,7 @@ public static class UserDataProvider
         }
         catch (Exception ex)
         {
-            throw new DatabaseException("An error occured while GetByIdAsync(int id)", ex) ;
+            throw new DatabaseException("An error occured while GetByIdAsync(int id)", ex);
         }
         finally
         {
@@ -137,9 +137,9 @@ public static class UserDataProvider
             }
             return users;
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
-            throw new DatabaseException("", ex);
+            throw new DatabaseException("An error occured while GetAllUsers()", ex);
         }
         finally
         {
@@ -172,9 +172,9 @@ public static class UserDataProvider
             }
             return users;
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
-            throw new DatabaseException("", ex);
+            throw new DatabaseException("An error occured while GetAllUsersAsync()", ex);
         }
         finally
         {
@@ -203,6 +203,7 @@ public static class UserDataProvider
             command.Parameters.Add("@FullName", SqlDbType.NVarChar, 100).Value = entity.FullName ?? string.Empty;
             command.Parameters.Add("@Role", SqlDbType.Int).Value = (int)entity.Role;
             command.Parameters.Add("@IsActive", SqlDbType.Bit).Value = entity.IsActive;
+            command.Parameters.Add("@CreatedBy", SqlDbType.Int).Value = entity.CreatedBy;
 
             var newIdParam = new SqlParameter("@Id", SqlDbType.Int)
             {
@@ -212,11 +213,12 @@ public static class UserDataProvider
 
             command.ExecuteNonQuery();
 
-            return (int)newIdParam.Value;
+            entity.Id = (int)newIdParam.Value;
+            return entity.Id;
         }
         catch (Exception ex)
         {
-            throw new DatabaseException("An error occured in ", ex);
+            throw new DatabaseException("An error occured while AddUser()", ex);
         }
         finally
         {
@@ -225,7 +227,7 @@ public static class UserDataProvider
         }
     }
 
-    public static async Task AddAsync(User entity)
+    public static async Task<int> AddAsync(User entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -244,6 +246,7 @@ public static class UserDataProvider
             command.Parameters.Add("@FullName", SqlDbType.NVarChar, 100).Value = entity.FullName ?? string.Empty;
             command.Parameters.Add("@Role", SqlDbType.Int).Value = (int)entity.Role;
             command.Parameters.Add("@IsActive", SqlDbType.Bit).Value = entity.IsActive;
+            command.Parameters.Add("@CreatedBy", SqlDbType.Int).Value = entity.CreatedBy;
 
             var newIdParam = new SqlParameter("@Id", SqlDbType.Int)
             {
@@ -253,7 +256,8 @@ public static class UserDataProvider
 
             await command.ExecuteNonQueryAsync();
 
-            //return (int) result!;
+            entity.Id = (int)newIdParam.Value;
+            return entity.Id;
         }
         catch (Exception ex)
         {
@@ -285,6 +289,7 @@ public static class UserDataProvider
             command.Parameters.Add("@FullName", SqlDbType.NVarChar, 100).Value = entity.FullName ?? string.Empty;
             command.Parameters.Add("@Role", SqlDbType.Int).Value = (int)entity.Role;
             command.Parameters.Add("@IsActive", SqlDbType.Bit).Value = entity.IsActive;
+            command.Parameters.Add("@ModifiedBy", SqlDbType.Int).Value = entity.ModifiedBy;
 
             command.ExecuteNonQuery();
         }
@@ -318,6 +323,7 @@ public static class UserDataProvider
             command.Parameters.Add("@FullName", SqlDbType.NVarChar, 100).Value = entity.FullName ?? string.Empty;
             command.Parameters.Add("@Role", SqlDbType.Int).Value = (int)entity.Role;
             command.Parameters.Add("@IsActive", SqlDbType.Bit).Value = entity.IsActive;
+            command.Parameters.Add("@ModifiedBy", SqlDbType.Int).Value = entity.ModifiedBy;
 
             await command.ExecuteNonQueryAsync();
         }
@@ -412,7 +418,7 @@ public static class UserDataProvider
         }
         catch (Exception ex)
         {
-            throw new DatabaseException("An error occured in Search(string regex)", ex);
+            throw new DatabaseException("An error occured while SearchUsers()", ex);
         }
         finally
         {
@@ -467,7 +473,24 @@ public static class UserDataProvider
             PasswordHash = reader.GetString(reader.GetOrdinal("PasswordHash")),
             FullName = reader.GetString(reader.GetOrdinal("FullName")),
             Role = (User.UserRoles)reader.GetInt32(reader.GetOrdinal("Role")),
-            IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive"))
+            IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
+            CreatedOn = HasColumn(reader, "CreatedOn") && !reader.IsDBNull(reader.GetOrdinal("CreatedOn")) ? reader.GetFieldValue<DateTimeOffset>(reader.GetOrdinal("CreatedOn")) : default,
+            ModifiedOn = HasColumn(reader, "ModifiedOn") && !reader.IsDBNull(reader.GetOrdinal("ModifiedOn")) ? reader.GetFieldValue<DateTimeOffset>(reader.GetOrdinal("ModifiedOn")) : default,
+            CreatedBy = HasColumn(reader, "CreatedBy") && !reader.IsDBNull(reader.GetOrdinal("CreatedBy")) ? reader.GetInt32(reader.GetOrdinal("CreatedBy")) : 0,
+            ModifiedBy = HasColumn(reader, "ModifiedBy") && !reader.IsDBNull(reader.GetOrdinal("ModifiedBy")) ? reader.GetInt32(reader.GetOrdinal("ModifiedBy")) : 0
         };
+    }
+
+    private static bool HasColumn(SqlDataReader reader, string name)
+    {
+        for (int i = 0; i < reader.FieldCount; i++)
+        {
+            if (reader.GetName(i).Equals(name, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

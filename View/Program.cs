@@ -1,26 +1,63 @@
 using CourseRegistrationManagmentSystem.View;
 using Shared.Entities;
+using Shared.Exceptions;
+using Shared.Logging;
 using Shared.Session;
 
 namespace View
 {
     internal static class Program
     {
-        /// <summary>
-        ///  The main entry point for the application.
-        /// </summary>
         [STAThread]
         static void Main()
         {
             ApplicationConfiguration.Initialize();
+            AppLogger.Configure();
+            Application.ThreadException += (sender, e) =>
+            {
+                AppLogger.LogCaught(e.Exception);
+                AppLogger.LogViewError(e.Exception, "ThreadException");
+            };
+            AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
+            {
+                if (e.ExceptionObject is Exception ex)
+                {
+                    AppLogger.LogCaught(ex);
+                    AppLogger.LogViewError(ex, "UnhandledException");
+                }
+            };
+            Application.ApplicationExit += (sender, e) => AppLogger.Close();
 
+            try
+            {
+                Run();
+            }
+            catch (BusinessException ex)
+            {
+                MessageBox.Show(ex.Message, "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            catch (Exception ex)
+            {
+                AppLogger.LogCaught(ex);
+                AppLogger.LogViewError(ex);
+                MessageBox.Show("An unexpected error occurred. The application will close.", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                AppLogger.Close();
+            }
+        }
+
+        static void Run()
+        {
             bool keepRunning = true;
             while (keepRunning)
             {
                 LoginForm loginForm = new LoginForm();
                 if (loginForm.ShowDialog() == DialogResult.OK)
                 {
-                    // Single session with role determines dashboard
                     var session = SessionManager.Current;
                     if (session?.Role == User.UserRoles.Admin)
                     {
@@ -30,9 +67,10 @@ namespace View
                     {
                         Application.Run(new StudentDashboard());
                     }
-                    // If user logged out, loop shows login again; if app closed, keepRunning determined by DialogResult
-                    // Logout already cleared session; if session is still logged in (user closed dashboard via X), clear it
-                    if (SessionManager.IsLoggedIn) SessionManager.Logout();
+                    if (SessionManager.IsLoggedIn)
+                    {
+                        SessionManager.Logout();
+                    }
                 }
                 else
                 {
