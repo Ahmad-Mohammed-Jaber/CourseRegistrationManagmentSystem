@@ -1,10 +1,11 @@
 using Microsoft.Data.SqlClient;
+using Shared.Database;
 
 namespace DAL.Database;
 
 public static class DBConnectionFactory
 {
-    private const string ConnectionString = "Server=localhost;Database=CourseManagementDB;User Id=sa;Password=P@ssw0rd;TrustServerCertificate=True;";
+    public static string ConnectionString => DbConfig.ConnectionString;
 
     public static SqlConnection CreateConnection()
     {

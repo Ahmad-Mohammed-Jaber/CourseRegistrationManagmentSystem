@@ -1,4 +1,5 @@
 using Serilog;
+using Shared.Database;
 using Shared.Exceptions;
 using Shared.Session;
 using System.Runtime.CompilerServices;
@@ -14,6 +15,8 @@ public static class AppLogger
     private static ILogger? _view;
 
     public static string DbPath => ResolveDbPath();
+
+    public static string SqlConnectionString { get; private set; } = DbConfig.ConnectionString;
 
     private static string ResolveDbPath()
     {
@@ -33,33 +36,60 @@ public static class AppLogger
         return Path.Combine(AppContext.BaseDirectory, "Logs", "exceptions.db");
     }
 
-    public static void Configure()
+    public static void Configure(string? sqlConnectionString = null)
     {
-        if (_configured)
+        if (_configured && string.IsNullOrEmpty(sqlConnectionString))
         {
             return;
         }
 
         lock (_sync)
         {
-            if (_configured)
+            if (_configured && string.IsNullOrEmpty(sqlConnectionString))
             {
                 return;
             }
 
+            // Allow override (tests, different environments) but default to
+            // the SAME database as the user data.
+            if (!string.IsNullOrWhiteSpace(sqlConnectionString))
+            {
+                SqlConnectionString = sqlConnectionString;
+            }
+            else
+            {
+                SqlConnectionString = DbConfig.ConnectionString;
+            }
+
+            // Dispose previous loggers on re-configure with a new string.
+            if (_configured)
+            {
+                Close();
+            }
+
             try
             {
+                // Primary: SQL Server via MssqlExceptionSink (same DB as user data,
+                // same SqlConnection + stored-procedure flow as the DAL providers,
+                // tables from LoggingTables.sql, procedures from LoggingProcedures.sql).
+                // Secondary: SQLite file (fallback when SQL is unreachable).
                 _database = new LoggerConfiguration()
                     .MinimumLevel.Error()
-                    .WriteTo.Sink(new SqliteExceptionSink(DbPath, "DatabaseExceptions"))
+                    .WriteTo.Sink(new FailoverSink(
+                        MssqlSinkFactory.Create(SqlConnectionString, "DatabaseExceptions"),
+                        new SqliteExceptionSink(DbPath, "DatabaseExceptions")))
                     .CreateLogger();
                 _business = new LoggerConfiguration()
                     .MinimumLevel.Verbose()
-                    .WriteTo.Sink(new SqliteExceptionSink(DbPath, "BusinessExceptions"))
+                    .WriteTo.Sink(new FailoverSink(
+                        MssqlSinkFactory.Create(SqlConnectionString, "BusinessExceptions"),
+                        new SqliteExceptionSink(DbPath, "BusinessExceptions")))
                     .CreateLogger();
                 _view = new LoggerConfiguration()
                     .MinimumLevel.Error()
-                    .WriteTo.Sink(new SqliteExceptionSink(DbPath, "ViewErrors"))
+                    .WriteTo.Sink(new FailoverSink(
+                        MssqlSinkFactory.Create(SqlConnectionString, "ViewErrors"),
+                        new SqliteExceptionSink(DbPath, "ViewErrors")))
                     .CreateLogger();
             }
             catch (Exception ex)
@@ -83,7 +113,8 @@ public static class AppLogger
                 return;
             }
 
-            var contextualized = log.ForContext("Operation", operation);
+            var contextualized = log.ForContext("Operation", operation)
+                .ForContext("ExceptionType", ex.GetType().FullName ?? "Exception");
             if (userId.HasValue)
             {
                 contextualized = contextualized.ForContext("UserId", userId.Value);
@@ -107,7 +138,8 @@ public static class AppLogger
                 return;
             }
 
-            var contextualized = _view.ForContext("Operation", operation);
+            var contextualized = _view.ForContext("Operation", operation)
+                .ForContext("ExceptionType", ex.GetType().FullName ?? "Exception");
             if (userId.HasValue)
             {
                 contextualized = contextualized.ForContext("UserId", userId.Value);
@@ -131,7 +163,8 @@ public static class AppLogger
                 return;
             }
 
-            var contextualized = _business.ForContext("Operation", operation);
+            var contextualized = _business.ForContext("Operation", operation)
+                .ForContext("ExceptionType", "Warning");
             if (userId.HasValue)
             {
                 contextualized = contextualized.ForContext("UserId", userId.Value);
