@@ -10,7 +10,6 @@ namespace View
 {
     public partial class CourseListForm : Form
     {
-        private readonly CourseService _courseService = new CourseService();
 
         private DataGridView dgvCourses;
         private Button btnAdd;
@@ -102,13 +101,8 @@ namespace View
             try
             {
                 dgvCourses.DataSource = null;
-                var loadResult = await _courseService.GetAllAsync();
-                if (!loadResult.IsSuccess)
-                {
-                    MessageBox.Show($"Error loading courses: {loadResult.Message}");
-                    return;
-                }
-                dgvCourses.DataSource = loadResult.Value!.Select(c => c.ToDto()).ToList();
+                var courses = await CourseService.GetAllAsync();
+                dgvCourses.DataSource = courses.Select(c => c.ToDto()).ToList();
                 ConfigureColumns();
             }
             catch (BusinessException ex)
@@ -155,13 +149,8 @@ namespace View
             {
                 if (!string.IsNullOrWhiteSpace(txtSearch.Text))
                 {
-                    var searchResult = await _courseService.SearchAsync(txtSearch.Text);
-                    if (!searchResult.IsSuccess)
-                    {
-                        MessageBox.Show($"Error searching courses: {searchResult.Message}");
-                        return;
-                    }
-                    dgvCourses.DataSource = searchResult.Value!.Select(c => c.ToDto()).ToList();
+                    var courses = await CourseService.SearchAsync(txtSearch.Text);
+                    dgvCourses.DataSource = courses.Select(c => c.ToDto()).ToList();
                     ConfigureColumns();
                 }
                 else
@@ -221,7 +210,7 @@ namespace View
                 {
                     try
                     {
-                        var deleteResult = await _courseService.DeleteAsync(course.Id);
+                        var deleteResult = await CourseService.DeleteAsync(course.Id);
                         if (!deleteResult.IsSuccess)
                         {
                             MessageBox.Show($"Error deleting course: {deleteResult.Message}");

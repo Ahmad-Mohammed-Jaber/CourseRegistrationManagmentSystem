@@ -8,8 +8,6 @@ namespace CourseRegistrationManagmentSystem.View
 {
     public partial class StudentDashboard : Form
     {
-        private readonly StudentService _studentService = new StudentService();
-
         public StudentDashboard()
         {
             InitializeComponent();
@@ -49,10 +47,10 @@ namespace CourseRegistrationManagmentSystem.View
 
             try
             {
-                var profileResult = await _studentService.GetCurrentProfileAsync();
-                if (profileResult.IsSuccess && profileResult.Value != null)
+                var profile = await StudentService.GetCurrentProfileAsync();
+                if (profile != null)
                 {
-                    lblWelcome.Text = $"{baseText} - Student #{profileResult.Value.StudentNumber}";
+                    lblWelcome.Text = $"{baseText} - Student #{profile.StudentNumber}";
                     return;
                 }
             }

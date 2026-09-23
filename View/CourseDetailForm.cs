@@ -10,7 +10,6 @@ namespace View
 {
     public partial class CourseDetailForm : Form
     {
-        private readonly CourseService _courseService = new CourseService();
         private CourseDto? _course;
         private bool _isEditMode;
 
@@ -138,11 +137,11 @@ namespace View
                 ValidationResult saveResult;
                 if (_isEditMode)
                 {
-                    saveResult = await _courseService.UpdateAsync(entity.Id, entity);
+                    saveResult = await CourseService.UpdateAsync(entity.Id, entity);
                 }
                 else
                 {
-                    saveResult = await _courseService.AddAsync(entity);
+                    saveResult = await CourseService.AddAsync(entity);
                 }
 
                 if (!saveResult.IsSuccess)

@@ -1,4 +1,3 @@
-using BL.Interfaces;
 using BL.Managers;
 using BL.Validation;
 using Shared.Entities;
@@ -8,22 +7,14 @@ using Shared.Logging;
 
 namespace BL.Services;
 
-public class ClassService : ICrudService<Class>
+public static class ClassService
 {
-    private readonly ClassManager _classManager = new ClassManager();
-    private readonly CourseManager _courseManager = new CourseManager();
-
-    public Result<Class?> GetById(int id)
+    public static Class? GetById(int id)
     {
         try
         {
-            var auth = AccessValidator.RequireLogin();
-            if (!auth.IsSuccess)
-            {
-                return new Result<Class?>(auth.Status, auth.Errors, default);
-            }
-
-            return new Result<Class?>(ValidationStatus.Success, Array.Empty<ValidationError>(), _classManager.GetById(id));
+            var classManager = new ClassManager();
+            return classManager.GetById(id);
         }
         catch (Exception ex)
         {
@@ -32,17 +23,12 @@ public class ClassService : ICrudService<Class>
         }
     }
 
-    public async Task<Result<Class?>> GetByIdAsync(int id)
+    public static async Task<Class?> GetByIdAsync(int id)
     {
         try
         {
-            var auth = AccessValidator.RequireLogin();
-            if (!auth.IsSuccess)
-            {
-                return new Result<Class?>(auth.Status, auth.Errors, default);
-            }
-
-            return new Result<Class?>(ValidationStatus.Success, Array.Empty<ValidationError>(), await _classManager.GetByIdAsync(id));
+            var classManager = new ClassManager();
+            return await classManager.GetByIdAsync(id);
         }
         catch (Exception ex)
         {
@@ -51,17 +37,12 @@ public class ClassService : ICrudService<Class>
         }
     }
 
-    public Result<List<Class>> GetAll()
+    public static List<Class> GetAll()
     {
         try
         {
-            var auth = AccessValidator.RequireLogin();
-            if (!auth.IsSuccess)
-            {
-                return new Result<List<Class>>(auth.Status, auth.Errors, default);
-            }
-
-            return new Result<List<Class>>(ValidationStatus.Success, Array.Empty<ValidationError>(), _classManager.GetAll());
+            var classManager = new ClassManager();
+            return classManager.GetAll();
         }
         catch (Exception ex)
         {
@@ -70,17 +51,12 @@ public class ClassService : ICrudService<Class>
         }
     }
 
-    public async Task<Result<List<Class>>> GetAllAsync()
+    public static async Task<List<Class>> GetAllAsync()
     {
         try
         {
-            var auth = AccessValidator.RequireLogin();
-            if (!auth.IsSuccess)
-            {
-                return new Result<List<Class>>(auth.Status, auth.Errors, default);
-            }
-
-            return new Result<List<Class>>(ValidationStatus.Success, Array.Empty<ValidationError>(), await _classManager.GetAllAsync());
+            var classManager = new ClassManager();
+            return await classManager.GetAllAsync();
         }
         catch (Exception ex)
         {
@@ -89,7 +65,7 @@ public class ClassService : ICrudService<Class>
         }
     }
 
-    public ValidationResult Add(Class classEntity)
+    public static ValidationResult Add(Class classEntity)
     {
         try
         {
@@ -111,7 +87,8 @@ public class ClassService : ICrudService<Class>
                 return course;
             }
 
-            _classManager.Add(classEntity);
+            var classManager = new ClassManager();
+            classManager.Add(classEntity);
             return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
         }
         catch (Exception ex)
@@ -121,7 +98,7 @@ public class ClassService : ICrudService<Class>
         }
     }
 
-    public async Task<ValidationResult> AddAsync(Class classEntity)
+    public static async Task<ValidationResult> AddAsync(Class classEntity)
     {
         try
         {
@@ -143,7 +120,8 @@ public class ClassService : ICrudService<Class>
                 return course;
             }
 
-            await _classManager.AddAsync(classEntity);
+            var classManager = new ClassManager();
+            await classManager.AddAsync(classEntity);
             return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
         }
         catch (Exception ex)
@@ -153,7 +131,7 @@ public class ClassService : ICrudService<Class>
         }
     }
 
-    public ValidationResult Update(int id, Class classEntity)
+    public static ValidationResult Update(int id, Class classEntity)
     {
         try
         {
@@ -163,7 +141,8 @@ public class ClassService : ICrudService<Class>
                 return auth;
             }
 
-            var existingClass = _classManager.GetById(id);
+            var classManager = new ClassManager();
+            var existingClass = classManager.GetById(id);
             var exists = ClassValidator.RequireExists(existingClass, id);
             if (!exists.IsSuccess)
             {
@@ -189,7 +168,7 @@ public class ClassService : ICrudService<Class>
                 return capacity;
             }
 
-            _classManager.Update(id, classEntity);
+            classManager.Update(id, classEntity);
             return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
         }
         catch (Exception ex)
@@ -199,7 +178,7 @@ public class ClassService : ICrudService<Class>
         }
     }
 
-    public async Task<ValidationResult> UpdateAsync(int id, Class classEntity)
+    public static async Task<ValidationResult> UpdateAsync(int id, Class classEntity)
     {
         try
         {
@@ -209,7 +188,8 @@ public class ClassService : ICrudService<Class>
                 return auth;
             }
 
-            var existingClass = await _classManager.GetByIdAsync(id);
+            var classManager = new ClassManager();
+            var existingClass = await classManager.GetByIdAsync(id);
             var exists = ClassValidator.RequireExists(existingClass, id);
             if (!exists.IsSuccess)
             {
@@ -235,7 +215,7 @@ public class ClassService : ICrudService<Class>
                 return capacity;
             }
 
-            await _classManager.UpdateAsync(id, classEntity);
+            await classManager.UpdateAsync(id, classEntity);
             return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
         }
         catch (Exception ex)
@@ -245,7 +225,7 @@ public class ClassService : ICrudService<Class>
         }
     }
 
-    public ValidationResult Delete(int id)
+    public static ValidationResult Delete(int id)
     {
         try
         {
@@ -255,14 +235,15 @@ public class ClassService : ICrudService<Class>
                 return auth;
             }
 
-            var existingClass = _classManager.GetById(id);
+            var classManager = new ClassManager();
+            var existingClass = classManager.GetById(id);
             var exists = ClassValidator.RequireExists(existingClass, id);
             if (!exists.IsSuccess)
             {
                 return exists;
             }
 
-            _classManager.Delete(id);
+            classManager.Delete(id);
             return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
         }
         catch (Exception ex)
@@ -272,7 +253,7 @@ public class ClassService : ICrudService<Class>
         }
     }
 
-    public async Task<ValidationResult> DeleteAsync(int id)
+    public static async Task<ValidationResult> DeleteAsync(int id)
     {
         try
         {
@@ -282,14 +263,15 @@ public class ClassService : ICrudService<Class>
                 return auth;
             }
 
-            var existingClass = await _classManager.GetByIdAsync(id);
+            var classManager = new ClassManager();
+            var existingClass = await classManager.GetByIdAsync(id);
             var exists = ClassValidator.RequireExists(existingClass, id);
             if (!exists.IsSuccess)
             {
                 return exists;
             }
 
-            await _classManager.DeleteAsync(id);
+            await classManager.DeleteAsync(id);
             return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
         }
         catch (Exception ex)
@@ -299,27 +281,22 @@ public class ClassService : ICrudService<Class>
         }
     }
 
-    public Result<List<Class>> Search(string regex)
+    public static List<Class> Search(string regex)
     {
         try
         {
-            var auth = AccessValidator.RequireLogin();
-            if (!auth.IsSuccess)
-            {
-                return new Result<List<Class>>(auth.Status, auth.Errors, default);
-            }
-
             var pattern = SearchValidator.ValidateSearchPattern(regex);
             if (!pattern.IsSuccess)
             {
-                return new Result<List<Class>>(pattern.Status, pattern.Errors, default);
+                return new List<Class>();
             }
 
-            var classes = _classManager.GetAll();
-            return new Result<List<Class>>(ValidationStatus.Success, Array.Empty<ValidationError>(), classes
+            var classManager = new ClassManager();
+            var classes = classManager.GetAll();
+            return classes
                 .Where(classEntity => Regex.IsMatch(classEntity.ClassName, regex, RegexOptions.IgnoreCase) ||
                                       Regex.IsMatch(classEntity.Instructor, regex, RegexOptions.IgnoreCase))
-                .ToList());
+                .ToList();
         }
         catch (Exception ex)
         {
@@ -328,27 +305,22 @@ public class ClassService : ICrudService<Class>
         }
     }
 
-    public async Task<Result<List<Class>>> SearchAsync(string regex)
+    public static async Task<List<Class>> SearchAsync(string regex)
     {
         try
         {
-            var auth = AccessValidator.RequireLogin();
-            if (!auth.IsSuccess)
-            {
-                return new Result<List<Class>>(auth.Status, auth.Errors, default);
-            }
-
             var pattern = SearchValidator.ValidateSearchPattern(regex);
             if (!pattern.IsSuccess)
             {
-                return new Result<List<Class>>(pattern.Status, pattern.Errors, default);
+                return new List<Class>();
             }
 
-            var classes = await _classManager.GetAllAsync();
-            return new Result<List<Class>>(ValidationStatus.Success, Array.Empty<ValidationError>(), classes
+            var classManager = new ClassManager();
+            var classes = await classManager.GetAllAsync();
+            return classes
                 .Where(classEntity => Regex.IsMatch(classEntity.ClassName, regex, RegexOptions.IgnoreCase) ||
                                       Regex.IsMatch(classEntity.Instructor, regex, RegexOptions.IgnoreCase))
-                .ToList());
+                .ToList();
         }
         catch (Exception ex)
         {
@@ -357,13 +329,15 @@ public class ClassService : ICrudService<Class>
         }
     }
 
-    private ValidationResult EnsureCourseExistsSync(int courseId)
+    private static ValidationResult EnsureCourseExistsSync(int courseId)
     {
-        return CourseValidator.RequireExists(_courseManager.GetById(courseId), courseId);
+        var courseManager = new CourseManager();
+        return CourseValidator.RequireExists(courseManager.GetById(courseId), courseId);
     }
 
-    private async Task<ValidationResult> EnsureCourseExistsAsync(int courseId)
+    private static async Task<ValidationResult> EnsureCourseExistsAsync(int courseId)
     {
-        return CourseValidator.RequireExists(await _courseManager.GetByIdAsync(courseId), courseId);
+        var courseManager = new CourseManager();
+        return CourseValidator.RequireExists(await courseManager.GetByIdAsync(courseId), courseId);
     }
 }

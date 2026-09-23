@@ -10,10 +10,6 @@ namespace View
 {
     public partial class RegistrationDetailForm : Form
     {
-        private readonly RegistrationService _regService = new RegistrationService();
-        private readonly StudentService _studentService = new StudentService();
-        private readonly ClassService _classService = new ClassService();
-
         private RegistrationDto? _reg;
         private bool _isEditMode;
 
@@ -156,26 +152,14 @@ namespace View
 
         private async void LoadDataAsync()
         {
-            var studentsResult = await _studentService.GetAllAsync();
-            if (!studentsResult.IsSuccess)
-            {
-                MessageBox.Show($"Error loading students: {studentsResult.Message}");
-                return;
-            }
-            var students = studentsResult.Value!;
+            var students = await StudentService.GetAllAsync();
 
             cmbStudent.DataSource = students;
             cmbStudent.DisplayMember = "FullName";
             cmbStudent.ValueMember = "Id";
 
 
-            var classesResult = await _classService.GetAllAsync();
-            if (!classesResult.IsSuccess)
-            {
-                MessageBox.Show($"Error loading classes: {classesResult.Message}");
-                return;
-            }
-            var classes = classesResult.Value!;
+            var classes = await ClassService.GetAllAsync();
 
             cmbClass.DataSource = classes;
             cmbClass.DisplayMember = "ClassName";
@@ -248,11 +232,11 @@ namespace View
                 ValidationResult saveResult;
                 if (_isEditMode)
                 {
-                    saveResult = await _regService.UpdateAsync(entity.Id, entity);
+                    saveResult = await RegistrationService.UpdateAsync(entity.Id, entity);
                 }
                 else
                 {
-                    saveResult = await _regService.AddAsync(entity);
+                    saveResult = await RegistrationService.AddAsync(entity);
                 }
 
                 if (!saveResult.IsSuccess)

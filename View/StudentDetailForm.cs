@@ -11,7 +11,6 @@ namespace View
 {
     public partial class StudentDetailForm : Form
     {
-        private readonly StudentService _studentService = new StudentService();
         private readonly AuthService _authService = new AuthService();
 
         private StudentDto? _student;
@@ -242,7 +241,7 @@ namespace View
                     };
 
                     var entity = dto.ToEntity();
-                    saveResult = await _studentService.UpdateAsync(entity.Id, entity);
+                    saveResult = await StudentService.UpdateAsync(entity.Id, entity);
                 }
                 else
                 {

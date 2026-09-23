@@ -10,7 +10,6 @@ namespace View
 {
     public partial class UserDetailForm : Form
     {
-        private readonly UserService _userService = new UserService();
         private readonly AuthService _authService = new AuthService();
         private UserDto? _user;
         private bool _isEditMode;
@@ -155,7 +154,7 @@ namespace View
                 ValidationResult saveResult;
                 if (_isEditMode)
                 {
-                    saveResult = await _userService.UpdateAsync(dto.Id, dto.ToEntity());
+                    saveResult = await UserService.UpdateAsync(dto.Id, dto.ToEntity());
                 }
                 else
                 {
@@ -166,7 +165,7 @@ namespace View
                     }
                     else
                     {
-                        saveResult = await _userService.AddAsync(dto.ToEntity());
+                        saveResult = await UserService.AddAsync(dto.ToEntity());
                     }
                 }
                 if (!saveResult.IsSuccess)

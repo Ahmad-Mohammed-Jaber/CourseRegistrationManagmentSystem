@@ -9,9 +9,6 @@ namespace View
 {
     public partial class BrowseClassesForm : Form
     {
-        private readonly StudentRegistrationService _regService = new();
-        private readonly ClassService _classService = new();
-
         private DataGridView dgvClasses;
         private Button btnRegister;
         private Panel topPanel;
@@ -148,13 +145,8 @@ namespace View
             try
             {
                 dgvClasses.DataSource = null;
-                var result = await _classService.GetAllAsync();
-                if (!result.IsSuccess)
-                {
-                    MessageBox.Show($"Error loading classes: {result.Message}");
-                    return;
-                }
-                dgvClasses.DataSource = result.Value!.Select(c => c.ToDto()).ToList();
+                var classes = await ClassService.GetAllAsync();
+                dgvClasses.DataSource = classes.Select(c => c.ToDto()).ToList();
             }
             catch (BusinessException)
             {
@@ -173,10 +165,10 @@ namespace View
             {
                 try
                 {
-                    var result = await _regService.RegisterClass(cls.Id);
-                    if (!result.IsSuccess)
+                    var registrationId = await StudentRegistrationService.RegisterClass(cls.Id);
+                    if (registrationId == null)
                     {
-                        MessageBox.Show($"Registration failed: {result.Message}");
+                        MessageBox.Show("Registration failed.");
                         return;
                     }
                     MessageBox.Show("Registered successfully!");

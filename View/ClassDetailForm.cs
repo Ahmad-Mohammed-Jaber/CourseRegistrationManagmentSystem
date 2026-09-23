@@ -11,8 +11,6 @@ namespace View
 {
     public partial class ClassDetailForm : Form
     {
-        private readonly ClassService _classService = new ClassService();
-        private readonly CourseService _courseService = new CourseService();
         private ClassDto? _class;
         private bool _isEditMode;
 
@@ -206,13 +204,8 @@ namespace View
         }
         private async void LoadCourses()
         {
-            var result = await _courseService.GetAllAsync();
-            if (!result.IsSuccess)
-            {
-                MessageBox.Show($"Error loading courses: {result.Message}");
-                return;
-            }
-            cmbCourse.DataSource = result.Value!;
+            var courses = await CourseService.GetAllAsync();
+            cmbCourse.DataSource = courses;
             cmbCourse.DisplayMember = "CourseName";
             cmbCourse.ValueMember = "Id";
         }
@@ -266,11 +259,11 @@ namespace View
                 ValidationResult saveResult;
                 if (_isEditMode)
                 {
-                    saveResult = await _classService.UpdateAsync(entity.Id, entity);
+                    saveResult = await ClassService.UpdateAsync(entity.Id, entity);
                 }
                 else
                 {
-                    saveResult = await _classService.AddAsync(entity);
+                    saveResult = await ClassService.AddAsync(entity);
                 }
 
                 if (!saveResult.IsSuccess)

@@ -7,83 +7,86 @@ using Shared.Logging;
 
 namespace BL.Services;
 
-public class StudentRegistrationService
+public static class StudentRegistrationService
 {
-    private readonly ClassManager _classManager = new ClassManager();
-    private readonly RegistrationManager _registrationManager = new RegistrationManager();
-    private readonly StudentManager _studentManager = new StudentManager();
-
-    private async Task<Result<int>> RequireStudentIdAsync()
+    private static async Task<int?> RequireStudentIdAsync()
     {
         var auth = AccessValidator.RequireStudent();
         if (!auth.IsSuccess)
         {
-            return new Result<int>(auth.Status, auth.Errors, default);
+            return null;
         }
 
-        var session = SessionManager.Current!;
-        var student = await _studentManager.GetByUserIdAsync(session.UserId);
+        var session = SessionManager.Current;
+        if (session == null)
+        {
+            return null;
+        }
+
+        var studentManager = new StudentManager();
+        var student = await studentManager.GetByUserIdAsync(session.UserId);
         var profile = StudentValidator.RequireProfileExists(student);
         if (!profile.IsSuccess)
         {
-            return new Result<int>(profile.Status, profile.Errors, default);
+            return null;
         }
 
-        return new Result<int>(ValidationStatus.Success, Array.Empty<ValidationError>(), student!.Id);
+        return student!.Id;
     }
 
-    public async Task<Result<int>> RegisterClass(int classId)
+    public static async Task<int?> RegisterClass(int classId)
     {
         try
         {
-            var studentIdResult = await RequireStudentIdAsync();
-            if (!studentIdResult.IsSuccess)
+            var studentId = await RequireStudentIdAsync();
+            if (studentId == null)
             {
-                return studentIdResult;
+                return null;
             }
 
-            int studentId = studentIdResult.Value;
+            var classManager = new ClassManager();
+            var registrationManager = new RegistrationManager();
 
-            Class? @class = await _classManager.GetByIdAsync(classId);
+            Class? @class = await classManager.GetByIdAsync(classId);
 
             var exists = ClassValidator.RequireExists(@class, classId);
             if (!exists.IsSuccess)
             {
-                return new Result<int>(exists.Status, exists.Errors, default);
+                return null;
             }
 
             var active = ClassValidator.ValidateIsActive(@class!);
             if (!active.IsSuccess)
             {
-                return new Result<int>(active.Status, active.Errors, default);
+                return null;
             }
 
             var dup = RegistrationValidator.ValidateAlreadyRegistered(
-                await _registrationManager.ExistsAsync(studentId, classId));
+                await registrationManager.ExistsAsync(studentId.Value, classId));
             if (!dup.IsSuccess)
             {
-                return new Result<int>(dup.Status, dup.Errors, default);
+                return null;
             }
 
             var capacity = ClassValidator.ValidateCapacityAvailable(@class!);
             if (!capacity.IsSuccess)
             {
-                return new Result<int>(capacity.Status, capacity.Errors, default);
+                return null;
             }
 
             var registration = new Registration
             {
-                StudentId = studentId,
+                StudentId = studentId.Value,
                 ClassId = classId,
                 RegistrationDate = DateTime.Now,
                 Status = "Registered"
             };
-            await _registrationManager.AddAsync(registration);
+            await registrationManager.AddAsync(registration);
 
             @class!.CurrentCapacity++;
-            await _classManager.UpdateAsync(classId, @class);
+            await classManager.UpdateAsync(classId, @class);
 
-            return new Result<int>(ValidationStatus.Success, Array.Empty<ValidationError>(), registration.Id);
+            return registration.Id;
         }
         catch (Exception ex)
         {
@@ -92,19 +95,22 @@ public class StudentRegistrationService
         }
     }
 
-    public async Task<ValidationResult> DropRegistration(int registrationId)
+    public static async Task<ValidationResult> DropRegistration(int registrationId)
     {
         try
         {
-            var studentIdResult = await RequireStudentIdAsync();
-            if (!studentIdResult.IsSuccess)
+            var studentId = await RequireStudentIdAsync();
+            if (studentId == null)
             {
-                return studentIdResult;
+                return new ValidationResult(
+                    ValidationStatus.Unauthorized,
+                    new[] { new ValidationError(string.Empty, "Student login required.") });
             }
 
-            int studentId = studentIdResult.Value;
+            var registrationManager = new RegistrationManager();
+            var classManager = new ClassManager();
 
-            Registration? registration = await _registrationManager.GetByIdAsync(registrationId);
+            Registration? registration = await registrationManager.GetByIdAsync(registrationId);
 
             var exists = RegistrationValidator.RequireExists(registration, registrationId);
             if (!exists.IsSuccess)
@@ -112,20 +118,20 @@ public class StudentRegistrationService
                 return exists;
             }
 
-            var ownership = RegistrationValidator.ValidateOwnership(registration!.StudentId, studentId);
+            var ownership = RegistrationValidator.ValidateOwnership(registration!.StudentId, studentId.Value);
             if (!ownership.IsSuccess)
             {
                 throw new BusinessException(ownership.Message);
             }
 
-            Class? @class = await _classManager.GetByIdAsync(registration.ClassId);
+            Class? @class = await classManager.GetByIdAsync(registration.ClassId);
 
             if (@class == null)
             {
                 throw new BusinessException($"Class with id {registration.ClassId} not found.");
             }
 
-            await _registrationManager.DeleteAsync(registrationId);
+            await registrationManager.DeleteAsync(registrationId);
 
             @class.CurrentCapacity--;
             if (@class.CurrentCapacity < 0)
@@ -133,7 +139,7 @@ public class StudentRegistrationService
                 @class.CurrentCapacity = 0;
             }
 
-            await _classManager.UpdateAsync(@class.Id, @class);
+            await classManager.UpdateAsync(@class.Id, @class);
             return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
         }
         catch (BusinessException ex)
@@ -148,22 +154,18 @@ public class StudentRegistrationService
         }
     }
 
-    public async Task<Result<List<(Registration Registration, Class Class)>>> GetRegistrationsAsync()
+    public static async Task<List<(Registration Registration, Class Class)>> GetRegistrationsAsync()
     {
         try
         {
-            var studentIdResult = await RequireStudentIdAsync();
-            if (!studentIdResult.IsSuccess)
+            var studentId = await RequireStudentIdAsync();
+            if (studentId == null)
             {
-                return new Result<List<(Registration, Class)>>(studentIdResult.Status, studentIdResult.Errors, default);
+                return new List<(Registration, Class)>();
             }
 
-            int studentId = studentIdResult.Value;
-
-            return new Result<List<(Registration, Class)>>(
-                ValidationStatus.Success,
-                Array.Empty<ValidationError>(),
-                await _registrationManager.GetStudentRegistrationsWithClassesAsync(studentId));
+            var registrationManager = new RegistrationManager();
+            return await registrationManager.GetStudentRegistrationsWithClassesAsync(studentId.Value);
         }
         catch (Exception ex)
         {

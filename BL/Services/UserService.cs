@@ -1,4 +1,3 @@
-using BL.Interfaces;
 using BL.Managers;
 using BL.Validation;
 using Shared.Entities;
@@ -11,9 +10,7 @@ namespace BL.Services;
 
 public static class UserService
 {
-   
-
-    public static User?  GetById(int id)
+    public static User? GetById(int id)
     {
         try
         {
@@ -27,17 +24,12 @@ public static class UserService
         }
     }
 
-    public async Task<Result<User?>> GetByIdAsync(int id)
+    public static async Task<User?> GetByIdAsync(int id)
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                return new Result<User?>(auth.Status, auth.Errors, default);
-            }
-
-            return new Result<User?>(ValidationStatus.Success, Array.Empty<ValidationError>(), await _userManager.GetByIdAsync(id));
+            var userManager = new UserManager();
+            return await userManager.GetByIdAsync(id);
         }
         catch (Exception ex)
         {
@@ -46,17 +38,12 @@ public static class UserService
         }
     }
 
-    public Result<List<User>> GetAll()
+    public static List<User> GetAll()
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                return new Result<List<User>>(auth.Status, auth.Errors, default);
-            }
-
-            return new Result<List<User>>(ValidationStatus.Success, Array.Empty<ValidationError>(), _userManager.GetAll());
+            var userManager = new UserManager();
+            return userManager.GetAll();
         }
         catch (Exception ex)
         {
@@ -65,17 +52,12 @@ public static class UserService
         }
     }
 
-    public async Task<Result<List<User>>> GetAllAsync()
+    public static async Task<List<User>> GetAllAsync()
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                return new Result<List<User>>(auth.Status, auth.Errors, default);
-            }
-
-            return new Result<List<User>>(ValidationStatus.Success, Array.Empty<ValidationError>(), await _userManager.GetAllAsync());
+            var userManager = new UserManager();
+            return await userManager.GetAllAsync();
         }
         catch (Exception ex)
         {
@@ -84,7 +66,7 @@ public static class UserService
         }
     }
 
-    public ValidationResult Add(User user)
+    public static ValidationResult Add(User user)
     {
         try
         {
@@ -110,7 +92,8 @@ public static class UserService
             user.CreatedBy = actorId;
             user.ModifiedBy = actorId;
 
-            _userManager.Add(user);
+            var userManager = new UserManager();
+            userManager.Add(user);
             return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
         }
         catch (Exception ex)
@@ -120,7 +103,7 @@ public static class UserService
         }
     }
 
-    public async Task<ValidationResult> AddAsync(User user)
+    public static async Task<ValidationResult> AddAsync(User user)
     {
         try
         {
@@ -146,7 +129,8 @@ public static class UserService
             user.CreatedBy = actorId;
             user.ModifiedBy = actorId;
 
-            await _userManager.AddAsync(user);
+            var userManager = new UserManager();
+            await userManager.AddAsync(user);
             return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
         }
         catch (Exception ex)
@@ -156,7 +140,7 @@ public static class UserService
         }
     }
 
-    public ValidationResult Update(int id, User user)
+    public static ValidationResult Update(int id, User user)
     {
         try
         {
@@ -166,7 +150,8 @@ public static class UserService
                 return auth;
             }
 
-            var existingUser = _userManager.GetById(id);
+            var userManager = new UserManager();
+            var existingUser = userManager.GetById(id);
             var exists = UserValidator.RequireExists(existingUser, id);
             if (!exists.IsSuccess)
             {
@@ -193,7 +178,7 @@ public static class UserService
             user.CreatedBy = existingUser!.CreatedBy;
             user.ModifiedBy = SessionManager.Current?.UserId ?? existingUser.ModifiedBy;
 
-            _userManager.Update(id, user);
+            userManager.Update(id, user);
             return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
         }
         catch (Exception ex)
@@ -203,7 +188,7 @@ public static class UserService
         }
     }
 
-    public async Task<ValidationResult> UpdateAsync(int id, User user)
+    public static async Task<ValidationResult> UpdateAsync(int id, User user)
     {
         try
         {
@@ -213,7 +198,8 @@ public static class UserService
                 return auth;
             }
 
-            var existingUser = await _userManager.GetByIdAsync(id);
+            var userManager = new UserManager();
+            var existingUser = await userManager.GetByIdAsync(id);
             var exists = UserValidator.RequireExists(existingUser, id);
             if (!exists.IsSuccess)
             {
@@ -240,7 +226,7 @@ public static class UserService
             user.CreatedBy = existingUser!.CreatedBy;
             user.ModifiedBy = SessionManager.Current?.UserId ?? existingUser.ModifiedBy;
 
-            await _userManager.UpdateAsync(id, user);
+            await userManager.UpdateAsync(id, user);
             return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
         }
         catch (Exception ex)
@@ -250,7 +236,7 @@ public static class UserService
         }
     }
 
-    public ValidationResult Delete(int id)
+    public static ValidationResult Delete(int id)
     {
         try
         {
@@ -260,14 +246,15 @@ public static class UserService
                 return auth;
             }
 
-            var existingUser = _userManager.GetById(id);
+            var userManager = new UserManager();
+            var existingUser = userManager.GetById(id);
             var exists = UserValidator.RequireExists(existingUser, id);
             if (!exists.IsSuccess)
             {
                 return exists;
             }
 
-            _userManager.Delete(id);
+            userManager.Delete(id);
             return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
         }
         catch (Exception ex)
@@ -277,7 +264,7 @@ public static class UserService
         }
     }
 
-    public async Task<ValidationResult> DeleteAsync(int id)
+    public static async Task<ValidationResult> DeleteAsync(int id)
     {
         try
         {
@@ -287,14 +274,15 @@ public static class UserService
                 return auth;
             }
 
-            var existingUser = await _userManager.GetByIdAsync(id);
+            var userManager = new UserManager();
+            var existingUser = await userManager.GetByIdAsync(id);
             var exists = UserValidator.RequireExists(existingUser, id);
             if (!exists.IsSuccess)
             {
                 return exists;
             }
 
-            await _userManager.DeleteAsync(id);
+            await userManager.DeleteAsync(id);
             return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
         }
         catch (Exception ex)
@@ -304,27 +292,22 @@ public static class UserService
         }
     }
 
-    public Result<List<User>> Search(string regex)
+    public static List<User> Search(string regex)
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                return new Result<List<User>>(auth.Status, auth.Errors, default);
-            }
-
             var pattern = SearchValidator.ValidateSearchPattern(regex);
             if (!pattern.IsSuccess)
             {
-                return new Result<List<User>>(pattern.Status, pattern.Errors, default);
+                return new List<User>();
             }
 
-            var users = _userManager.GetAll();
-            return new Result<List<User>>(ValidationStatus.Success, Array.Empty<ValidationError>(), users
+            var userManager = new UserManager();
+            var users = userManager.GetAll();
+            return users
                 .Where(user => Regex.IsMatch(user.UserName, regex, RegexOptions.IgnoreCase) ||
                                Regex.IsMatch(user.FullName, regex, RegexOptions.IgnoreCase))
-                .ToList());
+                .ToList();
         }
         catch (Exception ex)
         {
@@ -333,27 +316,22 @@ public static class UserService
         }
     }
 
-    public async Task<Result<List<User>>> SearchAsync(string regex)
+    public static async Task<List<User>> SearchAsync(string regex)
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                return new Result<List<User>>(auth.Status, auth.Errors, default);
-            }
-
             var pattern = SearchValidator.ValidateSearchPattern(regex);
             if (!pattern.IsSuccess)
             {
-                return new Result<List<User>>(pattern.Status, pattern.Errors, default);
+                return new List<User>();
             }
 
-            var users = await _userManager.GetAllAsync();
-            return new Result<List<User>>(ValidationStatus.Success, Array.Empty<ValidationError>(), users
+            var userManager = new UserManager();
+            var users = await userManager.GetAllAsync();
+            return users
                 .Where(user => Regex.IsMatch(user.UserName, regex, RegexOptions.IgnoreCase) ||
                                Regex.IsMatch(user.FullName, regex, RegexOptions.IgnoreCase))
-                .ToList());
+                .ToList();
         }
         catch (Exception ex)
         {
@@ -362,17 +340,19 @@ public static class UserService
         }
     }
 
-    private ValidationResult EnsureUniqueUserNameSync(string userName, int? excludeUserId = null)
+    private static ValidationResult EnsureUniqueUserNameSync(string userName, int? excludeUserId = null)
     {
-        var existing = _userManager.GetAll()
+        var userManager = new UserManager();
+        var existing = userManager.GetAll()
             .FirstOrDefault(u => u.UserName.Equals(userName, StringComparison.OrdinalIgnoreCase));
         return UserValidator.RequireUniqueUserName(
             existing != null && existing.Id != (excludeUserId ?? 0), userName);
     }
 
-    private async Task<ValidationResult> EnsureUniqueUserNameAsync(string userName, int? excludeUserId = null)
+    private static async Task<ValidationResult> EnsureUniqueUserNameAsync(string userName, int? excludeUserId = null)
     {
-        var existingUser = await _userManager.GetByUserNameAsync(userName);
+        var userManager = new UserManager();
+        var existingUser = await userManager.GetByUserNameAsync(userName);
         return UserValidator.RequireUniqueUserName(
             existingUser != null && existingUser.Id != (excludeUserId ?? 0), userName);
     }

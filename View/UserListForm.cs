@@ -9,7 +9,6 @@ namespace View
 {
     public partial class UserListForm : Form
     {
-        private readonly UserService _userService = new UserService();
         private readonly AuthService _authService = new AuthService();
         private DataGridView dgvUsers;
         private Button btnAdd;
@@ -92,13 +91,8 @@ namespace View
             try
             {
                 dgvUsers.DataSource = null;
-                var loadResult = await _userService.GetAllAsync();
-                if (!loadResult.IsSuccess)
-                {
-                    MessageBox.Show($"Error loading users: {loadResult.Message}");
-                    return;
-                }
-                dgvUsers.DataSource = loadResult.Value!.Select(u => u.ToDto()).ToList();
+                var users = await UserService.GetAllAsync();
+                dgvUsers.DataSource = users.Select(u => u.ToDto()).ToList();
                 ConfigureColumns();
             }
             catch (BusinessException ex)
@@ -145,13 +139,8 @@ namespace View
             {
                 if (!string.IsNullOrWhiteSpace(txtSearch.Text))
                 {
-                    var searchResult = await _userService.SearchAsync(txtSearch.Text);
-                    if (!searchResult.IsSuccess)
-                    {
-                        MessageBox.Show($"Error searching users: {searchResult.Message}");
-                        return;
-                    }
-                    dgvUsers.DataSource = searchResult.Value!.Select(u => u.ToDto()).ToList();
+                    var users = await UserService.SearchAsync(txtSearch.Text);
+                    dgvUsers.DataSource = users.Select(u => u.ToDto()).ToList();
                     ConfigureColumns();
                 }
                 else
@@ -213,7 +202,7 @@ namespace View
                 {
                     try
                     {
-                        var deleteResult = await _userService.DeleteAsync(user.Id);
+                        var deleteResult = await UserService.DeleteAsync(user.Id);
                         if (!deleteResult.IsSuccess)
                         {
                             MessageBox.Show($"Error deleting user: {deleteResult.Message}");

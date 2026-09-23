@@ -9,8 +9,6 @@ namespace View
 {
     public partial class StudentListForm : Form
     {
-        private readonly StudentService _studentService = new StudentService();
-
         private DataGridView dgvStudents;
         private Button btnAdd;
         private Button btnEdit;
@@ -177,13 +175,8 @@ namespace View
             try
             {
                 dgvStudents.DataSource = null;
-                var loadResult = await _studentService.GetAllAsync();
-                if (!loadResult.IsSuccess)
-                {
-                    MessageBox.Show($"Error loading students: {loadResult.Message}");
-                    return;
-                }
-                dgvStudents.DataSource = loadResult.Value!.Select(s => s.ToDto()).ToList();
+                var students = await StudentService.GetAllAsync();
+                dgvStudents.DataSource = students.Select(s => s.ToDto()).ToList();
             }
             catch (BusinessException ex)
             {
@@ -202,13 +195,8 @@ namespace View
             {
                 if (!string.IsNullOrWhiteSpace(txtSearch.Text))
                 {
-                    var searchResult = await _studentService.SearchAsync(txtSearch.Text);
-                    if (!searchResult.IsSuccess)
-                    {
-                        MessageBox.Show($"Error searching students: {searchResult.Message}");
-                        return;
-                    }
-                    dgvStudents.DataSource = searchResult.Value!.Select(s => s.ToDto()).ToList();
+                    var students = await StudentService.SearchAsync(txtSearch.Text);
+                    dgvStudents.DataSource = students.Select(s => s.ToDto()).ToList();
                 }
                 else
                 {
@@ -267,7 +255,7 @@ namespace View
                 {
                     try
                     {
-                        var deleteResult = await _studentService.DeleteAsync(student.Id);
+                        var deleteResult = await StudentService.DeleteAsync(student.Id);
                         if (!deleteResult.IsSuccess)
                         {
                             MessageBox.Show($"Error deleting student: {deleteResult.Message}");

@@ -1,4 +1,3 @@
-using BL.Interfaces;
 using BL.Managers;
 using BL.Validation;
 using Shared.DTOs;
@@ -8,14 +7,11 @@ using Shared.Logging;
 
 namespace BL.Services;
 
-public class StudentService : ICrudService<Student>
+public static class StudentService
 {
-    private readonly StudentManager _studentManager = new StudentManager();
-    private readonly UserManager _userManager = new UserManager();
-
-    private async Task EnrichAsync(Student student)
+    private static async Task EnrichAsync(Student student, UserManager userManager)
     {
-        var user = await _userManager.GetByIdAsync(student.UserId);
+        var user = await userManager.GetByIdAsync(student.UserId);
         if (user != null)
         {
             student.UserName = user.UserName;
@@ -26,9 +22,9 @@ public class StudentService : ICrudService<Student>
         }
     }
 
-    private void EnrichSync(Student student)
+    private static void EnrichSync(Student student, UserManager userManager)
     {
-        var user = _userManager.GetById(student.UserId);
+        var user = userManager.GetById(student.UserId);
         if (user != null)
         {
             student.UserName = user.UserName;
@@ -39,23 +35,19 @@ public class StudentService : ICrudService<Student>
         }
     }
 
-    public Result<Student?> GetById(int id)
+    public static Student? GetById(int id)
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                return new Result<Student?>(auth.Status, auth.Errors, default);
-            }
-
-            var student = _studentManager.GetById(id);
+            var studentManager = new StudentManager();
+            var userManager = new UserManager();
+            var student = studentManager.GetById(id);
             if (student != null)
             {
-                EnrichSync(student);
+                EnrichSync(student, userManager);
             }
 
-            return new Result<Student?>(ValidationStatus.Success, Array.Empty<ValidationError>(), student);
+            return student;
         }
         catch (Exception ex)
         {
@@ -64,23 +56,19 @@ public class StudentService : ICrudService<Student>
         }
     }
 
-    public async Task<Result<Student?>> GetByIdAsync(int id)
+    public static async Task<Student?> GetByIdAsync(int id)
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                return new Result<Student?>(auth.Status, auth.Errors, default);
-            }
-
-            var student = await _studentManager.GetByIdAsync(id);
+            var studentManager = new StudentManager();
+            var userManager = new UserManager();
+            var student = await studentManager.GetByIdAsync(id);
             if (student != null)
             {
-                await EnrichAsync(student);
+                await EnrichAsync(student, userManager);
             }
 
-            return new Result<Student?>(ValidationStatus.Success, Array.Empty<ValidationError>(), student);
+            return student;
         }
         catch (Exception ex)
         {
@@ -89,23 +77,19 @@ public class StudentService : ICrudService<Student>
         }
     }
 
-    public Result<List<Student>> GetAll()
+    public static List<Student> GetAll()
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                return new Result<List<Student>>(auth.Status, auth.Errors, default);
-            }
-
-            var list = _studentManager.GetAll();
+            var studentManager = new StudentManager();
+            var userManager = new UserManager();
+            var list = studentManager.GetAll();
             foreach (var s in list)
             {
-                EnrichSync(s);
+                EnrichSync(s, userManager);
             }
 
-            return new Result<List<Student>>(ValidationStatus.Success, Array.Empty<ValidationError>(), list);
+            return list;
         }
         catch (Exception ex)
         {
@@ -114,23 +98,19 @@ public class StudentService : ICrudService<Student>
         }
     }
 
-    public async Task<Result<List<Student>>> GetAllAsync()
+    public static async Task<List<Student>> GetAllAsync()
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                return new Result<List<Student>>(auth.Status, auth.Errors, default);
-            }
-
-            var list = await _studentManager.GetAllAsync();
+            var studentManager = new StudentManager();
+            var userManager = new UserManager();
+            var list = await studentManager.GetAllAsync();
             foreach (var s in list)
             {
-                await EnrichAsync(s);
+                await EnrichAsync(s, userManager);
             }
 
-            return new Result<List<Student>>(ValidationStatus.Success, Array.Empty<ValidationError>(), list);
+            return list;
         }
         catch (Exception ex)
         {
@@ -139,7 +119,7 @@ public class StudentService : ICrudService<Student>
         }
     }
 
-    public ValidationResult Add(Student student)
+    public static ValidationResult Add(Student student)
     {
         try
         {
@@ -168,6 +148,8 @@ public class StudentService : ICrudService<Student>
                 return unique;
             }
 
+            var userManager = new UserManager();
+            var studentManager = new StudentManager();
             var user = new User
             {
                 FullName = student.FullName,
@@ -177,10 +159,10 @@ public class StudentService : ICrudService<Student>
                 PasswordHash = student.PasswordHash,
             };
 
-            _userManager.Add(user);
+            userManager.Add(user);
             if (user.Id == 0)
             {
-                var created = _userManager.GetAll().FirstOrDefault(u => u.UserName == student.UserName);
+                var created = userManager.GetAll().FirstOrDefault(u => u.UserName == student.UserName);
                 if (created != null)
                 {
                     user.Id = created.Id;
@@ -195,13 +177,13 @@ public class StudentService : ICrudService<Student>
 
             try
             {
-                _studentManager.Add(student);
+                studentManager.Add(student);
             }
             catch
             {
                 try
                 {
-                    _userManager.Delete(user.Id);
+                    userManager.Delete(user.Id);
                 }
                 catch (Exception ex)
                 {
@@ -224,7 +206,7 @@ public class StudentService : ICrudService<Student>
         }
     }
 
-    public async Task<ValidationResult> AddAsync(Student student)
+    public static async Task<ValidationResult> AddAsync(Student student)
     {
         try
         {
@@ -253,6 +235,8 @@ public class StudentService : ICrudService<Student>
                 return unique;
             }
 
+            var userManager = new UserManager();
+            var studentManager = new StudentManager();
             var user = new User
             {
                 FullName = student.FullName,
@@ -261,8 +245,8 @@ public class StudentService : ICrudService<Student>
                 Role = User.UserRoles.Student,
                 PasswordHash = student.PasswordHash,
             };
-            await _userManager.AddAsync(user);
-            var created = await _userManager.GetByUserNameAsync(user.UserName);
+            await userManager.AddAsync(user);
+            var created = await userManager.GetByUserNameAsync(user.UserName);
             if (created == null)
             {
                 throw new BusinessException("Failed to create user account for student.");
@@ -272,13 +256,13 @@ public class StudentService : ICrudService<Student>
 
             try
             {
-                await _studentManager.AddAsync(student);
+                await studentManager.AddAsync(student);
             }
             catch
             {
                 try
                 {
-                    await _userManager.DeleteAsync(created.Id);
+                    await userManager.DeleteAsync(created.Id);
                 }
                 catch (Exception ex)
                 {
@@ -301,7 +285,7 @@ public class StudentService : ICrudService<Student>
         }
     }
 
-    public ValidationResult Update(int id, Student student)
+    public static ValidationResult Update(int id, Student student)
     {
         try
         {
@@ -317,14 +301,16 @@ public class StudentService : ICrudService<Student>
                 return valid;
             }
 
-            var existingStudent = _studentManager.GetById(id);
+            var studentManager = new StudentManager();
+            var userManager = new UserManager();
+            var existingStudent = studentManager.GetById(id);
             var exists = StudentValidator.RequireExists(existingStudent, id);
             if (!exists.IsSuccess)
             {
                 return exists;
             }
 
-            var userByName = _userManager.GetAll().FirstOrDefault(u => u.UserName == student!.UserName);
+            var userByName = userManager.GetAll().FirstOrDefault(u => u.UserName == student!.UserName);
             var unique = UserValidator.RequireUniqueUserName(
                 userByName != null && userByName.Id != existingStudent!.UserId, student.UserName);
             if (!unique.IsSuccess)
@@ -332,9 +318,9 @@ public class StudentService : ICrudService<Student>
                 return unique;
             }
 
-            _studentManager.Update(id, student);
+            studentManager.Update(id, student);
 
-            var existingUser = _userManager.GetById(existingStudent.UserId);
+            var existingUser = userManager.GetById(existingStudent.UserId);
             if (existingUser != null)
             {
                 existingUser.FullName = student.FullName;
@@ -345,7 +331,7 @@ public class StudentService : ICrudService<Student>
                     existingUser.PasswordHash = student.PasswordHash;
                 }
 
-                _userManager.Update(existingUser.Id, existingUser);
+                userManager.Update(existingUser.Id, existingUser);
             }
             return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
         }
@@ -356,7 +342,7 @@ public class StudentService : ICrudService<Student>
         }
     }
 
-    public async Task<ValidationResult> UpdateAsync(int id, Student student)
+    public static async Task<ValidationResult> UpdateAsync(int id, Student student)
     {
         try
         {
@@ -372,7 +358,9 @@ public class StudentService : ICrudService<Student>
                 return valid;
             }
 
-            var existingStudent = await _studentManager.GetByIdAsync(id);
+            var studentManager = new StudentManager();
+            var userManager = new UserManager();
+            var existingStudent = await studentManager.GetByIdAsync(id);
             var exists = StudentValidator.RequireExists(existingStudent, id);
             if (!exists.IsSuccess)
             {
@@ -385,9 +373,9 @@ public class StudentService : ICrudService<Student>
                 return unique;
             }
 
-            await _studentManager.UpdateAsync(id, student);
+            await studentManager.UpdateAsync(id, student);
 
-            var existingUser = await _userManager.GetByIdAsync(existingStudent.UserId);
+            var existingUser = await userManager.GetByIdAsync(existingStudent.UserId);
             if (existingUser != null)
             {
                 existingUser.FullName = student.FullName;
@@ -398,7 +386,7 @@ public class StudentService : ICrudService<Student>
                     existingUser.PasswordHash = student.PasswordHash;
                 }
 
-                await _userManager.UpdateAsync(existingUser.Id, existingUser);
+                await userManager.UpdateAsync(existingUser.Id, existingUser);
             }
             return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
         }
@@ -409,20 +397,22 @@ public class StudentService : ICrudService<Student>
         }
     }
 
-    private ValidationResult EnsureUniqueUserNameSync(string userName)
+    private static ValidationResult EnsureUniqueUserNameSync(string userName)
     {
-        var existing = _userManager.GetAll().FirstOrDefault(u => u.UserName.Equals(userName, StringComparison.OrdinalIgnoreCase));
+        var userManager = new UserManager();
+        var existing = userManager.GetAll().FirstOrDefault(u => u.UserName.Equals(userName, StringComparison.OrdinalIgnoreCase));
         return UserValidator.RequireUniqueUserName(existing != null, userName);
     }
 
-    private async Task<ValidationResult> EnsureUniqueUserNameAsync(string userName, int? excludeUserId = null)
+    private static async Task<ValidationResult> EnsureUniqueUserNameAsync(string userName, int? excludeUserId = null)
     {
-        var existingUser = await _userManager.GetByUserNameAsync(userName);
+        var userManager = new UserManager();
+        var existingUser = await userManager.GetByUserNameAsync(userName);
         return UserValidator.RequireUniqueUserName(
             existingUser != null && existingUser.Id != (excludeUserId ?? 0), userName);
     }
 
-    public ValidationResult Delete(int id)
+    public static ValidationResult Delete(int id)
     {
         try
         {
@@ -432,15 +422,17 @@ public class StudentService : ICrudService<Student>
                 return auth;
             }
 
-            var student = _studentManager.GetById(id);
+            var studentManager = new StudentManager();
+            var userManager = new UserManager();
+            var student = studentManager.GetById(id);
             var exists = StudentValidator.RequireExists(student, id);
             if (!exists.IsSuccess)
             {
                 return exists;
             }
 
-            _studentManager.Delete(id);
-            _userManager.Delete(student!.UserId);
+            studentManager.Delete(id);
+            userManager.Delete(student!.UserId);
             return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
         }
         catch (Exception ex)
@@ -450,7 +442,7 @@ public class StudentService : ICrudService<Student>
         }
     }
 
-    public async Task<ValidationResult> DeleteAsync(int id)
+    public static async Task<ValidationResult> DeleteAsync(int id)
     {
         try
         {
@@ -460,15 +452,17 @@ public class StudentService : ICrudService<Student>
                 return auth;
             }
 
-            var student = await _studentManager.GetByIdAsync(id);
+            var studentManager = new StudentManager();
+            var userManager = new UserManager();
+            var student = await studentManager.GetByIdAsync(id);
             var exists = StudentValidator.RequireExists(student, id);
             if (!exists.IsSuccess)
             {
                 return exists;
             }
 
-            await _studentManager.DeleteAsync(id);
-            await _userManager.DeleteAsync(student!.UserId);
+            await studentManager.DeleteAsync(id);
+            await userManager.DeleteAsync(student!.UserId);
             return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
         }
         catch (Exception ex)
@@ -478,29 +472,25 @@ public class StudentService : ICrudService<Student>
         }
     }
 
-    public Result<List<Student>> Search(string regex)
+    public static List<Student> Search(string regex)
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                return new Result<List<Student>>(auth.Status, auth.Errors, default);
-            }
-
             var pattern = SearchValidator.ValidateSearchPattern(regex);
             if (!pattern.IsSuccess)
             {
-                return new Result<List<Student>>(pattern.Status, pattern.Errors, default);
+                return new List<Student>();
             }
 
-            var result = _studentManager.Search(regex);
+            var studentManager = new StudentManager();
+            var userManager = new UserManager();
+            var result = studentManager.Search(regex);
             foreach (var s in result)
             {
-                EnrichSync(s);
+                EnrichSync(s, userManager);
             }
 
-            return new Result<List<Student>>(ValidationStatus.Success, Array.Empty<ValidationError>(), result);
+            return result;
         }
         catch (Exception ex)
         {
@@ -509,29 +499,25 @@ public class StudentService : ICrudService<Student>
         }
     }
 
-    public async Task<Result<List<Student>>> SearchAsync(string regex)
+    public static async Task<List<Student>> SearchAsync(string regex)
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                return new Result<List<Student>>(auth.Status, auth.Errors, default);
-            }
-
             var pattern = SearchValidator.ValidateSearchPattern(regex);
             if (!pattern.IsSuccess)
             {
-                return new Result<List<Student>>(pattern.Status, pattern.Errors, default);
+                return new List<Student>();
             }
 
-            var result = await _studentManager.SearchAsync(regex);
+            var studentManager = new StudentManager();
+            var userManager = new UserManager();
+            var result = await studentManager.SearchAsync(regex);
             foreach (var s in result)
             {
-                await EnrichAsync(s);
+                await EnrichAsync(s, userManager);
             }
 
-            return new Result<List<Student>>(ValidationStatus.Success, Array.Empty<ValidationError>(), result);
+            return result;
         }
         catch (Exception ex)
         {
@@ -541,27 +527,19 @@ public class StudentService : ICrudService<Student>
     }
 
 
-    public async Task<Result<Student?>> GetByUserIdAsync(int userId)
+    public static async Task<Student?> GetByUserIdAsync(int userId)
     {
         try
         {
-            var auth = AccessValidator.RequireOwnerOrAdmin(userId);
-            if (!auth.IsSuccess)
-            {
-                throw new BusinessException(auth.Message);
-            }
-
-            var student = await _studentManager.GetByUserIdAsync(userId);
+            var studentManager = new StudentManager();
+            var userManager = new UserManager();
+            var student = await studentManager.GetByUserIdAsync(userId);
             if (student != null)
             {
-                await EnrichAsync(student);
+                await EnrichAsync(student, userManager);
             }
 
-            return new Result<Student?>(ValidationStatus.Success, Array.Empty<ValidationError>(), student);
-        }
-        catch (BusinessException)
-        {
-            throw;
+            return student;
         }
         catch (Exception ex)
         {
@@ -570,24 +548,25 @@ public class StudentService : ICrudService<Student>
         }
     }
 
-    public async Task<Result<Student?>> GetCurrentStudentAsync()
+    public static async Task<Student?> GetCurrentStudentAsync()
     {
         try
         {
-            var auth = AccessValidator.RequireStudent();
-            if (!auth.IsSuccess)
+            var current = Shared.Session.SessionManager.Current;
+            if (current == null)
             {
-                return new Result<Student?>(auth.Status, auth.Errors, default);
+                return null;
             }
 
-            var current = Shared.Session.SessionManager.Current!;
-            var student = await _studentManager.GetByUserIdAsync(current.UserId);
+            var studentManager = new StudentManager();
+            var userManager = new UserManager();
+            var student = await studentManager.GetByUserIdAsync(current.UserId);
             if (student != null)
             {
-                await EnrichAsync(student);
+                await EnrichAsync(student, userManager);
             }
 
-            return new Result<Student?>(ValidationStatus.Success, Array.Empty<ValidationError>(), student);
+            return student;
         }
         catch (Exception ex)
         {
@@ -597,24 +576,12 @@ public class StudentService : ICrudService<Student>
     }
 
 
-    public async Task<Result<StudentProfile?>> GetProfileByUserIdAsync(int userId)
+    public static async Task<StudentProfile?> GetProfileByUserIdAsync(int userId)
     {
         try
         {
-            var auth = AccessValidator.RequireOwnerOrAdmin(userId);
-            if (!auth.IsSuccess)
-            {
-                throw new BusinessException(auth.Message);
-            }
-
-            return new Result<StudentProfile?>(
-                ValidationStatus.Success,
-                Array.Empty<ValidationError>(),
-                await _studentManager.GetProfileByUserIdAsync(userId));
-        }
-        catch (BusinessException)
-        {
-            throw;
+            var studentManager = new StudentManager();
+            return await studentManager.GetProfileByUserIdAsync(userId);
         }
         catch (Exception ex)
         {
@@ -623,21 +590,18 @@ public class StudentService : ICrudService<Student>
         }
     }
 
-    public async Task<Result<StudentProfile?>> GetCurrentProfileAsync()
+    public static async Task<StudentProfile?> GetCurrentProfileAsync()
     {
         try
         {
-            var auth = AccessValidator.RequireStudent();
-            if (!auth.IsSuccess)
+            var current = Shared.Session.SessionManager.Current;
+            if (current == null)
             {
-                return new Result<StudentProfile?>(auth.Status, auth.Errors, default);
+                return null;
             }
 
-            var current = Shared.Session.SessionManager.Current!;
-            return new Result<StudentProfile?>(
-                ValidationStatus.Success,
-                Array.Empty<ValidationError>(),
-                await _studentManager.GetProfileByUserIdAsync(current.UserId));
+            var studentManager = new StudentManager();
+            return await studentManager.GetProfileByUserIdAsync(current.UserId);
         }
         catch (Exception ex)
         {

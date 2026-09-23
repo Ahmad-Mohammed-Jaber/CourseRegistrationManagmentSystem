@@ -9,8 +9,6 @@ namespace View
 {
     public partial class RegistrationListForm : Form
     {
-        private readonly RegistrationService _regService = new RegistrationService();
-
         private DataGridView dgvRegs;
         private Button btnAdd;
         private Button btnEdit;
@@ -102,13 +100,8 @@ namespace View
             {
                 dgvRegs.DataSource = null;
 
-                var loadResult = await _regService.GetAllDetailedAsync();
-                if (!loadResult.IsSuccess)
-                {
-                    MessageBox.Show($"Error loading registrations: {loadResult.Message}");
-                    return;
-                }
-                dgvRegs.DataSource = loadResult.Value!
+                var details = await RegistrationService.GetAllDetailedAsync();
+                dgvRegs.DataSource = details
                     .Select(x => new RegistrationDto
                     {
                         Id = x.Registration.Id,
@@ -147,13 +140,8 @@ namespace View
                 {
                     dgvRegs.DataSource = null;
 
-                    var searchResult = await _regService.SearchDetailedAsync(txtSearch.Text);
-                    if (!searchResult.IsSuccess)
-                    {
-                        MessageBox.Show($"Error searching registrations: {searchResult.Message}");
-                        return;
-                    }
-                    dgvRegs.DataSource = searchResult.Value!
+                    var details = await RegistrationService.SearchDetailedAsync(txtSearch.Text);
+                    dgvRegs.DataSource = details
                         .Select(x => new RegistrationDto
                         {
                             Id = x.Registration.Id,
@@ -297,7 +285,7 @@ namespace View
                 {
                     try
                     {
-                        var deleteResult = await _regService.DeleteAsync(reg.Id);
+                        var deleteResult = await RegistrationService.DeleteAsync(reg.Id);
                         if (!deleteResult.IsSuccess)
                         {
                             MessageBox.Show($"Error deleting registration: {deleteResult.Message}");

@@ -1,4 +1,3 @@
-using BL.Interfaces;
 using BL.Managers;
 using BL.Validation;
 using Shared.Entities;
@@ -8,23 +7,14 @@ using Shared.Logging;
 
 namespace BL.Services;
 
-public class RegistrationService : ICrudService<Registration>
+public static class RegistrationService
 {
-    private readonly RegistrationManager _registrationManager = new RegistrationManager();
-    private readonly StudentManager _studentManager = new StudentManager();
-    private readonly ClassManager _classManager = new ClassManager();
-
-    public Result<Registration?> GetById(int id)
+    public static Registration? GetById(int id)
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                return new Result<Registration?>(auth.Status, auth.Errors, default);
-            }
-
-            return new Result<Registration?>(ValidationStatus.Success, Array.Empty<ValidationError>(), _registrationManager.GetById(id));
+            var registrationManager = new RegistrationManager();
+            return registrationManager.GetById(id);
         }
         catch (Exception ex)
         {
@@ -33,17 +23,12 @@ public class RegistrationService : ICrudService<Registration>
         }
     }
 
-    public async Task<Result<Registration?>> GetByIdAsync(int id)
+    public static async Task<Registration?> GetByIdAsync(int id)
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                return new Result<Registration?>(auth.Status, auth.Errors, default);
-            }
-
-            return new Result<Registration?>(ValidationStatus.Success, Array.Empty<ValidationError>(), await _registrationManager.GetByIdAsync(id));
+            var registrationManager = new RegistrationManager();
+            return await registrationManager.GetByIdAsync(id);
         }
         catch (Exception ex)
         {
@@ -52,17 +37,12 @@ public class RegistrationService : ICrudService<Registration>
         }
     }
 
-    public Result<List<Registration>> GetAll()
+    public static List<Registration> GetAll()
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                return new Result<List<Registration>>(auth.Status, auth.Errors, default);
-            }
-
-            return new Result<List<Registration>>(ValidationStatus.Success, Array.Empty<ValidationError>(), _registrationManager.GetAll());
+            var registrationManager = new RegistrationManager();
+            return registrationManager.GetAll();
         }
         catch (Exception ex)
         {
@@ -71,17 +51,12 @@ public class RegistrationService : ICrudService<Registration>
         }
     }
 
-    public async Task<Result<List<Registration>>> GetAllAsync()
+    public static async Task<List<Registration>> GetAllAsync()
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                return new Result<List<Registration>>(auth.Status, auth.Errors, default);
-            }
-
-            return new Result<List<Registration>>(ValidationStatus.Success, Array.Empty<ValidationError>(), await _registrationManager.GetAllAsync());
+            var registrationManager = new RegistrationManager();
+            return await registrationManager.GetAllAsync();
         }
         catch (Exception ex)
         {
@@ -90,7 +65,7 @@ public class RegistrationService : ICrudService<Registration>
         }
     }
 
-    public ValidationResult Add(Registration registration)
+    public static ValidationResult Add(Registration registration)
     {
         try
         {
@@ -118,15 +93,16 @@ public class RegistrationService : ICrudService<Registration>
                 return @class;
             }
 
+            var registrationManager = new RegistrationManager();
             var dup = RegistrationValidator.ValidateNotDuplicate(
-                _registrationManager.GetRegistrationsByStudentId(registration.StudentId)
+                registrationManager.GetRegistrationsByStudentId(registration.StudentId)
                     .Any(r => r.ClassId == registration.ClassId));
             if (!dup.IsSuccess)
             {
                 return dup;
             }
 
-            _registrationManager.Add(registration);
+            registrationManager.Add(registration);
             return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
         }
         catch (Exception ex)
@@ -136,7 +112,7 @@ public class RegistrationService : ICrudService<Registration>
         }
     }
 
-    public async Task<ValidationResult> AddAsync(Registration registration)
+    public static async Task<ValidationResult> AddAsync(Registration registration)
     {
         try
         {
@@ -164,14 +140,15 @@ public class RegistrationService : ICrudService<Registration>
                 return @class;
             }
 
+            var registrationManager = new RegistrationManager();
             var dup = RegistrationValidator.ValidateNotDuplicate(
-                await _registrationManager.ExistsAsync(registration.StudentId, registration.ClassId));
+                await registrationManager.ExistsAsync(registration.StudentId, registration.ClassId));
             if (!dup.IsSuccess)
             {
                 return dup;
             }
 
-            await _registrationManager.AddAsync(registration);
+            await registrationManager.AddAsync(registration);
             return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
         }
         catch (Exception ex)
@@ -181,7 +158,7 @@ public class RegistrationService : ICrudService<Registration>
         }
     }
 
-    public ValidationResult Update(int id, Registration registration)
+    public static ValidationResult Update(int id, Registration registration)
     {
         try
         {
@@ -197,7 +174,8 @@ public class RegistrationService : ICrudService<Registration>
                 return valid;
             }
 
-            var existing = _registrationManager.GetById(id);
+            var registrationManager = new RegistrationManager();
+            var existing = registrationManager.GetById(id);
             var exists = RegistrationValidator.RequireExists(existing, id);
             if (!exists.IsSuccess)
             {
@@ -219,7 +197,7 @@ public class RegistrationService : ICrudService<Registration>
             if (existing!.StudentId != registration.StudentId || existing.ClassId != registration.ClassId)
             {
                 var dup = RegistrationValidator.ValidateNotDuplicate(
-                    _registrationManager.GetRegistrationsByStudentId(registration.StudentId)
+                    registrationManager.GetRegistrationsByStudentId(registration.StudentId)
                         .Any(r => r.ClassId == registration.ClassId));
                 if (!dup.IsSuccess)
                 {
@@ -227,7 +205,7 @@ public class RegistrationService : ICrudService<Registration>
                 }
             }
 
-            _registrationManager.Update(id, registration);
+            registrationManager.Update(id, registration);
             return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
         }
         catch (Exception ex)
@@ -237,7 +215,7 @@ public class RegistrationService : ICrudService<Registration>
         }
     }
 
-    public async Task<ValidationResult> UpdateAsync(int id, Registration registration)
+    public static async Task<ValidationResult> UpdateAsync(int id, Registration registration)
     {
         try
         {
@@ -253,7 +231,8 @@ public class RegistrationService : ICrudService<Registration>
                 return valid;
             }
 
-            var existing = await _registrationManager.GetByIdAsync(id);
+            var registrationManager = new RegistrationManager();
+            var existing = await registrationManager.GetByIdAsync(id);
             var exists = RegistrationValidator.RequireExists(existing, id);
             if (!exists.IsSuccess)
             {
@@ -275,14 +254,14 @@ public class RegistrationService : ICrudService<Registration>
             if (existing!.StudentId != registration.StudentId || existing.ClassId != registration.ClassId)
             {
                 var dup = RegistrationValidator.ValidateNotDuplicate(
-                    await _registrationManager.ExistsAsync(registration.StudentId, registration.ClassId));
+                    await registrationManager.ExistsAsync(registration.StudentId, registration.ClassId));
                 if (!dup.IsSuccess)
                 {
                     return dup;
                 }
             }
 
-            await _registrationManager.UpdateAsync(id, registration);
+            await registrationManager.UpdateAsync(id, registration);
             return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
         }
         catch (Exception ex)
@@ -292,7 +271,7 @@ public class RegistrationService : ICrudService<Registration>
         }
     }
 
-    public ValidationResult Delete(int id)
+    public static ValidationResult Delete(int id)
     {
         try
         {
@@ -302,14 +281,15 @@ public class RegistrationService : ICrudService<Registration>
                 return auth;
             }
 
-            var existing = _registrationManager.GetById(id);
+            var registrationManager = new RegistrationManager();
+            var existing = registrationManager.GetById(id);
             var exists = RegistrationValidator.RequireExists(existing, id);
             if (!exists.IsSuccess)
             {
                 return exists;
             }
 
-            _registrationManager.Delete(id);
+            registrationManager.Delete(id);
             return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
         }
         catch (Exception ex)
@@ -319,7 +299,7 @@ public class RegistrationService : ICrudService<Registration>
         }
     }
 
-    public async Task<ValidationResult> DeleteAsync(int id)
+    public static async Task<ValidationResult> DeleteAsync(int id)
     {
         try
         {
@@ -329,14 +309,15 @@ public class RegistrationService : ICrudService<Registration>
                 return auth;
             }
 
-            var existing = await _registrationManager.GetByIdAsync(id);
+            var registrationManager = new RegistrationManager();
+            var existing = await registrationManager.GetByIdAsync(id);
             var exists = RegistrationValidator.RequireExists(existing, id);
             if (!exists.IsSuccess)
             {
                 return exists;
             }
 
-            await _registrationManager.DeleteAsync(id);
+            await registrationManager.DeleteAsync(id);
             return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
         }
         catch (Exception ex)
@@ -346,26 +327,21 @@ public class RegistrationService : ICrudService<Registration>
         }
     }
 
-    public Result<List<Registration>> Search(string regex)
+    public static List<Registration> Search(string regex)
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                return new Result<List<Registration>>(auth.Status, auth.Errors, default);
-            }
-
             var pattern = SearchValidator.ValidateSearchPattern(regex);
             if (!pattern.IsSuccess)
             {
-                return new Result<List<Registration>>(pattern.Status, pattern.Errors, default);
+                return new List<Registration>();
             }
 
-            var registrations = _registrationManager.GetAll();
-            return new Result<List<Registration>>(ValidationStatus.Success, Array.Empty<ValidationError>(), registrations
+            var registrationManager = new RegistrationManager();
+            var registrations = registrationManager.GetAll();
+            return registrations
                 .Where(registration => Regex.IsMatch(registration.Status, regex, RegexOptions.IgnoreCase))
-                .ToList());
+                .ToList();
         }
         catch (Exception ex)
         {
@@ -374,26 +350,21 @@ public class RegistrationService : ICrudService<Registration>
         }
     }
 
-    public async Task<Result<List<Registration>>> SearchAsync(string regex)
+    public static async Task<List<Registration>> SearchAsync(string regex)
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                return new Result<List<Registration>>(auth.Status, auth.Errors, default);
-            }
-
             var pattern = SearchValidator.ValidateSearchPattern(regex);
             if (!pattern.IsSuccess)
             {
-                return new Result<List<Registration>>(pattern.Status, pattern.Errors, default);
+                return new List<Registration>();
             }
 
-            var registrations = await _registrationManager.GetAllAsync();
-            return new Result<List<Registration>>(ValidationStatus.Success, Array.Empty<ValidationError>(), registrations
+            var registrationManager = new RegistrationManager();
+            var registrations = await registrationManager.GetAllAsync();
+            return registrations
                 .Where(registration => Regex.IsMatch(registration.Status, regex, RegexOptions.IgnoreCase))
-                .ToList());
+                .ToList();
         }
         catch (Exception ex)
         {
@@ -402,20 +373,12 @@ public class RegistrationService : ICrudService<Registration>
         }
     }
 
-    public async Task<Result<List<(Registration Registration, Student Student, Class Class, Course Course)>>> GetAllDetailedAsync()
+    public static async Task<List<(Registration Registration, Student Student, Class Class, Course Course)>> GetAllDetailedAsync()
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                return new Result<List<(Registration, Student, Class, Course)>>(auth.Status, auth.Errors, default);
-            }
-
-            return new Result<List<(Registration, Student, Class, Course)>>(
-                ValidationStatus.Success,
-                Array.Empty<ValidationError>(),
-                await _registrationManager.GetAllDetailedAsync());
+            var registrationManager = new RegistrationManager();
+            return await registrationManager.GetAllDetailedAsync();
         }
         catch (Exception ex)
         {
@@ -424,26 +387,18 @@ public class RegistrationService : ICrudService<Registration>
         }
     }
 
-    public async Task<Result<List<(Registration Registration, Student Student, Class Class, Course Course)>>> SearchDetailedAsync(string regex)
+    public static async Task<List<(Registration Registration, Student Student, Class Class, Course Course)>> SearchDetailedAsync(string regex)
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                return new Result<List<(Registration, Student, Class, Course)>>(auth.Status, auth.Errors, default);
-            }
-
             var pattern = SearchValidator.ValidateSearchPattern(regex);
             if (!pattern.IsSuccess)
             {
-                return new Result<List<(Registration, Student, Class, Course)>>(pattern.Status, pattern.Errors, default);
+                return new List<(Registration, Student, Class, Course)>();
             }
 
-            return new Result<List<(Registration, Student, Class, Course)>>(
-                ValidationStatus.Success,
-                Array.Empty<ValidationError>(),
-                await _registrationManager.SearchDetailedAsync(regex));
+            var registrationManager = new RegistrationManager();
+            return await registrationManager.SearchDetailedAsync(regex);
         }
         catch (Exception ex)
         {
@@ -452,23 +407,27 @@ public class RegistrationService : ICrudService<Registration>
         }
     }
 
-    private ValidationResult EnsureStudentExistsSync(int studentId)
+    private static ValidationResult EnsureStudentExistsSync(int studentId)
     {
-        return StudentValidator.RequireExists(_studentManager.GetById(studentId), studentId);
+        var studentManager = new StudentManager();
+        return StudentValidator.RequireExists(studentManager.GetById(studentId), studentId);
     }
 
-    private async Task<ValidationResult> EnsureStudentExistsAsync(int studentId)
+    private static async Task<ValidationResult> EnsureStudentExistsAsync(int studentId)
     {
-        return StudentValidator.RequireExists(await _studentManager.GetByIdAsync(studentId), studentId);
+        var studentManager = new StudentManager();
+        return StudentValidator.RequireExists(await studentManager.GetByIdAsync(studentId), studentId);
     }
 
-    private ValidationResult EnsureClassExistsSync(int classId)
+    private static ValidationResult EnsureClassExistsSync(int classId)
     {
-        return ClassValidator.RequireExists(_classManager.GetById(classId), classId);
+        var classManager = new ClassManager();
+        return ClassValidator.RequireExists(classManager.GetById(classId), classId);
     }
 
-    private async Task<ValidationResult> EnsureClassExistsAsync(int classId)
+    private static async Task<ValidationResult> EnsureClassExistsAsync(int classId)
     {
-        return ClassValidator.RequireExists(await _classManager.GetByIdAsync(classId), classId);
+        var classManager = new ClassManager();
+        return ClassValidator.RequireExists(await classManager.GetByIdAsync(classId), classId);
     }
 }

@@ -9,8 +9,6 @@ namespace View
 {
     public partial class MyRegistrationsForm : Form
     {
-        private readonly StudentRegistrationService _regService = new StudentRegistrationService();
-
         private DataGridView dgvRegs;
         private Button btnDrop;
         private Panel topPanel;
@@ -69,14 +67,9 @@ namespace View
             {
                 dgvRegs.DataSource = null;
 
-                var result = await _regService.GetRegistrationsAsync();
-                if (!result.IsSuccess)
-                {
-                    MessageBox.Show($"Error loading registrations: {result.Message}");
-                    return;
-                }
+                var regs = await StudentRegistrationService.GetRegistrationsAsync();
 
-                List<RegistrationDetailsDto> registrations = result.Value!
+                List<RegistrationDetailsDto> registrations = regs
                     .Select(x => x.Registration.ToDetailsDto(x.Class))
                     .ToList();
 
@@ -202,7 +195,7 @@ namespace View
                 {
                     try
                     {
-                        var dropResult = await _regService.DropRegistration(reg.RegistrationId);
+                        var dropResult = await StudentRegistrationService.DropRegistration(reg.RegistrationId);
                         if (!dropResult.IsSuccess)
                         {
                             MessageBox.Show($"Drop failed: {dropResult.Message}");

@@ -9,8 +9,6 @@ namespace View
 {
     public partial class ClassListForm : Form
     {
-        private readonly ClassService _classService = new ClassService();
-
         private DataGridView dgvClasses;
         private Button btnAdd;
         private Button btnEdit;
@@ -101,13 +99,8 @@ namespace View
             try
             {
                 dgvClasses.DataSource = null;
-                var result = await _classService.GetAllAsync();
-                if (!result.IsSuccess)
-                {
-                    MessageBox.Show($"Error loading classes: {result.Message}");
-                    return;
-                }
-                dgvClasses.DataSource = result.Value!.Select(c => c.ToDto()).ToList();
+                var classes = await ClassService.GetAllAsync();
+                dgvClasses.DataSource = classes.Select(c => c.ToDto()).ToList();
                 ConfigureColumns();
             }
             catch (BusinessException ex)
@@ -173,13 +166,8 @@ namespace View
                 if (!string.IsNullOrWhiteSpace(txtSearch.Text))
                 {
                     dgvClasses.DataSource = null;
-                    var result = await _classService.SearchAsync(txtSearch.Text);
-                    if (!result.IsSuccess)
-                    {
-                        MessageBox.Show($"Error searching classes: {result.Message}");
-                        return;
-                    }
-                    dgvClasses.DataSource = result.Value!.Select(c => c.ToDto()).ToList();
+                    var classes = await ClassService.SearchAsync(txtSearch.Text);
+                    dgvClasses.DataSource = classes.Select(c => c.ToDto()).ToList();
                     ConfigureColumns();
                 }
                 else
@@ -239,7 +227,7 @@ namespace View
                 {
                     try
                     {
-                        var deleteResult = await _classService.DeleteAsync(cls.Id);
+                        var deleteResult = await ClassService.DeleteAsync(cls.Id);
                         if (!deleteResult.IsSuccess)
                         {
                             MessageBox.Show($"Error deleting class: {deleteResult.Message}");
