@@ -1,3 +1,5 @@
+using Shared.Entities;
+
 namespace Shared.Session;
 
 public static class SessionManager
@@ -8,9 +10,9 @@ public static class SessionManager
 
     public static bool IsLoggedIn => Current != null;
 
-    public static void Login(UserSession userSession)
+    public static void Login(User userEntity)
     {
-        Current = userSession;
+        Current = new UserSession(user;)
     }
 
     public static void Logout()

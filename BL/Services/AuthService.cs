@@ -12,19 +12,19 @@ public class AuthService
 {
     private readonly UserManager _userManager = new UserManager();
 
-    public async Task<Result<UserSession>> LoginAsync(string userName, string password)
+    public async Task<Result<User>> LoginAsync(string userName, string password)
     {
         try
         {
             var userNameCheck = UserValidator.ValidateUserName(userName);
             if (!userNameCheck.IsSuccess)
             {
-                return new Result<UserSession>(userNameCheck.Status, userNameCheck.Errors, default);
+                return new Result<User>(userNameCheck.Status, userNameCheck.Errors, default);
             }
 
             if (string.IsNullOrWhiteSpace(password))
             {
-                return new Result<UserSession>(
+                return new Result<User>(
                     ValidationStatus.Invalid,
                     new[] { new ValidationError("Password", "Password is required.") },
                     default);
@@ -34,7 +34,7 @@ public class AuthService
 
             if (userRes == null)
             {
-                return new Result<UserSession>(
+                return new Result<User>(
                     ValidationStatus.Unauthorized,
                     new[] { new ValidationError(string.Empty, "Invalid username or password.") },
                     default);

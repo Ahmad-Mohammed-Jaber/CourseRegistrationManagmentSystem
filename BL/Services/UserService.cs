@@ -9,21 +9,16 @@ using Shared.Logging;
 
 namespace BL.Services;
 
-public class UserService : ICrudService<User>
+public static class UserService
 {
-    private readonly UserManager _userManager = new UserManager();
+   
 
-    public Result<User?> GetById(int id)
+    public static User?  GetById(int id)
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                return new Result<User?>(auth.Status, auth.Errors, default);
-            }
-
-            return new Result<User?>(ValidationStatus.Success, Array.Empty<ValidationError>(), _userManager.GetById(id));
+            var userManager = new UserManager();
+            return userManager.GetById(id);
         }
         catch (Exception ex)
         {

@@ -29,13 +29,13 @@ namespace CourseRegistrationManagmentSystem.View
             try
             {
                 lblErrorMessage.Text = "Authenticating...";
-                var login = await _authService.LoginAsync(username, password);
-                if (!login.IsSuccess)
+                var loginResult = await _authService.LoginAsync(username, password);
+                if (!loginResult.IsSuccess)
                 {
-                    lblErrorMessage.Text = login.Message;
+                    lblErrorMessage.Text = loginResult.Message;
                     return;
                 }
-                SessionManager.Login(login.Value!);
+                SessionManager.Login(loginResult.Value!);
                 this.DialogResult = DialogResult.OK;
                 this.Close();
             }
