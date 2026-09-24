@@ -65,31 +65,12 @@ public static class ClassService
         }
     }
 
-    public static ValidationResult Add(Class classEntity)
+    public static RequestResult Add(Class classEntity)
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                return auth;
-            }
-
-            var valid = ClassValidator.ValidateClass(classEntity);
-            if (!valid.IsSuccess)
-            {
-                return valid;
-            }
-
-            var course = EnsureCourseExistsSync(classEntity.CourseId);
-            if (!course.IsSuccess)
-            {
-                return course;
-            }
-
             var classManager = new ClassManager();
-            classManager.Add(classEntity);
-            return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
+            return classManager.Add(classEntity);
         }
         catch (Exception ex)
         {

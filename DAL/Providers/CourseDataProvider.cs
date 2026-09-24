@@ -148,7 +148,7 @@ public static class CourseDataProvider
         }
     }
 
-    public static int Add(Course entity)
+    public static RequestResult Add(Course entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -174,10 +174,9 @@ public static class CourseDataProvider
             };
             command.Parameters.Add(newIdParam);
 
-            command.ExecuteNonQuery();
+            int rows = command.ExecuteNonQuery();
 
-            entity.Id = (int)newIdParam.Value;
-            return entity.Id;
+            return rows == 0 ? RequestResult.Failure($"Course Not Added") : RequestResult.Success();
         }
         catch (Exception ex)
         {
@@ -190,7 +189,7 @@ public static class CourseDataProvider
         }
     }
 
-    public static async Task<int> AddAsync(Course entity)
+    public static async Task<RequestResult> AddAsync(Course entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -216,14 +215,13 @@ public static class CourseDataProvider
             };
             command.Parameters.Add(newIdParam);
 
-            await command.ExecuteNonQueryAsync();
+            int rows = await command.ExecuteNonQueryAsync();
 
-            entity.Id = (int)newIdParam.Value;
-            return entity.Id;
+            return rows == 0 ? RequestResult.Failure($"Course Not Added") : RequestResult.Success();
         }
         catch (Exception ex)
         {
-            throw new DatabaseException("An error occured in AddAsync(Course entity)", ex);
+            throw new DatabaseException("An error occured in CourseDataProvider.AddAsync(Course entity)", ex);
         }
         finally
         {
@@ -232,7 +230,7 @@ public static class CourseDataProvider
         }
     }
 
-    public static void Update(int id, Course entity)
+    public static RequestResult Update(int id, Course entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -249,10 +247,11 @@ public static class CourseDataProvider
             command.Parameters.Add("@CourseCode", SqlDbType.NVarChar, 20).Value = entity.CourseCode ?? string.Empty;
             command.Parameters.Add("@CourseName", SqlDbType.NVarChar, 100).Value = entity.CourseName ?? string.Empty;
             command.Parameters.Add("@CreditHours", SqlDbType.Decimal).Value = (decimal)entity.CreditHours;
-            command.Parameters.Add("@Description", SqlDbType.NVarChar, -1).Value = entity.Description ?? string.Empty;
+            command.Parameters.Add("@Description", SqlDbType.NVarChar,-1).Value = entity.Description ?? string.Empty;
             command.Parameters.Add("@IsActive", SqlDbType.Bit).Value = entity.IsActive;
 
-            command.ExecuteNonQuery();
+            int rows = command.ExecuteNonQuery();
+            return rows == 0 ? RequestResult.NotFound($"Course with id {id} not found.") : RequestResult.Success(rows);
         }
         catch (Exception ex)
         {
@@ -265,7 +264,7 @@ public static class CourseDataProvider
         }
     }
 
-    public static async Task UpdateAsync(int id, Course entity)
+    public static async Task<RequestResult> UpdateAsync(int id, Course entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -285,7 +284,8 @@ public static class CourseDataProvider
             command.Parameters.Add("@Description", SqlDbType.NVarChar, -1).Value = entity.Description ?? string.Empty;
             command.Parameters.Add("@IsActive", SqlDbType.Bit).Value = entity.IsActive;
 
-            await command.ExecuteNonQueryAsync();
+            int rowsAsync = await command.ExecuteNonQueryAsync();
+            return rowsAsync == 0 ? RequestResult.NotFound($"Course with id {id} not found.") : RequestResult.Success(rowsAsync);
         }
         catch (Exception ex)
         {
@@ -298,7 +298,7 @@ public static class CourseDataProvider
         }
     }
 
-    public static void Delete(int id)
+    public static RequestResult Delete(int id)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -312,7 +312,8 @@ public static class CourseDataProvider
                 CommandType = CommandType.StoredProcedure
             };
             command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
-            command.ExecuteNonQuery();
+            int rows = command.ExecuteNonQuery();
+            return rows == 0 ? RequestResult.NotFound($"Course with id {id} not found.") : RequestResult.Success(rows);
         }
         catch (Exception ex)
         {
@@ -325,7 +326,7 @@ public static class CourseDataProvider
         }
     }
 
-    public static async Task DeleteAsync(int id)
+    public static async Task<RequestResult> DeleteAsync(int id)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -339,7 +340,8 @@ public static class CourseDataProvider
                 CommandType = CommandType.StoredProcedure
             };
             command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
-            await command.ExecuteNonQueryAsync();
+            int rowsAsync = await command.ExecuteNonQueryAsync();
+            return rowsAsync == 0 ? RequestResult.NotFound($"Course with id {id} not found.") : RequestResult.Success(rowsAsync);
         }
         catch (Exception ex)
         {

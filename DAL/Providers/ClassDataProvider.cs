@@ -140,7 +140,7 @@ public static class ClassDataProvider
         }
         catch (Exception ex)
         {
-            throw new DatabaseException("An error occured in ClassDataProvider.GetClassesByCourseIdAsync()", ex);
+            throw new DatabaseException("An error occured in ClassDataProvider.GetClassesByCourseIdAsync(int courseId)", ex);
         }
         finally
         {
@@ -210,7 +210,7 @@ public static class ClassDataProvider
         }
         catch (Exception ex)
         {
-            throw new DatabaseException("An error occured in Class.GetAllAsync()", ex);
+            throw new DatabaseException("An error occured in ClassDataProvider.GetAllAsync()", ex);
         }
         finally
         {
@@ -220,7 +220,7 @@ public static class ClassDataProvider
         }
     }
 
-    public static int Add(Class entity)
+    public static RequestResult Add(Class entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -250,14 +250,13 @@ public static class ClassDataProvider
             };
             command.Parameters.Add(newIdParam);
 
-            command.ExecuteNonQuery();
+            int rows = command.ExecuteNonQuery();
 
-            entity.Id = (int)newIdParam.Value;
-            return entity.Id;
+            return rows == 0 ? RequestResult.Failure($"Class Not Added") : RequestResult.Success();
         }
         catch (Exception ex)
         {
-            throw new DatabaseException("An error occured in Class.Add()", ex);
+            throw new DatabaseException("An error occured in ClassDataProvider.Add(Class entity)", ex);
         }
         finally
         {
@@ -266,7 +265,7 @@ public static class ClassDataProvider
         }
     }
 
-    public static async Task<int> AddAsync(Class entity)
+    public static async Task<RequestResult> AddAsync(Class entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -296,10 +295,9 @@ public static class ClassDataProvider
             };
             command.Parameters.Add(newIdParam);
 
-            await command.ExecuteNonQueryAsync();
+            int rows = await command.ExecuteNonQueryAsync();
 
-            entity.Id = (int)newIdParam.Value;
-            return entity.Id;
+            return rows == 0 ? RequestResult.Failure($"Class Not Added") : RequestResult.Success();
         }
         catch (Exception ex)
         {
@@ -312,7 +310,7 @@ public static class ClassDataProvider
         }
     }
 
-    public static void Update(int id, Class entity)
+    public static RequestResult Update(int id, Class entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -336,7 +334,8 @@ public static class ClassDataProvider
             command.Parameters.Add("@Schedule", SqlDbType.Int).Value = (int)entity.Schedule;
             command.Parameters.Add("@IsActive", SqlDbType.Bit).Value = entity.IsActive;
 
-            command.ExecuteNonQuery();
+            int rows = command.ExecuteNonQuery();
+            return rows == 0 ? RequestResult.NotFound($"Class with id {id} not found.") : RequestResult.Success(rows);
         }
         catch (Exception ex)
         {
@@ -349,7 +348,7 @@ public static class ClassDataProvider
         }
     }
 
-    public static async Task UpdateAsync(int id, Class entity)
+    public static async Task<RequestResult> UpdateAsync(int id, Class entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -373,7 +372,8 @@ public static class ClassDataProvider
             command.Parameters.Add("@Schedule", SqlDbType.Int).Value = (int)entity.Schedule;
             command.Parameters.Add("@IsActive", SqlDbType.Bit).Value = entity.IsActive;
 
-            await command.ExecuteNonQueryAsync();
+            int rowsAsync = await command.ExecuteNonQueryAsync();
+            return rowsAsync == 0 ? RequestResult.NotFound($"Class with id {id} not found.") : RequestResult.Success(rowsAsync);
         }
         catch (Exception ex)
         {
@@ -386,7 +386,7 @@ public static class ClassDataProvider
         }
     }
 
-    public static void Delete(int id)
+    public static RequestResult Delete(int id)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -400,7 +400,8 @@ public static class ClassDataProvider
                 CommandType = CommandType.StoredProcedure
             };
             command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
-            command.ExecuteNonQuery();
+            int rows = command.ExecuteNonQuery();
+            return rows == 0 ? RequestResult.NotFound($"Class with id {id} not found.") : RequestResult.Success(rows);
         }
         catch (Exception ex)
         {
@@ -413,7 +414,7 @@ public static class ClassDataProvider
         }
     }
 
-    public static async Task DeleteAsync(int id)
+    public static async Task<RequestResult> DeleteAsync(int id)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -427,11 +428,12 @@ public static class ClassDataProvider
                 CommandType = CommandType.StoredProcedure
             };
             command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
-            await command.ExecuteNonQueryAsync();
+            int rowsAsync = await command.ExecuteNonQueryAsync();
+            return rowsAsync == 0 ? RequestResult.NotFound($"Class with id {id} not found.") : RequestResult.Success(rowsAsync);
         }
         catch (Exception ex)
         {
-            throw new DatabaseException("An error occured in DeleteAsync(int id)", ex);
+            throw new DatabaseException("An error occured in ClassDataProvider.DeleteAsync(int id)", ex);
         }
         finally
         {
@@ -502,7 +504,7 @@ public static class ClassDataProvider
         }
         catch (Exception ex)
         {
-            throw new DatabaseException("An error occured in SearchAsync(string regex)", ex);
+            throw new DatabaseException("An error occured in ClassDataProvider.SearchAsync(string regex)", ex);
         }
         finally
         {

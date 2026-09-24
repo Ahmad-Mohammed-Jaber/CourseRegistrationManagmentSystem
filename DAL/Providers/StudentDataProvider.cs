@@ -11,17 +11,21 @@ public static class StudentDataProvider
 {
     public static StudentProfile? GetProfileByUserId(int userId)
     {
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        SqlDataReader? reader = null;
         try
         {
-            using var connection = DBConnectionFactory.CreateConnection();
+            connection = DBConnectionFactory.CreateConnection();
             connection.Open();
-            using var command = new SqlCommand("usp_GetStudentProfileByUserId", connection)
+
+            command = new SqlCommand("usp_GetStudentProfileByUserId", connection)
             {
                 CommandType = CommandType.StoredProcedure
             };
             command.Parameters.Add("@UserId", SqlDbType.Int).Value = userId;
 
-            using var reader = command.ExecuteReader();
+            reader = command.ExecuteReader();
             if (reader.Read())
             {
                 return MapStudentProfile(reader);
@@ -33,21 +37,31 @@ public static class StudentDataProvider
         {
             throw new DatabaseException("An error occured in StudentDataProvider.GetProfileByUserId(int userId)", ex);
         }
+        finally
+        {
+            reader?.Dispose();
+            command?.Dispose();
+            connection?.Dispose();
+        }
     }
 
     public static async Task<StudentProfile?> GetProfileByUserIdAsync(int userId)
     {
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        SqlDataReader? reader = null;
         try
         {
-            using var connection = DBConnectionFactory.CreateConnection();
+            connection = DBConnectionFactory.CreateConnection();
             await connection.OpenAsync();
-            using var command = new SqlCommand("usp_GetStudentProfileByUserId", connection)
+
+            command = new SqlCommand("usp_GetStudentProfileByUserId", connection)
             {
                 CommandType = CommandType.StoredProcedure
             };
             command.Parameters.Add("@UserId", SqlDbType.Int).Value = userId;
 
-            using var reader = await command.ExecuteReaderAsync();
+            reader = await command.ExecuteReaderAsync();
             if (await reader.ReadAsync())
             {
                 return MapStudentProfile(reader);
@@ -58,6 +72,502 @@ public static class StudentDataProvider
         catch (Exception ex)
         {
             throw new DatabaseException("An error occured in StudentDataProvider.GetProfileByUserIdAsync(int userId)", ex);
+        }
+        finally
+        {
+            reader?.Dispose();
+            command?.Dispose();
+            connection?.Dispose();
+        }
+    }
+
+    public static Student? GetById(int id)
+    {
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        SqlDataReader? reader = null;
+        try
+        {
+            connection = DBConnectionFactory.CreateConnection();
+            connection.Open();
+
+            command = new SqlCommand("usp_GetStudentById", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+
+            reader = command.ExecuteReader();
+            if (reader.Read())
+            {
+                return MapStudent(reader);
+            }
+
+            return null;
+        }
+        catch (Exception ex)
+        {
+            throw new DatabaseException("An error occured in StudentDataProvider.GetById(int id)", ex);
+        }
+        finally
+        {
+            reader?.Dispose();
+            command?.Dispose();
+            connection?.Dispose();
+        }
+    }
+
+    public static async Task<Student?> GetByIdAsync(int id)
+    {
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        SqlDataReader? reader = null;
+        try
+        {
+            connection = DBConnectionFactory.CreateConnection();
+            await connection.OpenAsync();
+
+            command = new SqlCommand("usp_GetStudentById", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+
+            reader = await command.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                return MapStudent(reader);
+            }
+
+            return null;
+        }
+        catch (Exception ex)
+        {
+            throw new DatabaseException("An error occured in StudentDataProvider.GetByIdAsync(int id)", ex);
+        }
+        finally
+        {
+            reader?.Dispose();
+            command?.Dispose();
+            connection?.Dispose();
+        }
+    }
+
+    public static Student? GetByUserId(int userId)
+    {
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        SqlDataReader? reader = null;
+        try
+        {
+            connection = DBConnectionFactory.CreateConnection();
+            connection.Open();
+
+            command = new SqlCommand("usp_GetStudentByUserId", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            command.Parameters.Add("@UserId", SqlDbType.Int).Value = userId;
+
+            reader = command.ExecuteReader();
+            if (reader.Read())
+            {
+                return MapStudent(reader);
+            }
+
+            return null;
+        }
+        catch (Exception ex)
+        {
+            throw new DatabaseException("An error occured in StudentDataProvider.GetByUserId(int userId)", ex);
+        }
+        finally
+        {
+            reader?.Dispose();
+            command?.Dispose();
+            connection?.Dispose();
+        }
+    }
+
+    public static async Task<Student?> GetByUserIdAsync(int userId)
+    {
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        SqlDataReader? reader = null;
+        try
+        {
+            connection = DBConnectionFactory.CreateConnection();
+            await connection.OpenAsync();
+
+            command = new SqlCommand("usp_GetStudentByUserId", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            command.Parameters.Add("@UserId", SqlDbType.Int).Value = userId;
+
+            reader = await command.ExecuteReaderAsync();
+            if (await reader.ReadAsync())
+            {
+                return MapStudent(reader);
+            }
+
+            return null;
+        }
+        catch (Exception ex)
+        {
+            throw new DatabaseException("An error occured in StudentDataProvider.GetByUserIdAsync(int userId)", ex);
+        }
+        finally
+        {
+            reader?.Dispose();
+            command?.Dispose();
+            connection?.Dispose();
+        }
+    }
+
+    public static List<Student> GetAll()
+    {
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        SqlDataReader? reader = null;
+        try
+        {
+            connection = DBConnectionFactory.CreateConnection();
+            connection.Open();
+
+            command = new SqlCommand("usp_GetAllStudents", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+
+            reader = command.ExecuteReader();
+            var list = new List<Student>();
+            while (reader.Read())
+            {
+                list.Add(MapStudent(reader));
+            }
+
+            return list;
+        }
+        catch (Exception ex)
+        {
+            throw new DatabaseException("An error occured in StudentDataProvider.GetAll()", ex);
+        }
+        finally
+        {
+            reader?.Dispose();
+            command?.Dispose();
+            connection?.Dispose();
+        }
+    }
+
+    public static async Task<List<Student>> GetAllAsync()
+    {
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        SqlDataReader? reader = null;
+        try
+        {
+            connection = DBConnectionFactory.CreateConnection();
+            await connection.OpenAsync();
+
+            command = new SqlCommand("usp_GetAllStudents", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+
+            reader = await command.ExecuteReaderAsync();
+            var list = new List<Student>();
+            while (await reader.ReadAsync())
+            {
+                list.Add(MapStudent(reader));
+            }
+
+            return list;
+        }
+        catch (Exception ex)
+        {
+            throw new DatabaseException("An error occured in StudentDataProvider.GetAllAsync()", ex);
+        }
+        finally
+        {
+            reader?.Dispose();
+            command?.Dispose();
+            connection?.Dispose();
+        }
+    }
+
+    public static RequestResult Add(Student entity)
+    {
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        try
+        {
+            connection = DBConnectionFactory.CreateConnection();
+            connection.Open();
+
+            command = new SqlCommand("usp_CreateStudent", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            command.Parameters.Add("@UserId", SqlDbType.Int).Value = entity.UserId;
+            command.Parameters.Add("@StudentNumber", SqlDbType.Int).Value = entity.StudentNumber;
+            command.Parameters.Add("@Email", SqlDbType.NVarChar, 100).Value = (object?)entity.Email ?? string.Empty;
+            command.Parameters.Add("@Phone", SqlDbType.NVarChar, 20).Value = (object?)entity.Phone ?? string.Empty;
+
+            var newIdParam = new SqlParameter("@Id", SqlDbType.Int)
+            {
+                Direction = ParameterDirection.Output
+            };
+            command.Parameters.Add(newIdParam);
+
+            int rows = command.ExecuteNonQuery();
+
+            return rows == 0 ? RequestResult.Failure($"Student Not Added") : RequestResult.Success();
+        }
+        catch (Exception ex)
+        {
+            throw new DatabaseException("An error occured in StudentDataProvider.Add(Student entity)", ex);
+        }
+        finally
+        {
+            command?.Dispose();
+            connection?.Dispose();
+        }
+    }
+
+    public static async Task<RequestResult> AddAsync(Student entity)
+    {
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        try
+        {
+            connection = DBConnectionFactory.CreateConnection();
+            await connection.OpenAsync();
+
+            command = new SqlCommand("usp_CreateStudent", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            command.Parameters.Add("@UserId", SqlDbType.Int).Value = entity.UserId;
+            command.Parameters.Add("@StudentNumber", SqlDbType.Int).Value = entity.StudentNumber;
+            command.Parameters.Add("@Email", SqlDbType.NVarChar, 100).Value = (object?)entity.Email ?? string.Empty;
+            command.Parameters.Add("@Phone", SqlDbType.NVarChar, 20).Value = (object?)entity.Phone ?? string.Empty;
+
+            var newIdParam = new SqlParameter("@Id", SqlDbType.Int)
+            {
+                Direction = ParameterDirection.Output
+            };
+            command.Parameters.Add(newIdParam);
+
+            int rows = await command.ExecuteNonQueryAsync();
+
+            return rows == 0 ? RequestResult.Failure($"Student Not Added") : RequestResult.Success();
+        }
+        catch (Exception ex)
+        {
+            throw new DatabaseException("An error occured in StudentDataProvider.AddAsync(Student entity)", ex);
+        }
+        finally
+        {
+            command?.Dispose();
+            connection?.Dispose();
+        }
+    }
+
+    public static RequestResult Update(int id, Student entity)
+    {
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        try
+        {
+            connection = DBConnectionFactory.CreateConnection();
+            connection.Open();
+
+            command = new SqlCommand("usp_UpdateStudent", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+            command.Parameters.Add("@UserId", SqlDbType.Int).Value = entity.UserId;
+            command.Parameters.Add("@StudentNumber", SqlDbType.Int).Value = entity.StudentNumber;
+            command.Parameters.Add("@Email", SqlDbType.NVarChar, 100).Value = (object?)entity.Email ?? string.Empty;
+            command.Parameters.Add("@Phone", SqlDbType.NVarChar, 20).Value = (object?)entity.Phone ?? string.Empty;
+
+            int rows = command.ExecuteNonQuery();
+            return rows == 0 ? RequestResult.NotFound($"Student with id {id} not found.") : RequestResult.Success(rows);
+        }
+        catch (Exception ex)
+        {
+            throw new DatabaseException("An error occured in StudentDataProvider.Update(int id, Student entity)", ex);
+        }
+        finally
+        {
+            command?.Dispose();
+            connection?.Dispose();
+        }
+    }
+
+    public static async Task<RequestResult> UpdateAsync(int id, Student entity)
+    {
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        try
+        {
+            connection = DBConnectionFactory.CreateConnection();
+            await connection.OpenAsync();
+
+            command = new SqlCommand("usp_UpdateStudent", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+            command.Parameters.Add("@UserId", SqlDbType.Int).Value = entity.UserId;
+            command.Parameters.Add("@StudentNumber", SqlDbType.Int).Value = entity.StudentNumber;
+            command.Parameters.Add("@Email", SqlDbType.NVarChar, 100).Value = (object?)entity.Email ?? string.Empty;
+            command.Parameters.Add("@Phone", SqlDbType.NVarChar, 20).Value = (object?)entity.Phone ?? string.Empty;
+
+            int rowsAsync = await command.ExecuteNonQueryAsync();
+            return rowsAsync == 0 ? RequestResult.NotFound($"Student with id {id} not found.") : RequestResult.Success(rowsAsync);
+        }
+        catch (Exception ex)
+        {
+            throw new DatabaseException("An error occured in StudentDataProvider.UpdateAsync(int id, Student entity)", ex);
+        }
+        finally
+        {
+            command?.Dispose();
+            connection?.Dispose();
+        }
+    }
+
+    public static RequestResult Delete(int id)
+    {
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        try
+        {
+            connection = DBConnectionFactory.CreateConnection();
+            connection.Open();
+
+            command = new SqlCommand("usp_DeleteStudent", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+            int rows = command.ExecuteNonQuery();
+            return rows == 0 ? RequestResult.NotFound($"Student with id {id} not found.") : RequestResult.Success(rows);
+        }
+        catch (Exception ex)
+        {
+            throw new DatabaseException("An error occured in StudentDataProvider.Delete(int id)", ex);
+        }
+        finally
+        {
+            command?.Dispose();
+            connection?.Dispose();
+        }
+    }
+
+    public static async Task<RequestResult> DeleteAsync(int id)
+    {
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        try
+        {
+            connection = DBConnectionFactory.CreateConnection();
+            await connection.OpenAsync();
+
+            command = new SqlCommand("usp_DeleteStudent", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+            int rowsAsync = await command.ExecuteNonQueryAsync();
+            return rowsAsync == 0 ? RequestResult.NotFound($"Student with id {id} not found.") : RequestResult.Success(rowsAsync);
+        }
+        catch (Exception ex)
+        {
+            throw new DatabaseException("An error occured in StudentDataProvider.DeleteAsync(int id)", ex);
+        }
+        finally
+        {
+            command?.Dispose();
+            connection?.Dispose();
+        }
+    }
+
+    public static List<Student> Search(string regex)
+    {
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        SqlDataReader? reader = null;
+        try
+        {
+            connection = DBConnectionFactory.CreateConnection();
+            connection.Open();
+
+            command = new SqlCommand("usp_SearchStudents", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            command.Parameters.Add("@regex", SqlDbType.NVarChar, 100).Value = regex ?? string.Empty;
+
+            reader = command.ExecuteReader();
+            var list = new List<Student>();
+            while (reader.Read())
+            {
+                list.Add(MapStudent(reader));
+            }
+
+            return list;
+        }
+        catch (Exception ex)
+        {
+            throw new DatabaseException("An error occured in StudentDataProvider.Search(string regex)", ex);
+        }
+        finally
+        {
+            reader?.Dispose();
+            command?.Dispose();
+            connection?.Dispose();
+        }
+    }
+
+    public static async Task<List<Student>> SearchAsync(string regex)
+    {
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        SqlDataReader? reader = null;
+        try
+        {
+            connection = DBConnectionFactory.CreateConnection();
+            await connection.OpenAsync();
+
+            command = new SqlCommand("usp_SearchStudents", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            command.Parameters.Add("@regex", SqlDbType.NVarChar, 100).Value = regex ?? string.Empty;
+
+            reader = await command.ExecuteReaderAsync();
+            var list = new List<Student>();
+            while (await reader.ReadAsync())
+            {
+                list.Add(MapStudent(reader));
+            }
+
+            return list;
+        }
+        catch (Exception ex)
+        {
+            throw new DatabaseException("An error occured in StudentDataProvider.SearchAsync(string regex)", ex);
+        }
+        finally
+        {
+            reader?.Dispose();
+            command?.Dispose();
+            connection?.Dispose();
         }
     }
 
@@ -84,360 +594,6 @@ public static class StudentDataProvider
             reader.IsDBNull(reader.GetOrdinal("Email")) ? string.Empty : reader.GetString(reader.GetOrdinal("Email")),
             reader.IsDBNull(reader.GetOrdinal("Phone")) ? string.Empty : reader.GetString(reader.GetOrdinal("Phone"))
         );
-    }
-
-
-    public static Student? GetById(int id)
-    {
-        try
-        {
-            using var connection = DBConnectionFactory.CreateConnection();
-            connection.Open();
-            using var command = new SqlCommand("usp_GetStudentById", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
-
-            using var reader = command.ExecuteReader();
-            if (reader.Read())
-            {
-                return MapStudent(reader);
-            }
-
-            return null;
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in StudentDataProvider.GetById(int id)", ex);
-        }
-    }
-
-    public static async Task<Student?> GetByIdAsync(int id)
-    {
-        try
-        {
-            using var connection = DBConnectionFactory.CreateConnection();
-            await connection.OpenAsync();
-            using var command = new SqlCommand("usp_GetStudentById", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
-
-            using var reader = await command.ExecuteReaderAsync();
-            if (await reader.ReadAsync())
-            {
-                return MapStudent(reader);
-            }
-
-            return null;
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in StudentDataProvider.GetByIdAsync(int id)", ex);
-        }
-    }
-
-    public static Student? GetByUserId(int userId)
-    {
-        try
-        {
-            using var connection = DBConnectionFactory.CreateConnection();
-            connection.Open();
-            using var command = new SqlCommand("usp_GetStudentByUserId", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.Add("@UserId", SqlDbType.Int).Value = userId;
-
-            using var reader = command.ExecuteReader();
-            if (reader.Read())
-            {
-                return MapStudent(reader);
-            }
-
-            return null;
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in StudentDataProvider.GetByUserId(int userId)", ex);
-        }
-    }
-
-    public static async Task<Student?> GetByUserIdAsync(int userId)
-    {
-        try
-        {
-            using var connection = DBConnectionFactory.CreateConnection();
-            await connection.OpenAsync();
-            using var command = new SqlCommand("usp_GetStudentByUserId", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.Add("@UserId", SqlDbType.Int).Value = userId;
-
-            using var reader = await command.ExecuteReaderAsync();
-            if (await reader.ReadAsync())
-            {
-                return MapStudent(reader);
-            }
-
-            return null;
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in StudentDataProvider.GetByUserIdAsync(int userId)", ex);
-        }
-    }
-
-    public static List<Student> GetAll()
-    {
-        try
-        {
-            using var connection = DBConnectionFactory.CreateConnection();
-            connection.Open();
-            using var command = new SqlCommand("usp_GetAllStudents", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            using var reader = command.ExecuteReader();
-            var list = new List<Student>();
-            while (reader.Read())
-            {
-                list.Add(MapStudent(reader));
-            }
-
-            return list;
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in StudentDataProvider.GetAll()", ex);
-        }
-    }
-
-    public static async Task<List<Student>> GetAllAsync()
-    {
-        try
-        {
-            using var connection = DBConnectionFactory.CreateConnection();
-            await connection.OpenAsync();
-            using var command = new SqlCommand("usp_GetAllStudents", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            using var reader = await command.ExecuteReaderAsync();
-            var list = new List<Student>();
-            while (await reader.ReadAsync())
-            {
-                list.Add(MapStudent(reader));
-            }
-
-            return list;
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in StudentDataProvider.GetAllAsync()", ex);
-        }
-    }
-
-    public static int Add(Student entity)
-    {
-        try
-        {
-            using var connection = DBConnectionFactory.CreateConnection();
-            connection.Open();
-            using var command = new SqlCommand("usp_CreateStudent", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.Add("@UserId", SqlDbType.Int).Value = entity.UserId;
-            command.Parameters.Add("@StudentNumber", SqlDbType.Int).Value = entity.StudentNumber;
-            command.Parameters.Add("@Email", SqlDbType.NVarChar, 100).Value = (object?)entity.Email ?? string.Empty;
-            command.Parameters.Add("@Phone", SqlDbType.NVarChar, 20).Value = (object?)entity.Phone ?? string.Empty;
-
-            var outId = new SqlParameter("@Id", SqlDbType.Int) { Direction = ParameterDirection.Output };
-            command.Parameters.Add(outId);
-
-            command.ExecuteNonQuery();
-            entity.Id = (int)outId.Value;
-            return entity.Id;
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in StudentDataProvider.Add(Student entity)", ex);
-        }
-    }
-
-    public static async Task<int> AddAsync(Student entity)
-    {
-        try
-        {
-            using var connection = DBConnectionFactory.CreateConnection();
-            await connection.OpenAsync();
-            using var command = new SqlCommand("usp_CreateStudent", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.Add("@UserId", SqlDbType.Int).Value = entity.UserId;
-            command.Parameters.Add("@StudentNumber", SqlDbType.Int).Value = entity.StudentNumber;
-            command.Parameters.Add("@Email", SqlDbType.NVarChar, 100).Value = (object?)entity.Email ?? string.Empty;
-            command.Parameters.Add("@Phone", SqlDbType.NVarChar, 20).Value = (object?)entity.Phone ?? string.Empty;
-
-            var outId = new SqlParameter("@Id", SqlDbType.Int) { Direction = ParameterDirection.Output };
-            command.Parameters.Add(outId);
-
-            await command.ExecuteNonQueryAsync();
-            if (outId.Value is int id && id != 0)
-            {
-                entity.Id = id;
-            }
-            return entity.Id;
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in StudentDataProvider.AddAsync(Student entity)", ex);
-        }
-    }
-
-    public static void Update(int id, Student entity)
-    {
-        try
-        {
-            using var connection = DBConnectionFactory.CreateConnection();
-            connection.Open();
-            using var command = new SqlCommand("usp_UpdateStudent", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
-            command.Parameters.Add("@UserId", SqlDbType.Int).Value = entity.UserId;
-            command.Parameters.Add("@StudentNumber", SqlDbType.Int).Value = entity.StudentNumber;
-            command.Parameters.Add("@Email", SqlDbType.NVarChar, 100).Value = (object?)entity.Email ?? string.Empty;
-            command.Parameters.Add("@Phone", SqlDbType.NVarChar, 20).Value = (object?)entity.Phone ?? string.Empty;
-
-            command.ExecuteNonQuery();
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in StudentDataProvider.Update(int id, Student entity)", ex);
-        }
-    }
-
-    public static async Task UpdateAsync(int id, Student entity)
-    {
-        try
-        {
-            using var connection = DBConnectionFactory.CreateConnection();
-            await connection.OpenAsync();
-            using var command = new SqlCommand("usp_UpdateStudent", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
-            command.Parameters.Add("@UserId", SqlDbType.Int).Value = entity.UserId;
-            command.Parameters.Add("@StudentNumber", SqlDbType.Int).Value = entity.StudentNumber;
-            command.Parameters.Add("@Email", SqlDbType.NVarChar, 100).Value = (object?)entity.Email ?? string.Empty;
-            command.Parameters.Add("@Phone", SqlDbType.NVarChar, 20).Value = (object?)entity.Phone ?? string.Empty;
-
-            await command.ExecuteNonQueryAsync();
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in StudentDataProvider.UpdateAsync(int id, Student entity)", ex);
-        }
-    }
-
-    public static void Delete(int id)
-    {
-        try
-        {
-            using var connection = DBConnectionFactory.CreateConnection();
-            connection.Open();
-            using var command = new SqlCommand("usp_DeleteStudent", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
-            command.ExecuteNonQuery();
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in StudentDataProvider.Delete(int id)", ex);
-        }
-    }
-
-    public static async Task DeleteAsync(int id)
-    {
-        try
-        {
-            using var connection = DBConnectionFactory.CreateConnection();
-            await connection.OpenAsync();
-            using var command = new SqlCommand("usp_DeleteStudent", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
-            await command.ExecuteNonQueryAsync();
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in StudentDataProvider.DeleteAsync(int id)", ex);
-        }
-    }
-
-    public static List<Student> Search(string regex)
-    {
-        try
-        {
-            using var connection = DBConnectionFactory.CreateConnection();
-            connection.Open();
-            using var command = new SqlCommand("usp_SearchStudents", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.Add("@regex", SqlDbType.NVarChar, 100).Value = regex ?? string.Empty;
-
-            using var reader = command.ExecuteReader();
-            var list = new List<Student>();
-            while (reader.Read())
-            {
-                list.Add(MapStudent(reader));
-            }
-
-            return list;
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in StudentDataProvider.Search(string regex)", ex);
-        }
-    }
-
-    public static async Task<List<Student>> SearchAsync(string regex)
-    {
-        try
-        {
-            using var connection = DBConnectionFactory.CreateConnection();
-            await connection.OpenAsync();
-            using var command = new SqlCommand("usp_SearchStudents", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.Add("@regex", SqlDbType.NVarChar, 100).Value = regex ?? string.Empty;
-
-            using var reader = await command.ExecuteReaderAsync();
-            var list = new List<Student>();
-            while (await reader.ReadAsync())
-            {
-                list.Add(MapStudent(reader));
-            }
-
-            return list;
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in StudentDataProvider.SearchAsync(string regex)", ex);
-        }
     }
 
     private static Student MapStudent(SqlDataReader reader)

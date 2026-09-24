@@ -1,3 +1,5 @@
+using Shared.Entities;
+
 namespace DAL.Interfaces;
 
 public interface IGenericRepository<T> where T : class
@@ -10,17 +12,17 @@ public interface IGenericRepository<T> where T : class
 
     Task<List<T>> GetAllAsync();
 
-    void Add(T entity);
+    RequestResult Add(T entity);
 
-    Task AddAsync(T entity);
+    Task<RequestResult> AddAsync(T entity);
 
-    void Update(int id, T entity);
+    RequestResult Update(int id, T entity);
 
-    Task UpdateAsync(int id, T entity);
+    Task<RequestResult> UpdateAsync(int id, T entity);
 
-    void Delete(int id);
+    RequestResult Delete(int id);
 
-    Task DeleteAsync(int id);
+    Task<RequestResult> DeleteAsync(int id);
 
     List<T> Search(string regex);
 

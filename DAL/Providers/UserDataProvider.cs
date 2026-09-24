@@ -3,7 +3,6 @@ using Microsoft.Data.SqlClient;
 using Shared.Entities;
 using Shared.Exceptions;
 using System.Data;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace DAL.Providers;
 
@@ -34,7 +33,7 @@ public static class UserDataProvider
         }
         catch (Exception ex)
         {
-            throw new DatabaseException("An error occured while GetUserById(int id)", ex);
+            throw new DatabaseException("An error occured in UserDataProvider.GetById(int id)", ex);
         }
         finally
         {
@@ -69,7 +68,7 @@ public static class UserDataProvider
         }
         catch (Exception ex)
         {
-            throw new DatabaseException("An error occured while GetByIdAsync(int id)", ex);
+            throw new DatabaseException("An error occured in UserDataProvider.GetByIdAsync(int id)", ex);
         }
         finally
         {
@@ -104,7 +103,7 @@ public static class UserDataProvider
         }
         catch (Exception ex)
         {
-            throw new DatabaseException("An error occured while GetByUserNameAsync(int id)", ex);
+            throw new DatabaseException("An error occured in UserDataProvider.GetByUserNameAsync(string userName)", ex);
         }
         finally
         {
@@ -139,7 +138,7 @@ public static class UserDataProvider
         }
         catch (Exception ex)
         {
-            throw new DatabaseException("An error occured while GetAllUsers()", ex);
+            throw new DatabaseException("An error occured in UserDataProvider.GetAll()", ex);
         }
         finally
         {
@@ -174,7 +173,7 @@ public static class UserDataProvider
         }
         catch (Exception ex)
         {
-            throw new DatabaseException("An error occured while GetAllUsersAsync()", ex);
+            throw new DatabaseException("An error occured in UserDataProvider.GetAllAsync()", ex);
         }
         finally
         {
@@ -184,7 +183,7 @@ public static class UserDataProvider
         }
     }
 
-    public static int Add(User entity)
+    public static RequestResult Add(User entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -211,14 +210,13 @@ public static class UserDataProvider
             };
             command.Parameters.Add(newIdParam);
 
-            command.ExecuteNonQuery();
+            int rows = command.ExecuteNonQuery();
 
-            entity.Id = (int)newIdParam.Value;
-            return entity.Id;
+            return rows == 0 ? RequestResult.Failure($"User Not Added") : RequestResult.Success();
         }
         catch (Exception ex)
         {
-            throw new DatabaseException("An error occured while AddUser()", ex);
+            throw new DatabaseException("An error occured in UserDataProvider.Add(User entity)", ex);
         }
         finally
         {
@@ -227,7 +225,7 @@ public static class UserDataProvider
         }
     }
 
-    public static async Task<int> AddAsync(User entity)
+    public static async Task<RequestResult> AddAsync(User entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -254,14 +252,13 @@ public static class UserDataProvider
             };
             command.Parameters.Add(newIdParam);
 
-            await command.ExecuteNonQueryAsync();
+            int rows = await command.ExecuteNonQueryAsync();
 
-            entity.Id = (int)newIdParam.Value;
-            return entity.Id;
+            return rows == 0 ? RequestResult.Failure($"User Not Added") : RequestResult.Success();
         }
         catch (Exception ex)
         {
-            throw new DatabaseException("An error occured in AddAsync(User entity)", ex);
+            throw new DatabaseException("An error occured in UserDataProvider.AddAsync(User entity)", ex);
         }
         finally
         {
@@ -270,7 +267,7 @@ public static class UserDataProvider
         }
     }
 
-    public static void Update(int id, User entity)
+    public static RequestResult Update(int id, User entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -291,11 +288,12 @@ public static class UserDataProvider
             command.Parameters.Add("@IsActive", SqlDbType.Bit).Value = entity.IsActive;
             command.Parameters.Add("@ModifiedBy", SqlDbType.Int).Value = entity.ModifiedBy;
 
-            command.ExecuteNonQuery();
+            int rows = command.ExecuteNonQuery();
+            return rows == 0 ? RequestResult.NotFound($"User with id {id} not found.") : RequestResult.Success(rows);
         }
         catch (Exception ex)
         {
-            throw new DatabaseException("An error occured in Update(int id, User entity)", ex);
+            throw new DatabaseException("An error occured in UserDataProvider.Update(int id, User entity)", ex);
         }
         finally
         {
@@ -304,7 +302,7 @@ public static class UserDataProvider
         }
     }
 
-    public static async Task UpdateAsync(int id, User entity)
+    public static async Task<RequestResult> UpdateAsync(int id, User entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -325,11 +323,12 @@ public static class UserDataProvider
             command.Parameters.Add("@IsActive", SqlDbType.Bit).Value = entity.IsActive;
             command.Parameters.Add("@ModifiedBy", SqlDbType.Int).Value = entity.ModifiedBy;
 
-            await command.ExecuteNonQueryAsync();
+            int rowsAsync = await command.ExecuteNonQueryAsync();
+            return rowsAsync == 0 ? RequestResult.NotFound($"User with id {id} not found.") : RequestResult.Success(rowsAsync);
         }
         catch (Exception ex)
         {
-            throw new DatabaseException("An error occured in UpdateAsync(int id, User entity)", ex);
+            throw new DatabaseException("An error occured in UserDataProvider.UpdateAsync(int id, User entity)", ex);
         }
         finally
         {
@@ -338,7 +337,7 @@ public static class UserDataProvider
         }
     }
 
-    public static void Delete(int id)
+    public static RequestResult Delete(int id)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -352,11 +351,12 @@ public static class UserDataProvider
                 CommandType = CommandType.StoredProcedure
             };
             command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
-            command.ExecuteNonQuery();
+            int rows = command.ExecuteNonQuery();
+            return rows == 0 ? RequestResult.NotFound($"User with id {id} not found.") : RequestResult.Success(rows);
         }
         catch (Exception ex)
         {
-            throw new DatabaseException("An error occured in Delete(int id)", ex);
+            throw new DatabaseException("An error occured in UserDataProvider.Delete(int id)", ex);
         }
         finally
         {
@@ -365,7 +365,7 @@ public static class UserDataProvider
         }
     }
 
-    public static async Task DeleteAsync(int id)
+    public static async Task<RequestResult> DeleteAsync(int id)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -379,11 +379,12 @@ public static class UserDataProvider
                 CommandType = CommandType.StoredProcedure
             };
             command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
-            await command.ExecuteNonQueryAsync();
+            int rowsAsync = await command.ExecuteNonQueryAsync();
+            return rowsAsync == 0 ? RequestResult.NotFound($"User with id {id} not found.") : RequestResult.Success(rowsAsync);
         }
         catch (Exception ex)
         {
-            throw new DatabaseException("An error occured in DeleteAsync(int id)", ex);
+            throw new DatabaseException("An error occured in UserDataProvider.DeleteAsync(int id)", ex);
         }
         finally
         {
@@ -418,7 +419,7 @@ public static class UserDataProvider
         }
         catch (Exception ex)
         {
-            throw new DatabaseException("An error occured while SearchUsers()", ex);
+            throw new DatabaseException("An error occured in UserDataProvider.Search(string regex)", ex);
         }
         finally
         {
@@ -454,7 +455,7 @@ public static class UserDataProvider
         }
         catch (Exception ex)
         {
-            throw new DatabaseException("An error occured in SearchAsync(string regex)", ex);
+            throw new DatabaseException("An error occured in UserDataProvider.SearchAsync(string regex)", ex);
         }
         finally
         {

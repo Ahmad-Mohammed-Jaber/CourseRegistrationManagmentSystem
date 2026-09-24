@@ -47,32 +47,32 @@ public class StudentRepository : IGenericRepository<Student>
         return StudentDataProvider.GetAllAsync();
     }
 
-    public void Add(Student entity)
+    public RequestResult Add(Student entity)
     {
-        StudentDataProvider.Add(entity);
+        return StudentDataProvider.Add(entity);
     }
 
-    public Task AddAsync(Student entity)
+    public Task<RequestResult> AddAsync(Student entity)
     {
         return StudentDataProvider.AddAsync(entity);
     }
 
-    public void Update(int id, Student entity)
+    public RequestResult Update(int id, Student entity)
     {
-        StudentDataProvider.Update(id, entity);
+        return StudentDataProvider.Update(id, entity);
     }
 
-    public Task UpdateAsync(int id, Student entity)
+    public Task<RequestResult> UpdateAsync(int id, Student entity)
     {
         return StudentDataProvider.UpdateAsync(id, entity);
     }
 
-    public void Delete(int id)
+    public RequestResult Delete(int id)
     {
-        StudentDataProvider.Delete(id);
+        return StudentDataProvider.Delete(id);
     }
 
-    public Task DeleteAsync(int id)
+    public Task<RequestResult> DeleteAsync(int id)
     {
         return StudentDataProvider.DeleteAsync(id);
     }

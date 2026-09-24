@@ -19,17 +19,17 @@ internal class ClassManager
 
     public Task<List<Class>> GetAllAsync() => _classRepository.GetAllAsync();
 
-    public void Add(Class classEntity) => _classRepository.Add(classEntity);
+    public RequestResult Add(Class classEntity) => _classRepository.Add(classEntity);
 
-    public Task AddAsync(Class classEntity) => _classRepository.AddAsync(classEntity);
+    public Task<RequestResult> AddAsync(Class classEntity) => _classRepository.AddAsync(classEntity);
 
-    public void Update(int id, Class classEntity) => _classRepository.Update(id, classEntity);
+    public RequestResult Update(int id, Class classEntity) => _classRepository.Update(id, classEntity);
 
-    public Task UpdateAsync(int id, Class classEntity) => _classRepository.UpdateAsync(id, classEntity);
+    public Task<RequestResult> UpdateAsync(int id, Class classEntity) => _classRepository.UpdateAsync(id, classEntity);
 
-    public void Delete(int id) => _classRepository.Delete(id);
+    public RequestResult Delete(int id) => _classRepository.Delete(id);
 
-    public Task DeleteAsync(int id) => _classRepository.DeleteAsync(id);
+    public Task<RequestResult> DeleteAsync(int id) => _classRepository.DeleteAsync(id);
 
     public List<Class> Search(string regex) => _classRepository.Search(regex);
 

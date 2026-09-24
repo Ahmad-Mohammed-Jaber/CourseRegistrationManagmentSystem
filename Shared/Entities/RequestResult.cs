@@ -1,30 +1,37 @@
 namespace Shared.Entities;
 
-// Outcome of a service/database request (existence, uniqueness, authorization,
-// business-rule and persistence checks). Field/input validation stays in
-// ValidationResult; services return this type for write operations.
 public enum RequestStatus
 {
     Success,
     NotFound,
     Conflict,
-    Unauthorized,
-    Forbidden
+    Failure,
 }
 
-public record RequestError(string Field, string Message);
-
-public record RequestResult(RequestStatus Status, List<RequestError>? Errors)
+public class RequestResult
 {
+    public RequestStatus Status { get; }
+    public string? ErrorMessage { get; }
+    public int RowsAffected { get; }
+
     public bool IsSuccess => Status == RequestStatus.Success;
 
-    public string Message => Errors is not null 
-        ? (IsSuccess ? string.Empty : Status.ToString())
-        : string.Join(Environment.NewLine, Errors.Select(e => $"• {e.Message}"));
-    
-    public static RequestResult Ok() =>
-        new(RequestStatus.Success, null);
+    private RequestResult(RequestStatus status, string? error, int rows)
+    {
+        Status = status;
+        ErrorMessage = error;
+        RowsAffected = rows;
+    }
 
-    public static RequestResult Fail(RequestStatus status, string field, string message) =>
-        new(status, new List<RequestError> { new RequestError(field, message) });
+    public static RequestResult Success(int rowsAffected = 1)
+        => new(RequestStatus.Success, null, rowsAffected);
+
+    public static RequestResult NotFound(string? message = null)
+        => new(RequestStatus.NotFound, message ?? "Resource not found.", 0);
+
+    public static RequestResult Conflict(string message)
+        => new(RequestStatus.Conflict, message, 0);
+
+    public static RequestResult Failure(string message)
+        => new(RequestStatus.Failure, message, 0);
 }
