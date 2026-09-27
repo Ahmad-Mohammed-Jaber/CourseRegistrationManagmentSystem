@@ -1,4 +1,13 @@
- class StudentRegistrationService
+using BL.Managers;
+using BL.Validation;
+using Shared.Entities;
+using Shared.Exceptions;
+using Shared.Logging;
+using Shared.Session;
+
+namespace BL.Services;
+
+public static class StudentRegistrationService
 {
     private static async Task<int?> RequireStudentIdAsync()
     {
@@ -72,7 +81,12 @@
                 RegistrationDate = DateTime.Now,
                 Status = "Registered"
             };
-            await registrationManager.AddAsync(registration);
+            int newId = await registrationManager.AddAsync(registration);
+            if (newId <= 0)
+            {
+                return null;
+            }
+            registration.Id = newId;
 
             @class!.CurrentCapacity++;
             await classManager.UpdateAsync(classId, @class);

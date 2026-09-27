@@ -17,6 +17,7 @@ namespace View
         private TextBox txtSearch;
         private Button btnSearch;
         private Panel topPanel;
+        private List<ClassDto> _classes = new();
 
         public ClassListForm()
         {
@@ -98,10 +99,9 @@ namespace View
         {
             try
             {
-                dgvClasses.DataSource = null;
                 var classes = await ClassService.GetAllAsync();
-                dgvClasses.DataSource = classes.Select(c => c.ToDto()).ToList();
-                ConfigureColumns();
+                _classes = classes.Select(c => c.ToDto()).ToList()!;
+                RefreshGrid();
             }
             catch (BusinessException ex)
             {
@@ -111,6 +111,26 @@ namespace View
             {
                 AppLogger.LogViewError(ex);
                 MessageBox.Show("Error loading classes due to an unexpected error.");
+            }
+        }
+
+        private void RefreshGrid()
+        {
+            dgvClasses.DataSource = null;
+            dgvClasses.DataSource = _classes;
+            ConfigureColumns();
+        }
+
+        private void SelectRowById(int id)
+        {
+            foreach (DataGridViewRow row in dgvClasses.Rows)
+            {
+                if (row.DataBoundItem is ClassDto dto && dto.Id == id)
+                {
+                    row.Selected = true;
+                    dgvClasses.CurrentCell = row.Cells[0];
+                    break;
+                }
             }
         }
 
@@ -165,10 +185,9 @@ namespace View
             {
                 if (!string.IsNullOrWhiteSpace(txtSearch.Text))
                 {
-                    dgvClasses.DataSource = null;
                     var classes = await ClassService.SearchAsync(txtSearch.Text);
-                    dgvClasses.DataSource = classes.Select(c => c.ToDto()).ToList();
-                    ConfigureColumns();
+                    _classes = classes.Select(c => c.ToDto()).ToList()!;
+                    RefreshGrid();
                 }
                 else
                 {
@@ -190,9 +209,11 @@ namespace View
         {
             using var form = new ClassDetailForm();
 
-            if (form.ShowDialog() == DialogResult.OK)
+            if (form.ShowDialog() == DialogResult.OK && form.SavedDto != null)
             {
-                _ = LoadClassesAsync();
+                _classes.Add(form.SavedDto);
+                RefreshGrid();
+                SelectRowById(form.SavedDto.Id);
             }
         }
 
@@ -202,9 +223,15 @@ namespace View
             {
                 using var form = new ClassDetailForm(cls);
 
-                if (form.ShowDialog() == DialogResult.OK)
+                if (form.ShowDialog() == DialogResult.OK && form.SavedDto != null)
                 {
-                    _ = LoadClassesAsync();
+                    int index = _classes.FindIndex(c => c.Id == cls.Id);
+                    if (index >= 0)
+                    {
+                        _classes[index] = form.SavedDto;
+                    }
+                    RefreshGrid();
+                    SelectRowById(cls.Id);
                 }
             }
             else
@@ -233,7 +260,8 @@ namespace View
                             MessageBox.Show($"Error deleting class: {deleteResult.Message}");
                             return;
                         }
-                        await LoadClassesAsync();
+                        _classes.RemoveAll(c => c.Id == cls.Id);
+                        RefreshGrid();
                     }
                     catch (BusinessException ex)
                     {

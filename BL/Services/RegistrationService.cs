@@ -65,32 +65,32 @@ public static class RegistrationService
         }
     }
 
-    public static ValidationResult Add(Registration registration)
+    public static Result<Registration> Add(Registration registration)
     {
         try
         {
             var auth = AccessValidator.RequireAdmin();
             if (!auth.IsSuccess)
             {
-                return auth;
+                return Result<Registration>.From(auth);
             }
 
             var valid = RegistrationValidator.ValidateRegistration(registration);
             if (!valid.IsSuccess)
             {
-                return valid;
+                return Result<Registration>.From(valid);
             }
 
             var student = EnsureStudentExistsSync(registration!.StudentId);
             if (!student.IsSuccess)
             {
-                return student;
+                return Result<Registration>.From(student);
             }
 
             var @class = EnsureClassExistsSync(registration.ClassId);
             if (!@class.IsSuccess)
             {
-                return @class;
+                return Result<Registration>.From(@class);
             }
 
             var registrationManager = new RegistrationManager();
@@ -99,11 +99,16 @@ public static class RegistrationService
                     .Any(r => r.ClassId == registration.ClassId));
             if (!dup.IsSuccess)
             {
-                return dup;
+                return Result<Registration>.From(dup);
             }
 
-            registrationManager.Add(registration);
-            return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
+            int newId = registrationManager.Add(registration);
+            if (newId <= 0)
+            {
+                return Result<Registration>.Fail(ValidationStatus.Conflict, $"Failed to create registration: database reported no new id.");
+            }
+            registration.Id = newId;
+            return Result<Registration>.Ok(registration);
         }
         catch (Exception ex)
         {
@@ -112,32 +117,32 @@ public static class RegistrationService
         }
     }
 
-    public static async Task<ValidationResult> AddAsync(Registration registration)
+    public static async Task<Result<Registration>> AddAsync(Registration registration)
     {
         try
         {
             var auth = AccessValidator.RequireAdmin();
             if (!auth.IsSuccess)
             {
-                return auth;
+                return Result<Registration>.From(auth);
             }
 
             var valid = RegistrationValidator.ValidateRegistration(registration);
             if (!valid.IsSuccess)
             {
-                return valid;
+                return Result<Registration>.From(valid);
             }
 
             var student = await EnsureStudentExistsAsync(registration!.StudentId);
             if (!student.IsSuccess)
             {
-                return student;
+                return Result<Registration>.From(student);
             }
 
             var @class = await EnsureClassExistsAsync(registration.ClassId);
             if (!@class.IsSuccess)
             {
-                return @class;
+                return Result<Registration>.From(@class);
             }
 
             var registrationManager = new RegistrationManager();
@@ -145,11 +150,16 @@ public static class RegistrationService
                 await registrationManager.ExistsAsync(registration.StudentId, registration.ClassId));
             if (!dup.IsSuccess)
             {
-                return dup;
+                return Result<Registration>.From(dup);
             }
 
-            await registrationManager.AddAsync(registration);
-            return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
+            int newId = await registrationManager.AddAsync(registration);
+            if (newId <= 0)
+            {
+                return Result<Registration>.Fail(ValidationStatus.Conflict, $"Failed to create registration: database reported no new id.");
+            }
+            registration.Id = newId;
+            return Result<Registration>.Ok(registration);
         }
         catch (Exception ex)
         {
@@ -158,20 +168,20 @@ public static class RegistrationService
         }
     }
 
-    public static ValidationResult Update(int id, Registration registration)
+    public static Result<Registration> Update(int id, Registration registration)
     {
         try
         {
             var auth = AccessValidator.RequireAdmin();
             if (!auth.IsSuccess)
             {
-                return auth;
+                return Result<Registration>.From(auth);
             }
 
             var valid = RegistrationValidator.ValidateRegistration(registration);
             if (!valid.IsSuccess)
             {
-                return valid;
+                return Result<Registration>.From(valid);
             }
 
             var registrationManager = new RegistrationManager();
@@ -179,19 +189,19 @@ public static class RegistrationService
             var exists = RegistrationValidator.RequireExists(existing, id);
             if (!exists.IsSuccess)
             {
-                return exists;
+                return Result<Registration>.From(exists);
             }
 
             var student = EnsureStudentExistsSync(registration!.StudentId);
             if (!student.IsSuccess)
             {
-                return student;
+                return Result<Registration>.From(student);
             }
 
             var @class = EnsureClassExistsSync(registration.ClassId);
             if (!@class.IsSuccess)
             {
-                return @class;
+                return Result<Registration>.From(@class);
             }
 
             if (existing!.StudentId != registration.StudentId || existing.ClassId != registration.ClassId)
@@ -201,12 +211,17 @@ public static class RegistrationService
                         .Any(r => r.ClassId == registration.ClassId));
                 if (!dup.IsSuccess)
                 {
-                    return dup;
+                    return Result<Registration>.From(dup);
                 }
             }
 
-            registrationManager.Update(id, registration);
-            return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
+            int outcome = registrationManager.Update(id, registration);
+            if (outcome <= 0)
+            {
+                return Result<Registration>.Fail(ValidationStatus.NotFound, $"Registration with id {id} not found.");
+            }
+            registration.Id = id;
+            return Result<Registration>.Ok(registration);
         }
         catch (Exception ex)
         {
@@ -215,20 +230,20 @@ public static class RegistrationService
         }
     }
 
-    public static async Task<ValidationResult> UpdateAsync(int id, Registration registration)
+    public static async Task<Result<Registration>> UpdateAsync(int id, Registration registration)
     {
         try
         {
             var auth = AccessValidator.RequireAdmin();
             if (!auth.IsSuccess)
             {
-                return auth;
+                return Result<Registration>.From(auth);
             }
 
             var valid = RegistrationValidator.ValidateRegistration(registration);
             if (!valid.IsSuccess)
             {
-                return valid;
+                return Result<Registration>.From(valid);
             }
 
             var registrationManager = new RegistrationManager();
@@ -236,19 +251,19 @@ public static class RegistrationService
             var exists = RegistrationValidator.RequireExists(existing, id);
             if (!exists.IsSuccess)
             {
-                return exists;
+                return Result<Registration>.From(exists);
             }
 
             var student = await EnsureStudentExistsAsync(registration!.StudentId);
             if (!student.IsSuccess)
             {
-                return student;
+                return Result<Registration>.From(student);
             }
 
             var @class = await EnsureClassExistsAsync(registration.ClassId);
             if (!@class.IsSuccess)
             {
-                return @class;
+                return Result<Registration>.From(@class);
             }
 
             if (existing!.StudentId != registration.StudentId || existing.ClassId != registration.ClassId)
@@ -257,12 +272,17 @@ public static class RegistrationService
                     await registrationManager.ExistsAsync(registration.StudentId, registration.ClassId));
                 if (!dup.IsSuccess)
                 {
-                    return dup;
+                    return Result<Registration>.From(dup);
                 }
             }
 
-            await registrationManager.UpdateAsync(id, registration);
-            return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
+            int outcome = await registrationManager.UpdateAsync(id, registration);
+            if (outcome <= 0)
+            {
+                return Result<Registration>.Fail(ValidationStatus.NotFound, $"Registration with id {id} not found.");
+            }
+            registration.Id = id;
+            return Result<Registration>.Ok(registration);
         }
         catch (Exception ex)
         {
@@ -271,14 +291,14 @@ public static class RegistrationService
         }
     }
 
-    public static ValidationResult Delete(int id)
+    public static Result<int> Delete(int id)
     {
         try
         {
             var auth = AccessValidator.RequireAdmin();
             if (!auth.IsSuccess)
             {
-                return auth;
+                return Result<int>.From(auth);
             }
 
             var registrationManager = new RegistrationManager();
@@ -286,11 +306,15 @@ public static class RegistrationService
             var exists = RegistrationValidator.RequireExists(existing, id);
             if (!exists.IsSuccess)
             {
-                return exists;
+                return Result<int>.From(exists);
             }
 
-            registrationManager.Delete(id);
-            return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
+            int outcome = registrationManager.Delete(id);
+            if (outcome <= 0)
+            {
+                return Result<int>.Fail(ValidationStatus.NotFound, $"Registration with id {id} not found.");
+            }
+            return Result<int>.Ok(id);
         }
         catch (Exception ex)
         {
@@ -299,14 +323,14 @@ public static class RegistrationService
         }
     }
 
-    public static async Task<ValidationResult> DeleteAsync(int id)
+    public static async Task<Result<int>> DeleteAsync(int id)
     {
         try
         {
             var auth = AccessValidator.RequireAdmin();
             if (!auth.IsSuccess)
             {
-                return auth;
+                return Result<int>.From(auth);
             }
 
             var registrationManager = new RegistrationManager();
@@ -314,11 +338,15 @@ public static class RegistrationService
             var exists = RegistrationValidator.RequireExists(existing, id);
             if (!exists.IsSuccess)
             {
-                return exists;
+                return Result<int>.From(exists);
             }
 
-            await registrationManager.DeleteAsync(id);
-            return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
+            int outcome = await registrationManager.DeleteAsync(id);
+            if (outcome <= 0)
+            {
+                return Result<int>.Fail(ValidationStatus.NotFound, $"Registration with id {id} not found.");
+            }
+            return Result<int>.Ok(id);
         }
         catch (Exception ex)
         {

@@ -35,6 +35,8 @@ namespace View
         private Button btnSave;
         private Button btnCancel;
 
+        public StudentDto? SavedDto { get; private set; }
+
         public StudentDetailForm(StudentDto? student = null)
         {
             _student = student;
@@ -224,7 +226,7 @@ namespace View
 
             try
             {
-                ValidationResult saveResult;
+                Result<Student> saveResult;
                 if (_isEditMode)
                 {
                     var dto = new StudentDto
@@ -256,11 +258,28 @@ namespace View
                     );
                 }
 
-                if (!saveResult.IsSuccess)
+                if (!saveResult.IsSuccess || saveResult.Value == null)
                 {
                     MessageBox.Show($"Error saving student: {saveResult.Message}");
                     return;
                 }
+                var saved = saveResult.Value;
+                SavedDto = new StudentDto
+                {
+                    Id = saved.Id,
+                    UserId = saved.UserId,
+                    StudentNumber = studentNumber,
+                    Email = txtEmail.Text,
+                    Phone = txtPhone.Text,
+                    UserName = txtUsername.Text,
+                    FullName = txtFullName.Text,
+                    IsActive = chkActive.Checked,
+                    Role = User.UserRoles.Student,
+                    CreatedOn = _isEditMode && _student != null ? _student.CreatedOn : DateTimeOffset.Now,
+                    ModifiedOn = DateTimeOffset.Now,
+                    CreatedBy = _isEditMode && _student != null ? _student.CreatedBy : saved.CreatedBy,
+                    ModifiedBy = saved.ModifiedBy
+                };
                 DialogResult = DialogResult.OK;
             }
             catch (BusinessException ex)

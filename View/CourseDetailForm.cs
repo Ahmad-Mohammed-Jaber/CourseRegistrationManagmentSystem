@@ -25,6 +25,8 @@ namespace View
         private Button btnSave;
         private Button btnCancel;
 
+        public CourseDto? SavedDto { get; private set; }
+
         public CourseDetailForm(CourseDto? course = null)
         {
             _course = course;
@@ -134,7 +136,7 @@ namespace View
 
             try
             {
-                ValidationResult saveResult;
+                Result<Course> saveResult;
                 if (_isEditMode)
                 {
                     saveResult = await CourseService.UpdateAsync(entity.Id, entity);
@@ -144,11 +146,25 @@ namespace View
                     saveResult = await CourseService.AddAsync(entity);
                 }
 
-                if (!saveResult.IsSuccess)
+                if (!saveResult.IsSuccess || saveResult.Value == null)
                 {
                     MessageBox.Show($"Error saving course: {saveResult.Message}");
                     return;
                 }
+                var saved = saveResult.Value;
+                SavedDto = new CourseDto
+                {
+                    Id = saved.Id,
+                    CourseCode = txtCode.Text,
+                    CourseName = txtName.Text,
+                    CreditHours = (int)numCredits.Value,
+                    Description = txtDesc.Text,
+                    IsActive = chkActive.Checked,
+                    CreatedOn = _isEditMode && _course != null ? _course.CreatedOn : DateTimeOffset.Now,
+                    ModifiedOn = DateTimeOffset.Now,
+                    CreatedBy = _isEditMode && _course != null ? _course.CreatedBy : saved.CreatedBy,
+                    ModifiedBy = saved.ModifiedBy
+                };
                 this.DialogResult = DialogResult.OK;
             }
             catch (BusinessException ex)

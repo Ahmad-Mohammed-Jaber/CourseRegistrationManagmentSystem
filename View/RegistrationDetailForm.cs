@@ -26,6 +26,8 @@ namespace View
         private Button btnSave;
         private Button btnCancel;
 
+        public RegistrationDto? SavedDto { get; private set; }
+
 
         public RegistrationDetailForm(RegistrationDto? reg = null)
         {
@@ -229,7 +231,7 @@ namespace View
 
             try
             {
-                ValidationResult saveResult;
+                Result<Registration> saveResult;
                 if (_isEditMode)
                 {
                     saveResult = await RegistrationService.UpdateAsync(entity.Id, entity);
@@ -239,11 +241,48 @@ namespace View
                     saveResult = await RegistrationService.AddAsync(entity);
                 }
 
-                if (!saveResult.IsSuccess)
+                if (!saveResult.IsSuccess || saveResult.Value == null)
                 {
                     MessageBox.Show($"Error saving registration: {saveResult.Message}");
                     return;
                 }
+
+                var saved = saveResult.Value;
+                string? studentName = (cmbStudent.SelectedItem as Student)?.UserName
+                    ?? (cmbStudent.SelectedItem as Student)?.FullName
+                    ?? _reg?.StudentUserName;
+                string? className = (cmbClass.SelectedItem as Class)?.ClassName ?? _reg?.ClassName;
+                string? courseName = _reg?.CourseName;
+                try
+                {
+                    if (cmbClass.SelectedItem is Class selectedClass)
+                    {
+                        var course = await CourseService.GetByIdAsync(selectedClass.CourseId);
+                        if (course != null)
+                        {
+                            courseName = course.CourseName;
+                        }
+                    }
+                }
+                catch
+                {
+                    // Display-name lookup is best-effort; grid still updates without it.
+                }
+                SavedDto = new RegistrationDto
+                {
+                    Id = saved.Id,
+                    StudentId = saved.StudentId,
+                    StudentUserName = studentName,
+                    ClassId = saved.ClassId,
+                    ClassName = className,
+                    CourseName = courseName,
+                    RegistrationDate = dtRegDate.Value,
+                    Status = cmbStatus.SelectedItem?.ToString() ?? "Registered",
+                    CreatedOn = _isEditMode && _reg != null ? _reg.CreatedOn : DateTimeOffset.Now,
+                    ModifiedOn = DateTimeOffset.Now,
+                    CreatedBy = _isEditMode && _reg != null ? _reg.CreatedBy : saved.CreatedBy,
+                    ModifiedBy = saved.ModifiedBy
+                };
 
                 DialogResult = DialogResult.OK;
             }

@@ -12,6 +12,7 @@ namespace View
         private DataGridView dgvClasses;
         private Button btnRegister;
         private Panel topPanel;
+        private List<ClassDto> _classes = new();
 
         public BrowseClassesForm()
         {
@@ -144,9 +145,10 @@ namespace View
         {
             try
             {
-                dgvClasses.DataSource = null;
                 var classes = await ClassService.GetAllAsync();
-                dgvClasses.DataSource = classes.Select(c => c.ToDto()).ToList();
+                _classes = classes.Select(c => c.ToDto()).ToList()!;
+                dgvClasses.DataSource = null;
+                dgvClasses.DataSource = _classes;
             }
             catch (BusinessException)
             {
@@ -170,6 +172,13 @@ namespace View
                     {
                         MessageBox.Show("Registration failed.");
                         return;
+                    }
+                    var cached = _classes.FirstOrDefault(c => c.Id == cls.Id);
+                    if (cached != null)
+                    {
+                        cached.CurrentCapacity++;
+                        dgvClasses.DataSource = null;
+                        dgvClasses.DataSource = _classes;
                     }
                     MessageBox.Show("Registered successfully!");
                 }

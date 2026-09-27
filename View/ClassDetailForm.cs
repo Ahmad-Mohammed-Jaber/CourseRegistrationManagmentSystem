@@ -33,6 +33,8 @@ namespace View
         private Button btnSave;
         private Button btnCancel;
 
+        public ClassDto? SavedDto { get; private set; }
+
         public ClassDetailForm(ClassDto? cls = null)
         {
             _class = cls;
@@ -256,7 +258,7 @@ namespace View
 
             try
             {
-                ValidationResult saveResult;
+                Result<Class> saveResult;
                 if (_isEditMode)
                 {
                     saveResult = await ClassService.UpdateAsync(entity.Id, entity);
@@ -266,11 +268,29 @@ namespace View
                     saveResult = await ClassService.AddAsync(entity);
                 }
 
-                if (!saveResult.IsSuccess)
+                if (!saveResult.IsSuccess || saveResult.Value == null)
                 {
                     MessageBox.Show($"Error saving class: {saveResult.Message}");
                     return;
                 }
+                var saved = saveResult.Value;
+                SavedDto = new ClassDto
+                {
+                    Id = saved.Id,
+                    CourseId = dto.CourseId,
+                    ClassName = dto.ClassName,
+                    Instructor = dto.Instructor,
+                    MaxCapacity = dto.MaxCapacity,
+                    CurrentCapacity = _isEditMode && _class != null ? _class.CurrentCapacity : 0,
+                    StartDate = dto.StartDate,
+                    EndDate = dto.EndDate,
+                    Schedule = dto.Schedule,
+                    IsActive = dto.IsActive,
+                    CreatedOn = _isEditMode && _class != null ? _class.CreatedOn : DateTimeOffset.Now,
+                    ModifiedOn = DateTimeOffset.Now,
+                    CreatedBy = _isEditMode && _class != null ? _class.CreatedBy : saved.CreatedBy,
+                    ModifiedBy = saved.ModifiedBy
+                };
                 this.DialogResult = DialogResult.OK;
             }
             catch (BusinessException ex)

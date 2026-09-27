@@ -119,33 +119,34 @@ public static class StudentService
         }
     }
 
-    public static ValidationResult Add(Student student)
+    public static Result<Student> Add(Student student)
     {
         try
         {
             var auth = AccessValidator.RequireAdmin();
             if (!auth.IsSuccess)
             {
-                return auth;
+                return Result<Student>.From(auth);
             }
 
             var valid = StudentValidator.ValidateStudent(student);
             if (!valid.IsSuccess)
             {
-                return valid;
+                return Result<Student>.From(valid);
             }
 
             if (student != null && string.IsNullOrWhiteSpace(student.PasswordHash))
             {
-                return new ValidationResult(
+                return new Result<Student>(
                     ValidationStatus.Invalid,
-                    new[] { new ValidationError(nameof(Student.PasswordHash), "Password is required for a new student.") });
+                    new[] { new ValidationError(nameof(Student.PasswordHash), "Password is required for a new student.") },
+                    default);
             }
 
             var unique = EnsureUniqueUserNameSync(student!.UserName);
             if (!unique.IsSuccess)
             {
-                return unique;
+                return Result<Student>.From(unique);
             }
 
             var userManager = new UserManager();
@@ -159,25 +160,31 @@ public static class StudentService
                 PasswordHash = student.PasswordHash,
             };
 
-            userManager.Add(user);
-            if (user.Id == 0)
+            int userId = userManager.Add(user);
+            if (userId == 0)
             {
                 var created = userManager.GetAll().FirstOrDefault(u => u.UserName == student.UserName);
                 if (created != null)
                 {
-                    user.Id = created.Id;
+                    userId = created.Id;
                 }
             }
-            if (user.Id == 0)
+            if (userId == 0)
             {
                 throw new BusinessException("Failed to create user account for student.");
             }
+            user.Id = userId;
 
             student.UserId = user.Id;
 
             try
             {
-                studentManager.Add(student);
+                int studentId = studentManager.Add(student);
+                if (studentId <= 0)
+                {
+                    return Result<Student>.Fail(ValidationStatus.Conflict, $"Failed to create student: database reported no new id.");
+                }
+                student.Id = studentId;
             }
             catch
             {
@@ -192,7 +199,7 @@ public static class StudentService
 
                 throw;
             }
-            return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
+            return Result<Student>.Ok(student);
         }
         catch (BusinessException ex)
         {
@@ -206,33 +213,34 @@ public static class StudentService
         }
     }
 
-    public static async Task<ValidationResult> AddAsync(Student student)
+    public static async Task<Result<Student>> AddAsync(Student student)
     {
         try
         {
             var auth = AccessValidator.RequireAdmin();
             if (!auth.IsSuccess)
             {
-                return auth;
+                return Result<Student>.From(auth);
             }
 
             var valid = StudentValidator.ValidateStudent(student);
             if (!valid.IsSuccess)
             {
-                return valid;
+                return Result<Student>.From(valid);
             }
 
             if (student != null && string.IsNullOrWhiteSpace(student.PasswordHash))
             {
-                return new ValidationResult(
+                return new Result<Student>(
                     ValidationStatus.Invalid,
-                    new[] { new ValidationError(nameof(Student.PasswordHash), "Password is required for a new student.") });
+                    new[] { new ValidationError(nameof(Student.PasswordHash), "Password is required for a new student.") },
+                    default);
             }
 
             var unique = await EnsureUniqueUserNameAsync(student!.UserName);
             if (!unique.IsSuccess)
             {
-                return unique;
+                return Result<Student>.From(unique);
             }
 
             var userManager = new UserManager();
@@ -245,8 +253,10 @@ public static class StudentService
                 Role = User.UserRoles.Student,
                 PasswordHash = student.PasswordHash,
             };
-            await userManager.AddAsync(user);
-            var created = await userManager.GetByUserNameAsync(user.UserName);
+            int userId = await userManager.AddAsync(user);
+            var created = userId > 0
+                ? await userManager.GetByIdAsync(userId) ?? await userManager.GetByUserNameAsync(user.UserName)
+                : await userManager.GetByUserNameAsync(user.UserName);
             if (created == null)
             {
                 throw new BusinessException("Failed to create user account for student.");
@@ -256,7 +266,12 @@ public static class StudentService
 
             try
             {
-                await studentManager.AddAsync(student);
+                int studentId = await studentManager.AddAsync(student);
+                if (studentId <= 0)
+                {
+                    return Result<Student>.Fail(ValidationStatus.Conflict, $"Failed to create student: database reported no new id.");
+                }
+                student.Id = studentId;
             }
             catch
             {
@@ -271,7 +286,7 @@ public static class StudentService
 
                 throw;
             }
-            return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
+            return Result<Student>.Ok(student);
         }
         catch (BusinessException ex)
         {
@@ -285,20 +300,20 @@ public static class StudentService
         }
     }
 
-    public static ValidationResult Update(int id, Student student)
+    public static Result<Student> Update(int id, Student student)
     {
         try
         {
             var auth = AccessValidator.RequireAdmin();
             if (!auth.IsSuccess)
             {
-                return auth;
+                return Result<Student>.From(auth);
             }
 
             var valid = StudentValidator.ValidateStudent(student);
             if (!valid.IsSuccess)
             {
-                return valid;
+                return Result<Student>.From(valid);
             }
 
             var studentManager = new StudentManager();
@@ -307,7 +322,7 @@ public static class StudentService
             var exists = StudentValidator.RequireExists(existingStudent, id);
             if (!exists.IsSuccess)
             {
-                return exists;
+                return Result<Student>.From(exists);
             }
 
             var userByName = userManager.GetAll().FirstOrDefault(u => u.UserName == student!.UserName);
@@ -315,10 +330,14 @@ public static class StudentService
                 userByName != null && userByName.Id != existingStudent!.UserId, student.UserName);
             if (!unique.IsSuccess)
             {
-                return unique;
+                return Result<Student>.From(unique);
             }
 
-            studentManager.Update(id, student);
+            int outcome = studentManager.Update(id, student);
+            if (outcome <= 0)
+            {
+                return Result<Student>.Fail(ValidationStatus.NotFound, $"Student with id {id} not found.");
+            }
 
             var existingUser = userManager.GetById(existingStudent.UserId);
             if (existingUser != null)
@@ -333,7 +352,9 @@ public static class StudentService
 
                 userManager.Update(existingUser.Id, existingUser);
             }
-            return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
+            student.Id = id;
+            student.UserId = existingStudent.UserId;
+            return Result<Student>.Ok(student);
         }
         catch (Exception ex)
         {
@@ -342,20 +363,20 @@ public static class StudentService
         }
     }
 
-    public static async Task<ValidationResult> UpdateAsync(int id, Student student)
+    public static async Task<Result<Student>> UpdateAsync(int id, Student student)
     {
         try
         {
             var auth = AccessValidator.RequireAdmin();
             if (!auth.IsSuccess)
             {
-                return auth;
+                return Result<Student>.From(auth);
             }
 
             var valid = StudentValidator.ValidateStudent(student);
             if (!valid.IsSuccess)
             {
-                return valid;
+                return Result<Student>.From(valid);
             }
 
             var studentManager = new StudentManager();
@@ -364,16 +385,20 @@ public static class StudentService
             var exists = StudentValidator.RequireExists(existingStudent, id);
             if (!exists.IsSuccess)
             {
-                return exists;
+                return Result<Student>.From(exists);
             }
 
             var unique = await EnsureUniqueUserNameAsync(student!.UserName, existingStudent!.UserId);
             if (!unique.IsSuccess)
             {
-                return unique;
+                return Result<Student>.From(unique);
             }
 
-            await studentManager.UpdateAsync(id, student);
+            int outcome = await studentManager.UpdateAsync(id, student);
+            if (outcome <= 0)
+            {
+                return Result<Student>.Fail(ValidationStatus.NotFound, $"Student with id {id} not found.");
+            }
 
             var existingUser = await userManager.GetByIdAsync(existingStudent.UserId);
             if (existingUser != null)
@@ -388,7 +413,9 @@ public static class StudentService
 
                 await userManager.UpdateAsync(existingUser.Id, existingUser);
             }
-            return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
+            student.Id = id;
+            student.UserId = existingStudent.UserId;
+            return Result<Student>.Ok(student);
         }
         catch (Exception ex)
         {
@@ -412,14 +439,14 @@ public static class StudentService
             existingUser != null && existingUser.Id != (excludeUserId ?? 0), userName);
     }
 
-    public static ValidationResult Delete(int id)
+    public static Result<int> Delete(int id)
     {
         try
         {
             var auth = AccessValidator.RequireAdmin();
             if (!auth.IsSuccess)
             {
-                return auth;
+                return Result<int>.From(auth);
             }
 
             var studentManager = new StudentManager();
@@ -428,12 +455,16 @@ public static class StudentService
             var exists = StudentValidator.RequireExists(student, id);
             if (!exists.IsSuccess)
             {
-                return exists;
+                return Result<int>.From(exists);
             }
 
-            studentManager.Delete(id);
+            int outcome = studentManager.Delete(id);
+            if (outcome <= 0)
+            {
+                return Result<int>.Fail(ValidationStatus.NotFound, $"Student with id {id} not found.");
+            }
             userManager.Delete(student!.UserId);
-            return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
+            return Result<int>.Ok(id);
         }
         catch (Exception ex)
         {
@@ -442,14 +473,14 @@ public static class StudentService
         }
     }
 
-    public static async Task<ValidationResult> DeleteAsync(int id)
+    public static async Task<Result<int>> DeleteAsync(int id)
     {
         try
         {
             var auth = AccessValidator.RequireAdmin();
             if (!auth.IsSuccess)
             {
-                return auth;
+                return Result<int>.From(auth);
             }
 
             var studentManager = new StudentManager();
@@ -458,12 +489,16 @@ public static class StudentService
             var exists = StudentValidator.RequireExists(student, id);
             if (!exists.IsSuccess)
             {
-                return exists;
+                return Result<int>.From(exists);
             }
 
-            await studentManager.DeleteAsync(id);
+            int outcome = await studentManager.DeleteAsync(id);
+            if (outcome <= 0)
+            {
+                return Result<int>.Fail(ValidationStatus.NotFound, $"Student with id {id} not found.");
+            }
             await userManager.DeleteAsync(student!.UserId);
-            return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
+            return Result<int>.Ok(id);
         }
         catch (Exception ex)
         {

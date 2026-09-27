@@ -67,7 +67,7 @@ public class AuthService
         }
     }
 
-    public async Task<ValidationResult> RegisterAdminAsync(string userName, string fullName, bool isActive, string password)
+    public async Task<Result<User>> RegisterAdminAsync(string userName, string fullName, bool isActive, string password)
     {
         try
         {
@@ -77,27 +77,28 @@ public class AuthService
                 var auth = AccessValidator.RequireAdmin();
                 if (!auth.IsSuccess)
                 {
-                    return auth;
+                    return Result<User>.From(auth);
                 }
             }
             var fields = UserValidator.ValidateAdminRegistration(userName, fullName, password);
             if (!fields.IsSuccess)
             {
-                return fields;
+                return Result<User>.From(fields);
             }
 
             if (await _userManager.GetByUserNameAsync(userName) != null)
             {
-                return new ValidationResult(
+                return new Result<User>(
                     ValidationStatus.Conflict,
-                    new[] { new ValidationError(nameof(User.UserName), $"A user with username '{userName}' already exists.") });
+                    new[] { new ValidationError(nameof(User.UserName), $"A user with username '{userName}' already exists.") },
+                    default);
             }
 
             string passwordHash = HashPassword(password);
 
             var actorId = SessionManager.Current?.UserId ?? 0;
 
-            await _userManager.AddAsync(new User
+            var user = new User
             {
                 UserName = userName,
                 FullName = fullName,
@@ -106,8 +107,14 @@ public class AuthService
                 Role = User.UserRoles.Admin,
                 CreatedBy = actorId,
                 ModifiedBy = actorId
-            });
-            return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
+            };
+            int newId = await _userManager.AddAsync(user);
+            if (newId <= 0)
+            {
+                return Result<User>.Fail(ValidationStatus.Conflict, $"Failed to create user: database reported no new id.");
+            }
+            user.Id = newId;
+            return Result<User>.Ok(user);
         }
         catch (Exception ex)
         {
@@ -116,28 +123,29 @@ public class AuthService
         }
     }
 
-    public async Task<ValidationResult> RegisterStudentAsync(string userName, int studentNumber, string fullName, bool isActive, string email, string phone, string password)
+    public async Task<Result<Student>> RegisterStudentAsync(string userName, int studentNumber, string fullName, bool isActive, string email, string phone, string password)
     {
         try
         {
             var auth = AccessValidator.RequireAdmin();
             if (!auth.IsSuccess)
             {
-                return auth;
+                return Result<Student>.From(auth);
             }
 
             var fields = StudentValidator.ValidateStudentRegistration(
                 userName, studentNumber, fullName, email, phone, password);
             if (!fields.IsSuccess)
             {
-                return fields;
+                return Result<Student>.From(fields);
             }
 
             if (await _userManager.GetByUserNameAsync(userName) != null)
             {
-                return new ValidationResult(
+                return new Result<Student>(
                     ValidationStatus.Conflict,
-                    new[] { new ValidationError(nameof(User.UserName), $"A user with username '{userName}' already exists.") });
+                    new[] { new ValidationError(nameof(User.UserName), $"A user with username '{userName}' already exists.") },
+                    default);
             }
 
             string passwordHash = HashPassword(password);
@@ -153,9 +161,10 @@ public class AuthService
                 ModifiedBy = actorId,
             };
 
-            await _userManager.AddAsync(user);
-
-            var createdUser = await _userManager.GetByUserNameAsync(userName);
+            int userId = await _userManager.AddAsync(user);
+            var createdUser = userId > 0
+                ? await _userManager.GetByIdAsync(userId) ?? await _userManager.GetByUserNameAsync(userName)
+                : await _userManager.GetByUserNameAsync(userName);
             if (createdUser == null)
             {
                 throw new BusinessException("Failed to create student user.");
@@ -164,6 +173,9 @@ public class AuthService
             Student student = new Student
             {
                 UserId = createdUser.Id,
+                UserName = userName,
+                FullName = fullName,
+                IsActive = isActive,
                 Email = email,
                 Phone = phone,
                 StudentNumber = studentNumber,
@@ -174,7 +186,12 @@ public class AuthService
             var studentManager = new StudentManager();
             try
             {
-                await studentManager.AddAsync(student);
+                int studentId = await studentManager.AddAsync(student);
+                if (studentId <= 0)
+                {
+                    return Result<Student>.Fail(ValidationStatus.Conflict, $"Failed to create student: database reported no new id.");
+                }
+                student.Id = studentId;
             }
             catch
             {
@@ -189,7 +206,7 @@ public class AuthService
 
                 throw;
             }
-            return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
+            return Result<Student>.Ok(student);
         }
         catch (BusinessException ex)
         {

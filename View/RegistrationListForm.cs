@@ -17,6 +17,7 @@ namespace View
         private TextBox txtSearch;
         private Button btnSearch;
         private Panel topPanel;
+        private List<RegistrationDto> _regs = new();
 
         public RegistrationListForm()
         {
@@ -98,10 +99,8 @@ namespace View
         {
             try
             {
-                dgvRegs.DataSource = null;
-
                 var details = await RegistrationService.GetAllDetailedAsync();
-                dgvRegs.DataSource = details
+                _regs = details
                     .Select(x => new RegistrationDto
                     {
                         Id = x.Registration.Id,
@@ -119,7 +118,7 @@ namespace View
                     })
                     .ToList();
 
-                ConfigureColumns();
+                RefreshGrid();
             }
             catch (BusinessException ex)
             {
@@ -132,16 +131,34 @@ namespace View
             }
         }
 
+        private void RefreshGrid()
+        {
+            dgvRegs.DataSource = null;
+            dgvRegs.DataSource = _regs;
+            ConfigureColumns();
+        }
+
+        private void SelectRowById(int id)
+        {
+            foreach (DataGridViewRow row in dgvRegs.Rows)
+            {
+                if (row.DataBoundItem is RegistrationDto dto && dto.Id == id)
+                {
+                    row.Selected = true;
+                    dgvRegs.CurrentCell = row.Cells[0];
+                    break;
+                }
+            }
+        }
+
         private async void btnSearch_Click(object sender, EventArgs e)
         {
             try
             {
                 if (!string.IsNullOrWhiteSpace(txtSearch.Text))
                 {
-                    dgvRegs.DataSource = null;
-
                     var details = await RegistrationService.SearchDetailedAsync(txtSearch.Text);
-                    dgvRegs.DataSource = details
+                    _regs = details
                         .Select(x => new RegistrationDto
                         {
                             Id = x.Registration.Id,
@@ -159,7 +176,7 @@ namespace View
                         })
                         .ToList();
 
-                    ConfigureColumns();
+                    RefreshGrid();
                 }
                 else
                 {
@@ -248,9 +265,11 @@ namespace View
         {
             using var form = new RegistrationDetailForm();
 
-            if (form.ShowDialog() == DialogResult.OK)
+            if (form.ShowDialog() == DialogResult.OK && form.SavedDto != null)
             {
-                LoadRegistrations();
+                _regs.Add(form.SavedDto);
+                RefreshGrid();
+                SelectRowById(form.SavedDto.Id);
             }
         }
 
@@ -260,9 +279,15 @@ namespace View
             {
                 using var form = new RegistrationDetailForm(reg);
 
-                if (form.ShowDialog() == DialogResult.OK)
+                if (form.ShowDialog() == DialogResult.OK && form.SavedDto != null)
                 {
-                    LoadRegistrations();
+                    int index = _regs.FindIndex(r => r.Id == reg.Id);
+                    if (index >= 0)
+                    {
+                        _regs[index] = form.SavedDto;
+                    }
+                    RefreshGrid();
+                    SelectRowById(reg.Id);
                 }
             }
             else
@@ -291,7 +316,8 @@ namespace View
                             MessageBox.Show($"Error deleting registration: {deleteResult.Message}");
                             return;
                         }
-                        LoadRegistrations();
+                        _regs.RemoveAll(r => r.Id == reg.Id);
+                        RefreshGrid();
                     }
                     catch (BusinessException ex)
                     {

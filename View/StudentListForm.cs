@@ -17,6 +17,7 @@ namespace View
         private TextBox txtSearch;
         private Button btnSearch;
         private Panel topPanel;
+        private List<StudentDto> _students = new();
 
         public StudentListForm()
         {
@@ -174,9 +175,9 @@ namespace View
         {
             try
             {
-                dgvStudents.DataSource = null;
                 var students = await StudentService.GetAllAsync();
-                dgvStudents.DataSource = students.Select(s => s.ToDto()).ToList();
+                _students = students.Select(s => s.ToDto()).ToList()!;
+                RefreshGrid();
             }
             catch (BusinessException ex)
             {
@@ -189,6 +190,25 @@ namespace View
             }
         }
 
+        private void RefreshGrid()
+        {
+            dgvStudents.DataSource = null;
+            dgvStudents.DataSource = _students;
+        }
+
+        private void SelectRowById(int id)
+        {
+            foreach (DataGridViewRow row in dgvStudents.Rows)
+            {
+                if (row.DataBoundItem is StudentDto dto && dto.Id == id)
+                {
+                    row.Selected = true;
+                    dgvStudents.CurrentCell = row.Cells[0];
+                    break;
+                }
+            }
+        }
+
         private async void btnSearch_Click(object sender, EventArgs e)
         {
             try
@@ -196,7 +216,8 @@ namespace View
                 if (!string.IsNullOrWhiteSpace(txtSearch.Text))
                 {
                     var students = await StudentService.SearchAsync(txtSearch.Text);
-                    dgvStudents.DataSource = students.Select(s => s.ToDto()).ToList();
+                    _students = students.Select(s => s.ToDto()).ToList()!;
+                    RefreshGrid();
                 }
                 else
                 {
@@ -218,9 +239,11 @@ namespace View
         {
             using var form = new StudentDetailForm();
 
-            if (form.ShowDialog() == DialogResult.OK)
+            if (form.ShowDialog() == DialogResult.OK && form.SavedDto != null)
             {
-                LoadStudents();
+                _students.Add(form.SavedDto);
+                RefreshGrid();
+                SelectRowById(form.SavedDto.Id);
             }
         }
 
@@ -230,9 +253,15 @@ namespace View
             {
                 using var form = new StudentDetailForm(student);
 
-                if (form.ShowDialog() == DialogResult.OK)
+                if (form.ShowDialog() == DialogResult.OK && form.SavedDto != null)
                 {
-                    LoadStudents();
+                    int index = _students.FindIndex(s => s.Id == student.Id);
+                    if (index >= 0)
+                    {
+                        _students[index] = form.SavedDto;
+                    }
+                    RefreshGrid();
+                    SelectRowById(student.Id);
                 }
             }
             else
@@ -261,7 +290,8 @@ namespace View
                             MessageBox.Show($"Error deleting student: {deleteResult.Message}");
                             return;
                         }
-                        LoadStudents();
+                        _students.RemoveAll(s => s.Id == student.Id);
+                        RefreshGrid();
                     }
                     catch (BusinessException ex)
                     {

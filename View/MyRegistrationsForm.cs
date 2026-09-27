@@ -12,6 +12,7 @@ namespace View
         private DataGridView dgvRegs;
         private Button btnDrop;
         private Panel topPanel;
+        private List<RegistrationDetailsDto> _regs = new();
 
         public MyRegistrationsForm()
         {
@@ -65,15 +66,14 @@ namespace View
         {
             try
             {
-                dgvRegs.DataSource = null;
-
                 var regs = await StudentRegistrationService.GetRegistrationsAsync();
 
-                List<RegistrationDetailsDto> registrations = regs
+                _regs = regs
                     .Select(x => x.Registration.ToDetailsDto(x.Class))
                     .ToList();
 
-                dgvRegs.DataSource = registrations;
+                dgvRegs.DataSource = null;
+                dgvRegs.DataSource = _regs;
             }
             catch (BusinessException ex)
             {
@@ -201,7 +201,9 @@ namespace View
                             MessageBox.Show($"Drop failed: {dropResult.Message}");
                             return;
                         }
-                        await LoadMyRegistrationsAsync();
+                        _regs.RemoveAll(r => r.RegistrationId == reg.RegistrationId);
+                        dgvRegs.DataSource = null;
+                        dgvRegs.DataSource = _regs;
                     }
                     catch (BusinessException ex)
                     {

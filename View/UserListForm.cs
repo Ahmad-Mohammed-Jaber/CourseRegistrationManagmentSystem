@@ -18,6 +18,7 @@ namespace View
         private TextBox txtSearch;
         private Button btnSearch;
         private Panel topPanel;
+        private List<UserDto> _users = new();
 
         public UserListForm()
         {
@@ -90,10 +91,9 @@ namespace View
         {
             try
             {
-                dgvUsers.DataSource = null;
                 var users = await UserService.GetAllAsync();
-                dgvUsers.DataSource = users.Select(u => u.ToDto()).ToList();
-                ConfigureColumns();
+                _users = users.Select(u => u.ToDto()).ToList()!;
+                RefreshGrid();
             }
             catch (BusinessException ex)
             {
@@ -103,6 +103,26 @@ namespace View
             {
                 AppLogger.LogViewError(ex);
                 MessageBox.Show("Error loading users due to an unexpected error.");
+            }
+        }
+
+        private void RefreshGrid()
+        {
+            dgvUsers.DataSource = null;
+            dgvUsers.DataSource = _users;
+            ConfigureColumns();
+        }
+
+        private void SelectRowById(int id)
+        {
+            foreach (DataGridViewRow row in dgvUsers.Rows)
+            {
+                if (row.DataBoundItem is UserDto dto && dto.Id == id)
+                {
+                    row.Selected = true;
+                    dgvUsers.CurrentCell = row.Cells[0];
+                    break;
+                }
             }
         }
 
@@ -140,8 +160,8 @@ namespace View
                 if (!string.IsNullOrWhiteSpace(txtSearch.Text))
                 {
                     var users = await UserService.SearchAsync(txtSearch.Text);
-                    dgvUsers.DataSource = users.Select(u => u.ToDto()).ToList();
-                    ConfigureColumns();
+                    _users = users.Select(u => u.ToDto()).ToList()!;
+                    RefreshGrid();
                 }
                 else
                 {
@@ -163,9 +183,11 @@ namespace View
         {
             using (var form = new UserDetailForm())
             {
-                if (form.ShowDialog() == DialogResult.OK)
+                if (form.ShowDialog() == DialogResult.OK && form.SavedDto != null)
                 {
-                    LoadUsers();
+                    _users.Add(form.SavedDto);
+                    RefreshGrid();
+                    SelectRowById(form.SavedDto.Id);
                 }
             }
         }
@@ -176,9 +198,15 @@ namespace View
             {
                 using (var form = new UserDetailForm(user))
                 {
-                    if (form.ShowDialog() == DialogResult.OK)
+                    if (form.ShowDialog() == DialogResult.OK && form.SavedDto != null)
                     {
-                        LoadUsers();
+                        int index = _users.FindIndex(u => u.Id == user.Id);
+                        if (index >= 0)
+                        {
+                            _users[index] = form.SavedDto;
+                        }
+                        RefreshGrid();
+                        SelectRowById(user.Id);
                     }
                 }
             }
@@ -208,7 +236,8 @@ namespace View
                             MessageBox.Show($"Error deleting user: {deleteResult.Message}");
                             return;
                         }
-                        LoadUsers();
+                        _users.RemoveAll(u => u.Id == user.Id);
+                        RefreshGrid();
                     }
                     catch (BusinessException ex)
                     {

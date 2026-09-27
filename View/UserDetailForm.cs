@@ -26,6 +26,8 @@ namespace View
         private Button btnSave;
         private Button btnCancel;
 
+        public UserDto? SavedDto { get; private set; }
+
         public UserDetailForm(UserDto? user = null)
         {
             _user = user;
@@ -151,7 +153,7 @@ namespace View
 
             try
             {
-                ValidationResult saveResult;
+                Result<User> saveResult;
                 if (_isEditMode)
                 {
                     saveResult = await UserService.UpdateAsync(dto.Id, dto.ToEntity());
@@ -168,11 +170,24 @@ namespace View
                         saveResult = await UserService.AddAsync(dto.ToEntity());
                     }
                 }
-                if (!saveResult.IsSuccess)
+                if (!saveResult.IsSuccess || saveResult.Value == null)
                 {
                     MessageBox.Show($"Error saving user: {saveResult.Message}");
                     return;
                 }
+                var saved = saveResult.Value;
+                SavedDto = new UserDto
+                {
+                    Id = saved.Id,
+                    UserName = txtUsername.Text,
+                    FullName = txtFullName.Text,
+                    Role = dto.Role,
+                    IsActive = chkIsActive.Checked,
+                    CreatedOn = _isEditMode && _user != null ? _user.CreatedOn : DateTimeOffset.Now,
+                    ModifiedOn = DateTimeOffset.Now,
+                    CreatedBy = _isEditMode && _user != null ? _user.CreatedBy : saved.CreatedBy,
+                    ModifiedBy = saved.ModifiedBy
+                };
                 this.DialogResult = DialogResult.OK;
             }
             catch (BusinessException ex)

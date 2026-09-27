@@ -19,6 +19,7 @@ namespace View
         private TextBox txtSearch;
         private Button btnSearch;
         private Panel topPanel;
+        private List<CourseDto> _courses = new();
 
         public CourseListForm()
         {
@@ -100,10 +101,9 @@ namespace View
         {
             try
             {
-                dgvCourses.DataSource = null;
                 var courses = await CourseService.GetAllAsync();
-                dgvCourses.DataSource = courses.Select(c => c.ToDto()).ToList();
-                ConfigureColumns();
+                _courses = courses.Select(c => c.ToDto()).ToList()!;
+                RefreshGrid();
             }
             catch (BusinessException ex)
             {
@@ -113,6 +113,26 @@ namespace View
             {
                 AppLogger.LogViewError(ex);
                 MessageBox.Show("Error loading courses due to an unexpected error.");
+            }
+        }
+
+        private void RefreshGrid()
+        {
+            dgvCourses.DataSource = null;
+            dgvCourses.DataSource = _courses;
+            ConfigureColumns();
+        }
+
+        private void SelectRowById(int id)
+        {
+            foreach (DataGridViewRow row in dgvCourses.Rows)
+            {
+                if (row.DataBoundItem is CourseDto dto && dto.Id == id)
+                {
+                    row.Selected = true;
+                    dgvCourses.CurrentCell = row.Cells[0];
+                    break;
+                }
             }
         }
 
@@ -150,8 +170,8 @@ namespace View
                 if (!string.IsNullOrWhiteSpace(txtSearch.Text))
                 {
                     var courses = await CourseService.SearchAsync(txtSearch.Text);
-                    dgvCourses.DataSource = courses.Select(c => c.ToDto()).ToList();
-                    ConfigureColumns();
+                    _courses = courses.Select(c => c.ToDto()).ToList()!;
+                    RefreshGrid();
                 }
                 else
                 {
@@ -173,9 +193,11 @@ namespace View
         {
             using var form = new CourseDetailForm();
 
-            if (form.ShowDialog() == DialogResult.OK)
+            if (form.ShowDialog() == DialogResult.OK && form.SavedDto != null)
             {
-                LoadCourses();
+                _courses.Add(form.SavedDto);
+                RefreshGrid();
+                SelectRowById(form.SavedDto.Id);
             }
         }
 
@@ -185,9 +207,15 @@ namespace View
             {
                 using var form = new CourseDetailForm(course);
 
-                if (form.ShowDialog() == DialogResult.OK)
+                if (form.ShowDialog() == DialogResult.OK && form.SavedDto != null)
                 {
-                    LoadCourses();
+                    int index = _courses.FindIndex(c => c.Id == course.Id);
+                    if (index >= 0)
+                    {
+                        _courses[index] = form.SavedDto;
+                    }
+                    RefreshGrid();
+                    SelectRowById(course.Id);
                 }
             }
             else
@@ -216,7 +244,8 @@ namespace View
                             MessageBox.Show($"Error deleting course: {deleteResult.Message}");
                             return;
                         }
-                        LoadCourses();
+                        _courses.RemoveAll(c => c.Id == course.Id);
+                        RefreshGrid();
                     }
                     catch (BusinessException ex)
                     {
