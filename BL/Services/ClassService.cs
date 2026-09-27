@@ -65,7 +65,7 @@ public static class ClassService
         }
     }
 
-    public static RequestResult Add(Class classEntity)
+    public static int Add(Class classEntity)
     {
         try
         {
@@ -83,12 +83,6 @@ public static class ClassService
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                return auth;
-            }
-
             var valid = ClassValidator.ValidateClass(classEntity);
             if (!valid.IsSuccess)
             {

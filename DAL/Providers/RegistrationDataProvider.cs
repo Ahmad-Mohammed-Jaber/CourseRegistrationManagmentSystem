@@ -321,7 +321,7 @@ public static class RegistrationDataProvider
         }
     }
 
-    public static RequestResult Add(Registration entity)
+    public static int Add(Registration entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -348,7 +348,13 @@ public static class RegistrationDataProvider
 
             int rows = command.ExecuteNonQuery();
 
-            return rows == 0 ? RequestResult.Failure($"Registration Not Added") : RequestResult.Success();
+            if (rows == 0)
+            {
+                return 0;
+            }
+
+            int? newId = newIdParam.Value != DBNull.Value ? (int)newIdParam.Value : null;
+            return newId ?? 0;
         }
         catch (Exception ex)
         {
@@ -361,7 +367,7 @@ public static class RegistrationDataProvider
         }
     }
 
-    public static async Task<RequestResult> AddAsync(Registration entity)
+    public static async Task<int> AddAsync(Registration entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -388,7 +394,13 @@ public static class RegistrationDataProvider
 
             int rows = await command.ExecuteNonQueryAsync();
 
-            return rows == 0 ? RequestResult.Failure($"Registration Not Added") : RequestResult.Success();
+            if (rows == 0)
+            {
+                return 0;
+            }
+
+            int? newId = newIdParam.Value != DBNull.Value ? (int)newIdParam.Value : null;
+            return newId ?? 0;
         }
         catch (Exception ex)
         {
@@ -401,7 +413,7 @@ public static class RegistrationDataProvider
         }
     }
 
-    public static RequestResult Update(int id, Registration entity)
+    public static int Update(int id, Registration entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -421,7 +433,7 @@ public static class RegistrationDataProvider
             command.Parameters.Add("@Status", SqlDbType.NVarChar, 50).Value = entity.Status ?? string.Empty;
 
             int rows = command.ExecuteNonQuery();
-            return rows == 0 ? RequestResult.NotFound($"Registration with id {id} not found.") : RequestResult.Success(rows);
+            return rows == 0 ? 0 : id;
         }
         catch (Exception ex)
         {
@@ -434,7 +446,7 @@ public static class RegistrationDataProvider
         }
     }
 
-    public static async Task<RequestResult> UpdateAsync(int id, Registration entity)
+    public static async Task<int> UpdateAsync(int id, Registration entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -454,7 +466,7 @@ public static class RegistrationDataProvider
             command.Parameters.Add("@Status", SqlDbType.NVarChar, 50).Value = entity.Status ?? string.Empty;
 
             int rowsAsync = await command.ExecuteNonQueryAsync();
-            return rowsAsync == 0 ? RequestResult.NotFound($"Registration with id {id} not found.") : RequestResult.Success(rowsAsync);
+            return rowsAsync == 0 ? 0 : id;
         }
         catch (Exception ex)
         {
@@ -467,7 +479,7 @@ public static class RegistrationDataProvider
         }
     }
 
-    public static RequestResult Delete(int id)
+    public static int Delete(int id)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -482,7 +494,7 @@ public static class RegistrationDataProvider
             };
             command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
             int rows = command.ExecuteNonQuery();
-            return rows == 0 ? RequestResult.NotFound($"Registration with id {id} not found.") : RequestResult.Success(rows);
+            return rows == 0 ? 0 : id;
         }
         catch (Exception ex)
         {
@@ -495,7 +507,7 @@ public static class RegistrationDataProvider
         }
     }
 
-    public static async Task<RequestResult> DeleteAsync(int id)
+    public static async Task<int> DeleteAsync(int id)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -510,7 +522,7 @@ public static class RegistrationDataProvider
             };
             command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
             int rowsAsync = await command.ExecuteNonQueryAsync();
-            return rowsAsync == 0 ? RequestResult.NotFound($"Registration with id {id} not found.") : RequestResult.Success(rowsAsync);
+            return rowsAsync == 0 ? 0 : id;
         }
         catch (Exception ex)
         {

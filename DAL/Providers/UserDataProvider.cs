@@ -183,7 +183,7 @@ public static class UserDataProvider
         }
     }
 
-    public static RequestResult Add(User entity)
+    public static int Add(User entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -212,7 +212,13 @@ public static class UserDataProvider
 
             int rows = command.ExecuteNonQuery();
 
-            return rows == 0 ? RequestResult.Failure($"User Not Added") : RequestResult.Success();
+            if (rows == 0)
+            {
+                return 0;
+            }
+
+            int? newId = newIdParam.Value != DBNull.Value ? (int)newIdParam.Value : null;
+            return newId ?? 0;
         }
         catch (Exception ex)
         {
@@ -225,7 +231,7 @@ public static class UserDataProvider
         }
     }
 
-    public static async Task<RequestResult> AddAsync(User entity)
+    public static async Task<int> AddAsync(User entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -254,7 +260,13 @@ public static class UserDataProvider
 
             int rows = await command.ExecuteNonQueryAsync();
 
-            return rows == 0 ? RequestResult.Failure($"User Not Added") : RequestResult.Success();
+            if (rows == 0)
+            {
+                return 0;
+            }
+
+            int? newId = newIdParam.Value != DBNull.Value ? (int)newIdParam.Value : null;
+            return newId ?? 0;
         }
         catch (Exception ex)
         {
@@ -267,7 +279,7 @@ public static class UserDataProvider
         }
     }
 
-    public static RequestResult Update(int id, User entity)
+    public static int Update(int id, User entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -289,7 +301,7 @@ public static class UserDataProvider
             command.Parameters.Add("@ModifiedBy", SqlDbType.Int).Value = entity.ModifiedBy;
 
             int rows = command.ExecuteNonQuery();
-            return rows == 0 ? RequestResult.NotFound($"User with id {id} not found.") : RequestResult.Success(rows);
+            return rows == 0 ? 0 : id;
         }
         catch (Exception ex)
         {
@@ -302,7 +314,7 @@ public static class UserDataProvider
         }
     }
 
-    public static async Task<RequestResult> UpdateAsync(int id, User entity)
+    public static async Task<int> UpdateAsync(int id, User entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -324,7 +336,7 @@ public static class UserDataProvider
             command.Parameters.Add("@ModifiedBy", SqlDbType.Int).Value = entity.ModifiedBy;
 
             int rowsAsync = await command.ExecuteNonQueryAsync();
-            return rowsAsync == 0 ? RequestResult.NotFound($"User with id {id} not found.") : RequestResult.Success(rowsAsync);
+            return rowsAsync == 0 ? 0 : id;
         }
         catch (Exception ex)
         {
@@ -337,7 +349,7 @@ public static class UserDataProvider
         }
     }
 
-    public static RequestResult Delete(int id)
+    public static int Delete(int id)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -352,7 +364,7 @@ public static class UserDataProvider
             };
             command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
             int rows = command.ExecuteNonQuery();
-            return rows == 0 ? RequestResult.NotFound($"User with id {id} not found.") : RequestResult.Success(rows);
+            return rows == 0 ? 0 : id;
         }
         catch (Exception ex)
         {
@@ -365,7 +377,7 @@ public static class UserDataProvider
         }
     }
 
-    public static async Task<RequestResult> DeleteAsync(int id)
+    public static async Task<int> DeleteAsync(int id)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -380,7 +392,7 @@ public static class UserDataProvider
             };
             command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
             int rowsAsync = await command.ExecuteNonQueryAsync();
-            return rowsAsync == 0 ? RequestResult.NotFound($"User with id {id} not found.") : RequestResult.Success(rowsAsync);
+            return rowsAsync == 0 ? 0 : id;
         }
         catch (Exception ex)
         {

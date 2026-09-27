@@ -25,17 +25,17 @@ internal class RegistrationManager
 
     public Task<List<Registration>> GetAllAsync() => _registrationRepository.GetAllAsync();
 
-    public RequestResult Add(Registration registration) => _registrationRepository.Add(registration);
+    public int Add(Registration registration) => _registrationRepository.Add(registration);
 
-    public Task<RequestResult> AddAsync(Registration registration) => _registrationRepository.AddAsync(registration);
+    public Task<int > AddAsync(Registration registration) => _registrationRepository.AddAsync(registration);
 
-    public RequestResult Update(int id, Registration registration) => _registrationRepository.Update(id, registration);
+    public int Update(int id, Registration registration) => _registrationRepository.Update(id, registration);
 
-    public Task<RequestResult> UpdateAsync(int id, Registration registration) => _registrationRepository.UpdateAsync(id, registration);
+    public Task<int > UpdateAsync(int id, Registration registration) => _registrationRepository.UpdateAsync(id, registration);
 
-    public RequestResult Delete(int id) => _registrationRepository.Delete(id);
+    public int Delete(int id) => _registrationRepository.Delete(id);
 
-    public Task<RequestResult> DeleteAsync(int id) => _registrationRepository.DeleteAsync(id);
+    public Task<int > DeleteAsync(int id) => _registrationRepository.DeleteAsync(id);
 
     public List<Registration> Search(string regex) => _registrationRepository.Search(regex);
 

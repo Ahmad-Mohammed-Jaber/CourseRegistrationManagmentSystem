@@ -51,32 +51,32 @@ public class RegistrationRepository : IGenericRepository<Registration>
         return RegistrationDataProvider.GetAllAsync();
     }
 
-    public RequestResult Add(Registration entity)
+    public int Add(Registration entity)
     {
         return RegistrationDataProvider.Add(entity);
     }
 
-    public Task<RequestResult> AddAsync(Registration entity)
+    public Task<int > AddAsync(Registration entity)
     {
         return RegistrationDataProvider.AddAsync(entity);
     }
 
-    public RequestResult Update(int id, Registration entity)
+    public int Update(int id, Registration entity)
     {
         return RegistrationDataProvider.Update(id, entity);
     }
 
-    public Task<RequestResult> UpdateAsync(int id, Registration entity)
+    public Task<int > UpdateAsync(int id, Registration entity)
     {
         return RegistrationDataProvider.UpdateAsync(id, entity);
     }
 
-    public RequestResult Delete(int id)
+    public int Delete(int id)
     {
         return RegistrationDataProvider.Delete(id);
     }
 
-    public Task<RequestResult> DeleteAsync(int id)
+    public Task<int > DeleteAsync(int id)
     {
         return RegistrationDataProvider.DeleteAsync(id);
     }

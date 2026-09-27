@@ -12,17 +12,17 @@ public interface IGenericProvider<T> where T : class
 
     Task<List<T>> GetAllAsync();
 
-    RequestResult Add(T entity);
+    int Add(T entity);
 
-    Task<RequestResult> AddAsync(T entity);
+    Task<int > AddAsync(T entity);
 
-    RequestResult Update(int id, T entity);
+    int Update(int id, T entity);
 
-    Task<RequestResult> UpdateAsync(int id, T entity);
+    Task<int > UpdateAsync(int id, T entity);
 
-    RequestResult Delete(int id);
+    int Delete(int id);
 
-    Task<RequestResult> DeleteAsync(int id);
+    Task<int > DeleteAsync(int id);
 
     List<T> Search(string regex);
 

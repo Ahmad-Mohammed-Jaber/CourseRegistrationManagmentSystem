@@ -1,13 +1,4 @@
-using BL.Managers;
-using BL.Validation;
-using Shared.Entities;
-using Shared.Exceptions;
-using Shared.Session;
-using Shared.Logging;
-
-namespace BL.Services;
-
-public static class StudentRegistrationService
+ class StudentRegistrationService
 {
     private static async Task<int?> RequireStudentIdAsync()
     {

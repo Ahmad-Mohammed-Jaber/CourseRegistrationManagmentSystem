@@ -220,7 +220,7 @@ public static class ClassDataProvider
         }
     }
 
-    public static RequestResult Add(Class entity)
+    public static int Add(Class entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -252,7 +252,13 @@ public static class ClassDataProvider
 
             int rows = command.ExecuteNonQuery();
 
-            return rows == 0 ? RequestResult.Failure($"Class Not Added") : RequestResult.Success();
+            if (rows == 0)
+            {
+                return 0;
+            }
+
+            int? newId = newIdParam.Value != DBNull.Value ? (int)newIdParam.Value : null;
+            return newId ?? 0;
         }
         catch (Exception ex)
         {
@@ -265,7 +271,7 @@ public static class ClassDataProvider
         }
     }
 
-    public static async Task<RequestResult> AddAsync(Class entity)
+    public static async Task<int> AddAsync(Class entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -297,7 +303,13 @@ public static class ClassDataProvider
 
             int rows = await command.ExecuteNonQueryAsync();
 
-            return rows == 0 ? RequestResult.Failure($"Class Not Added") : RequestResult.Success();
+            if (rows == 0)
+            {
+                return 0;
+            }
+
+            int? newId = newIdParam.Value != DBNull.Value ? (int)newIdParam.Value : null;
+            return newId ?? 0;
         }
         catch (Exception ex)
         {
@@ -310,7 +322,7 @@ public static class ClassDataProvider
         }
     }
 
-    public static RequestResult Update(int id, Class entity)
+    public static int Update(int id, Class entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -335,7 +347,7 @@ public static class ClassDataProvider
             command.Parameters.Add("@IsActive", SqlDbType.Bit).Value = entity.IsActive;
 
             int rows = command.ExecuteNonQuery();
-            return rows == 0 ? RequestResult.NotFound($"Class with id {id} not found.") : RequestResult.Success(rows);
+            return rows == 0 ? 0 : id;
         }
         catch (Exception ex)
         {
@@ -348,7 +360,7 @@ public static class ClassDataProvider
         }
     }
 
-    public static async Task<RequestResult> UpdateAsync(int id, Class entity)
+    public static async Task<int> UpdateAsync(int id, Class entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -373,7 +385,7 @@ public static class ClassDataProvider
             command.Parameters.Add("@IsActive", SqlDbType.Bit).Value = entity.IsActive;
 
             int rowsAsync = await command.ExecuteNonQueryAsync();
-            return rowsAsync == 0 ? RequestResult.NotFound($"Class with id {id} not found.") : RequestResult.Success(rowsAsync);
+            return rowsAsync == 0 ? 0 : id;
         }
         catch (Exception ex)
         {
@@ -386,7 +398,7 @@ public static class ClassDataProvider
         }
     }
 
-    public static RequestResult Delete(int id)
+    public static int Delete(int id)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -401,7 +413,7 @@ public static class ClassDataProvider
             };
             command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
             int rows = command.ExecuteNonQuery();
-            return rows == 0 ? RequestResult.NotFound($"Class with id {id} not found.") : RequestResult.Success(rows);
+            return rows == 0 ? 0 : id;
         }
         catch (Exception ex)
         {
@@ -414,7 +426,7 @@ public static class ClassDataProvider
         }
     }
 
-    public static async Task<RequestResult> DeleteAsync(int id)
+    public static async Task<int> DeleteAsync(int id)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -429,7 +441,7 @@ public static class ClassDataProvider
             };
             command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
             int rowsAsync = await command.ExecuteNonQueryAsync();
-            return rowsAsync == 0 ? RequestResult.NotFound($"Class with id {id} not found.") : RequestResult.Success(rowsAsync);
+            return rowsAsync == 0 ? 0 : id;
         }
         catch (Exception ex)
         {

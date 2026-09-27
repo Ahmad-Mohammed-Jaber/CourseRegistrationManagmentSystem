@@ -36,32 +36,32 @@ public class ClassRepository : IGenericRepository<Class>
         return ClassDataProvider.GetAllAsync();
     }
 
-    public RequestResult Add(Class entity)
+    public int Add(Class entity)
     {
         return ClassDataProvider.Add(entity);
     }
 
-    public Task<RequestResult> AddAsync(Class entity)
+    public Task<int> AddAsync(Class entity)
     {
         return ClassDataProvider.AddAsync(entity);
     }
 
-    public RequestResult Update(int id, Class entity)
+    public int Update(int id, Class entity)
     {
         return ClassDataProvider.Update(id, entity);
     }
 
-    public Task<RequestResult> UpdateAsync(int id, Class entity)
+    public Task<int> UpdateAsync(int id, Class entity)
     {
         return ClassDataProvider.UpdateAsync(id, entity);
     }
 
-    public RequestResult Delete(int id)
+    public int Delete(int id)
     {
         return ClassDataProvider.Delete(id);
     }
 
-    public Task<RequestResult> DeleteAsync(int id)
+    public Task<int> DeleteAsync(int id)
     {
         return ClassDataProvider.DeleteAsync(id);
     }

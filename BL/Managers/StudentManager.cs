@@ -24,17 +24,17 @@ internal class StudentManager
 
     public Task<List<Student>> GetAllAsync() => _studentRepository.GetAllAsync();
 
-    public RequestResult Add(Student student) => _studentRepository.Add(student);
+    public int Add(Student student) => _studentRepository.Add(student);
 
-    public Task<RequestResult> AddAsync(Student student) => _studentRepository.AddAsync(student);
+    public Task<int > AddAsync(Student student) => _studentRepository.AddAsync(student);
 
-    public RequestResult Update(int id, Student student) => _studentRepository.Update(id, student);
+    public int Update(int id, Student student) => _studentRepository.Update(id, student);
 
-    public Task<RequestResult> UpdateAsync(int id, Student student) => _studentRepository.UpdateAsync(id, student);
+    public Task<int > UpdateAsync(int id, Student student) => _studentRepository.UpdateAsync(id, student);
 
-    public RequestResult Delete(int id) => _studentRepository.Delete(id);
+    public int Delete(int id) => _studentRepository.Delete(id);
 
-    public Task<RequestResult> DeleteAsync(int id) => _studentRepository.DeleteAsync(id);
+    public Task<int > DeleteAsync(int id) => _studentRepository.DeleteAsync(id);
 
     public List<Student> Search(string regex) => _studentRepository.Search(regex);
 

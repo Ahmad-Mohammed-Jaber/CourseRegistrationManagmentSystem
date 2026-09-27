@@ -148,7 +148,7 @@ public static class CourseDataProvider
         }
     }
 
-    public static RequestResult Add(Course entity)
+    public static int Add(Course entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -176,7 +176,13 @@ public static class CourseDataProvider
 
             int rows = command.ExecuteNonQuery();
 
-            return rows == 0 ? RequestResult.Failure($"Course Not Added") : RequestResult.Success();
+            if (rows == 0)
+            {
+                return 0;
+            }
+
+            int? newId = newIdParam.Value != DBNull.Value ? (int)newIdParam.Value : null;
+            return newId ?? 0;
         }
         catch (Exception ex)
         {
@@ -189,7 +195,7 @@ public static class CourseDataProvider
         }
     }
 
-    public static async Task<RequestResult> AddAsync(Course entity)
+    public static async Task<int> AddAsync(Course entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -217,7 +223,13 @@ public static class CourseDataProvider
 
             int rows = await command.ExecuteNonQueryAsync();
 
-            return rows == 0 ? RequestResult.Failure($"Course Not Added") : RequestResult.Success();
+            if (rows == 0)
+            {
+                return 0;
+            }
+
+            int? newId = newIdParam.Value != DBNull.Value ? (int)newIdParam.Value : null;
+            return newId ?? 0;
         }
         catch (Exception ex)
         {
@@ -230,7 +242,7 @@ public static class CourseDataProvider
         }
     }
 
-    public static RequestResult Update(int id, Course entity)
+    public static int Update(int id, Course entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -251,7 +263,7 @@ public static class CourseDataProvider
             command.Parameters.Add("@IsActive", SqlDbType.Bit).Value = entity.IsActive;
 
             int rows = command.ExecuteNonQuery();
-            return rows == 0 ? RequestResult.NotFound($"Course with id {id} not found.") : RequestResult.Success(rows);
+            return rows == 0 ? 0 : id;
         }
         catch (Exception ex)
         {
@@ -264,7 +276,7 @@ public static class CourseDataProvider
         }
     }
 
-    public static async Task<RequestResult> UpdateAsync(int id, Course entity)
+    public static async Task<int> UpdateAsync(int id, Course entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -285,7 +297,7 @@ public static class CourseDataProvider
             command.Parameters.Add("@IsActive", SqlDbType.Bit).Value = entity.IsActive;
 
             int rowsAsync = await command.ExecuteNonQueryAsync();
-            return rowsAsync == 0 ? RequestResult.NotFound($"Course with id {id} not found.") : RequestResult.Success(rowsAsync);
+            return rowsAsync == 0 ? 0 : id;
         }
         catch (Exception ex)
         {
@@ -298,7 +310,7 @@ public static class CourseDataProvider
         }
     }
 
-    public static RequestResult Delete(int id)
+    public static int Delete(int id)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -313,7 +325,7 @@ public static class CourseDataProvider
             };
             command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
             int rows = command.ExecuteNonQuery();
-            return rows == 0 ? RequestResult.NotFound($"Course with id {id} not found.") : RequestResult.Success(rows);
+            return rows == 0 ? 0 : id;
         }
         catch (Exception ex)
         {
@@ -326,7 +338,7 @@ public static class CourseDataProvider
         }
     }
 
-    public static async Task<RequestResult> DeleteAsync(int id)
+    public static async Task<int> DeleteAsync(int id)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -341,7 +353,7 @@ public static class CourseDataProvider
             };
             command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
             int rowsAsync = await command.ExecuteNonQueryAsync();
-            return rowsAsync == 0 ? RequestResult.NotFound($"Course with id {id} not found.") : RequestResult.Success(rowsAsync);
+            return rowsAsync == 0 ? 0 : id;
         }
         catch (Exception ex)
         {
