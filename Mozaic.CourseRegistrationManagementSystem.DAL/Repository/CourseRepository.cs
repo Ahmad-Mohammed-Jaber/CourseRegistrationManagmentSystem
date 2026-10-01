@@ -26,32 +26,32 @@ public class CourseRepository : IGenericRepository<Course>
         return CourseDataProvider.GetAllAsync();
     }
 
-    public int Add(Course entity)
+    public void Add(Course entity)
     {
-        return CourseDataProvider.Add(entity);
+        CourseDataProvider.Add(entity);
     }
 
-    public Task<int> AddAsync(Course entity)
+    public Task AddAsync(Course entity)
     {
         return CourseDataProvider.AddAsync(entity);
     }
 
-    public int Update(int id, Course entity)
+    public void Update(Course entity)
     {
-        return CourseDataProvider.Update(id, entity);
+        CourseDataProvider.Update(entity);
     }
 
-    public Task<int> UpdateAsync(int id, Course entity)
+    public Task UpdateAsync(Course entity)
     {
-        return CourseDataProvider.UpdateAsync(id, entity);
+        return CourseDataProvider.UpdateAsync(entity);
     }
 
-    public int Delete(int id)
+    public void Delete(int id)
     {
-        return CourseDataProvider.Delete(id);
+        CourseDataProvider.Delete(id);
     }
 
-    public Task<int> DeleteAsync(int id)
+    public Task DeleteAsync(int id)
     {
         return CourseDataProvider.DeleteAsync(id);
     }

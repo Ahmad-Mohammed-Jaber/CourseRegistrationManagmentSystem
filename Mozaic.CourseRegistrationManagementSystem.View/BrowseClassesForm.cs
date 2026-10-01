@@ -167,12 +167,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             {
                 try
                 {
-                    var registrationId = await StudentRegistrationService.RegisterClass(cls.Id);
-                    if (registrationId == null)
-                    {
-                        MessageBox.Show("Registration failed.");
-                        return;
-                    }
+                    await StudentRegistrationService.RegisterClass(cls.Id);
                     var cached = _classes.FirstOrDefault(c => c.Id == cls.Id);
                     if (cached != null)
                     {

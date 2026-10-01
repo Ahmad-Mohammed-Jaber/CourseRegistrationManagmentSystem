@@ -65,30 +65,29 @@ public static class ClassService
         }
     }
 
-    public static Result<Class> Add(Class classEntity)
+    public static void Add(Class classEntity)
     {
         try
         {
             var valid = ClassValidator.ValidateClass(classEntity);
             if (!valid.IsSuccess)
             {
-                return Result<Class>.From(valid);
+                throw new BusinessException(valid.Message);
             }
 
             var course = EnsureCourseExistsSync(classEntity.CourseId);
             if (!course.IsSuccess)
             {
-                return Result<Class>.From(course);
+                throw new BusinessException(course.Message);
             }
 
             var classManager = new ClassManager();
-            int newId = classManager.Add(classEntity);
-            if (newId <= 0)
-            {
-                return Result<Class>.Fail(ValidationStatus.Conflict, $"Failed to create class: database reported no new id.");
-            }
-            classEntity.Id = newId;
-            return Result<Class>.Ok(classEntity);
+            classManager.Add(classEntity);
+        }
+        catch (BusinessException ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw;
         }
         catch (Exception ex)
         {
@@ -97,30 +96,29 @@ public static class ClassService
         }
     }
 
-    public static async Task<Result<Class>> AddAsync(Class classEntity)
+    public static async Task AddAsync(Class classEntity)
     {
         try
         {
             var valid = ClassValidator.ValidateClass(classEntity);
             if (!valid.IsSuccess)
             {
-                return Result<Class>.From(valid);
+                throw new BusinessException(valid.Message);
             }
 
             var course = await EnsureCourseExistsAsync(classEntity.CourseId);
             if (!course.IsSuccess)
             {
-                return Result<Class>.From(course);
+                throw new BusinessException(course.Message);
             }
 
             var classManager = new ClassManager();
-            int newId = await classManager.AddAsync(classEntity);
-            if (newId <= 0)
-            {
-                return Result<Class>.Fail(ValidationStatus.Conflict, $"Failed to create class: database reported no new id.");
-            }
-            classEntity.Id = newId;
-            return Result<Class>.Ok(classEntity);
+            await classManager.AddAsync(classEntity);
+        }
+        catch (BusinessException ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw;
         }
         catch (Exception ex)
         {
@@ -129,44 +127,43 @@ public static class ClassService
         }
     }
 
-    public static Result<Class> Update(int id, Class classEntity)
+    public static void Update(Class classEntity)
     {
         try
         {
             var classManager = new ClassManager();
-            var existingClass = classManager.GetById(id);
-            var exists = ClassValidator.RequireExists(existingClass, id);
+            var existingClass = classManager.GetById(classEntity.Id);
+            var exists = ClassValidator.RequireExists(existingClass, classEntity.Id);
             if (!exists.IsSuccess)
             {
-                return Result<Class>.From(exists);
+                throw new BusinessException(exists.Message);
             }
 
             var valid = ClassValidator.ValidateClass(classEntity);
             if (!valid.IsSuccess)
             {
-                return Result<Class>.From(valid);
+                throw new BusinessException(valid.Message);
             }
 
             var course = EnsureCourseExistsSync(classEntity.CourseId);
             if (!course.IsSuccess)
             {
-                return Result<Class>.From(course);
+                throw new BusinessException(course.Message);
             }
 
             var capacity = ClassValidator.ValidateMaxCapacityNotBelowEnrollment(
                 classEntity.MaxCapacity, existingClass!.CurrentCapacity);
             if (!capacity.IsSuccess)
             {
-                return Result<Class>.From(capacity);
+                throw new BusinessException(capacity.Message);
             }
 
-            int outcome = classManager.Update(id, classEntity);
-            if (outcome <= 0)
-            {
-                return Result<Class>.Fail(ValidationStatus.NotFound, $"Class with id {id} not found.");
-            }
-            classEntity.Id = id;
-            return Result<Class>.Ok(classEntity);
+            classManager.Update(classEntity);
+        }
+        catch (BusinessException ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw;
         }
         catch (Exception ex)
         {
@@ -175,44 +172,43 @@ public static class ClassService
         }
     }
 
-    public static async Task<Result<Class>> UpdateAsync(int id, Class classEntity)
+    public static async Task UpdateAsync(Class classEntity)
     {
         try
         {
             var classManager = new ClassManager();
-            var existingClass = await classManager.GetByIdAsync(id);
-            var exists = ClassValidator.RequireExists(existingClass, id);
+            var existingClass = await classManager.GetByIdAsync(classEntity.Id);
+            var exists = ClassValidator.RequireExists(existingClass, classEntity.Id);
             if (!exists.IsSuccess)
             {
-                return Result<Class>.From(exists);
+                throw new BusinessException(exists.Message);
             }
 
             var valid = ClassValidator.ValidateClass(classEntity);
             if (!valid.IsSuccess)
             {
-                return Result<Class>.From(valid);
+                throw new BusinessException(valid.Message);
             }
 
             var course = await EnsureCourseExistsAsync(classEntity.CourseId);
             if (!course.IsSuccess)
             {
-                return Result<Class>.From(course);
+                throw new BusinessException(course.Message);
             }
 
             var capacity = ClassValidator.ValidateMaxCapacityNotBelowEnrollment(
                 classEntity.MaxCapacity, existingClass!.CurrentCapacity);
             if (!capacity.IsSuccess)
             {
-                return Result<Class>.From(capacity);
+                throw new BusinessException(capacity.Message);
             }
 
-            int outcome = await classManager.UpdateAsync(id, classEntity);
-            if (outcome <= 0)
-            {
-                return Result<Class>.Fail(ValidationStatus.NotFound, $"Class with id {id} not found.");
-            }
-            classEntity.Id = id;
-            return Result<Class>.Ok(classEntity);
+            await classManager.UpdateAsync(classEntity);
+        }
+        catch (BusinessException ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw;
         }
         catch (Exception ex)
         {
@@ -221,7 +217,7 @@ public static class ClassService
         }
     }
 
-    public static Result<int> Delete(int id)
+    public static void Delete(int id)
     {
         try
         {
@@ -230,15 +226,15 @@ public static class ClassService
             var exists = ClassValidator.RequireExists(existingClass, id);
             if (!exists.IsSuccess)
             {
-                return Result<int>.From(exists);
+                throw new BusinessException(exists.Message);
             }
 
-            int outcome = classManager.Delete(id);
-            if (outcome <= 0)
-            {
-                return Result<int>.Fail(ValidationStatus.NotFound, $"Class with id {id} not found.");
-            }
-            return Result<int>.Ok(id);
+            classManager.Delete(id);
+        }
+        catch (BusinessException ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw;
         }
         catch (Exception ex)
         {
@@ -247,14 +243,14 @@ public static class ClassService
         }
     }
 
-    public static async Task<Result<int>> DeleteAsync(int id)
+    public static async Task DeleteAsync(int id)
     {
         try
         {
             var auth = AccessValidator.RequireAdmin();
             if (!auth.IsSuccess)
             {
-                return Result<int>.From(auth);
+                throw new BusinessException(auth.Message);
             }
 
             var classManager = new ClassManager();
@@ -262,15 +258,15 @@ public static class ClassService
             var exists = ClassValidator.RequireExists(existingClass, id);
             if (!exists.IsSuccess)
             {
-                return Result<int>.From(exists);
+                throw new BusinessException(exists.Message);
             }
 
-            int outcome = await classManager.DeleteAsync(id);
-            if (outcome <= 0)
-            {
-                return Result<int>.Fail(ValidationStatus.NotFound, $"Class with id {id} not found.");
-            }
-            return Result<int>.Ok(id);
+            await classManager.DeleteAsync(id);
+        }
+        catch (BusinessException ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw;
         }
         catch (Exception ex)
         {

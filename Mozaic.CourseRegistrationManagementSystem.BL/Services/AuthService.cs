@@ -108,12 +108,11 @@ public class AuthService
                 CreatedBy = actorId,
                 ModifiedBy = actorId
             };
-            int newId = await _userManager.AddAsync(user);
-            if (newId <= 0)
+            await _userManager.AddAsync(user);
+            if (user.Id <= 0)
             {
                 return Result<User>.Fail(ValidationStatus.Conflict, $"Failed to create user: database reported no new id.");
             }
-            user.Id = newId;
             return Result<User>.Ok(user);
         }
         catch (Exception ex)
@@ -161,9 +160,9 @@ public class AuthService
                 ModifiedBy = actorId,
             };
 
-            int userId = await _userManager.AddAsync(user);
-            var createdUser = userId > 0
-                ? await _userManager.GetByIdAsync(userId) ?? await _userManager.GetByUserNameAsync(userName)
+            await _userManager.AddAsync(user);
+            var createdUser = user.Id > 0
+                ? await _userManager.GetByIdAsync(user.Id) ?? await _userManager.GetByUserNameAsync(userName)
                 : await _userManager.GetByUserNameAsync(userName);
             if (createdUser == null)
             {
@@ -186,12 +185,11 @@ public class AuthService
             var studentManager = new StudentManager();
             try
             {
-                int studentId = await studentManager.AddAsync(student);
-                if (studentId <= 0)
+                await studentManager.AddAsync(student);
+                if (student.Id <= 0)
                 {
                     return Result<Student>.Fail(ValidationStatus.Conflict, $"Failed to create student: database reported no new id.");
                 }
-                student.Id = studentId;
             }
             catch
             {

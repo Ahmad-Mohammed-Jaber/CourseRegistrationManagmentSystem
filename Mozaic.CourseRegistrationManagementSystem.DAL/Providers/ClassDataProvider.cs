@@ -220,7 +220,7 @@ public static class ClassDataProvider
         }
     }
 
-    public static int Add(Class entity)
+    public static void Add(Class entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -252,13 +252,17 @@ public static class ClassDataProvider
 
             int rows = command.ExecuteNonQuery();
 
-            if (rows == 0)
+            int? newId = newIdParam.Value != DBNull.Value ? (int)newIdParam.Value : null;
+            if (rows == 0 || newId == null || newId <= 0)
             {
-                return 0;
+                throw new DatabaseException("An error occured in ClassDataProvider.Add(Class entity): database reported no new id.");
             }
 
-            int? newId = newIdParam.Value != DBNull.Value ? (int)newIdParam.Value : null;
-            return newId ?? 0;
+            entity.Id = newId.Value;
+        }
+        catch (DatabaseException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -271,7 +275,7 @@ public static class ClassDataProvider
         }
     }
 
-    public static async Task<int> AddAsync(Class entity)
+    public static async Task AddAsync(Class entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -303,13 +307,17 @@ public static class ClassDataProvider
 
             int rows = await command.ExecuteNonQueryAsync();
 
-            if (rows == 0)
+            int? newId = newIdParam.Value != DBNull.Value ? (int)newIdParam.Value : null;
+            if (rows == 0 || newId == null || newId <= 0)
             {
-                return 0;
+                throw new DatabaseException("An error occured in ClassDataProvider.AddAsync(Class entity): database reported no new id.");
             }
 
-            int? newId = newIdParam.Value != DBNull.Value ? (int)newIdParam.Value : null;
-            return newId ?? 0;
+            entity.Id = newId.Value;
+        }
+        catch (DatabaseException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -322,7 +330,7 @@ public static class ClassDataProvider
         }
     }
 
-    public static int Update(int id, Class entity)
+    public static void Update(Class entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -335,7 +343,7 @@ public static class ClassDataProvider
             {
                 CommandType = CommandType.StoredProcedure
             };
-            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+            command.Parameters.Add("@Id", SqlDbType.Int).Value = entity.Id;
             command.Parameters.Add("@CourseId", SqlDbType.Int).Value = entity.CourseId;
             command.Parameters.Add("@ClassName", SqlDbType.NVarChar, 50).Value = entity.ClassName ?? string.Empty;
             command.Parameters.Add("@Instructor", SqlDbType.NVarChar, 50).Value = entity.Instructor ?? string.Empty;
@@ -347,11 +355,18 @@ public static class ClassDataProvider
             command.Parameters.Add("@IsActive", SqlDbType.Bit).Value = entity.IsActive;
 
             int rows = command.ExecuteNonQuery();
-            return rows == 0 ? 0 : id;
+            if (rows == 0)
+            {
+                throw new DatabaseException($"An error occured in ClassDataProvider.Update(Class entity): Class with id {entity.Id} not found.");
+            }
+        }
+        catch (DatabaseException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
-            throw new DatabaseException("An error occured in ClassDataProvider.Update(int id, Class entity)", ex);
+            throw new DatabaseException("An error occured in ClassDataProvider.Update(Class entity)", ex);
         }
         finally
         {
@@ -360,7 +375,7 @@ public static class ClassDataProvider
         }
     }
 
-    public static async Task<int> UpdateAsync(int id, Class entity)
+    public static async Task UpdateAsync(Class entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -373,7 +388,7 @@ public static class ClassDataProvider
             {
                 CommandType = CommandType.StoredProcedure
             };
-            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+            command.Parameters.Add("@Id", SqlDbType.Int).Value = entity.Id;
             command.Parameters.Add("@CourseId", SqlDbType.Int).Value = entity.CourseId;
             command.Parameters.Add("@ClassName", SqlDbType.NVarChar, 50).Value = entity.ClassName ?? string.Empty;
             command.Parameters.Add("@Instructor", SqlDbType.NVarChar, 50).Value = entity.Instructor ?? string.Empty;
@@ -385,11 +400,18 @@ public static class ClassDataProvider
             command.Parameters.Add("@IsActive", SqlDbType.Bit).Value = entity.IsActive;
 
             int rowsAsync = await command.ExecuteNonQueryAsync();
-            return rowsAsync == 0 ? 0 : id;
+            if (rowsAsync == 0)
+            {
+                throw new DatabaseException($"An error occured in ClassDataProvider.UpdateAsync(Class entity): Class with id {entity.Id} not found.");
+            }
+        }
+        catch (DatabaseException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
-            throw new DatabaseException("An error occured in ClassDataProvider.UpdateAsync(int id, Class entity)", ex);
+            throw new DatabaseException("An error occured in ClassDataProvider.UpdateAsync(Class entity)", ex);
         }
         finally
         {
@@ -398,7 +420,7 @@ public static class ClassDataProvider
         }
     }
 
-    public static int Delete(int id)
+    public static void Delete(int id)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -413,7 +435,14 @@ public static class ClassDataProvider
             };
             command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
             int rows = command.ExecuteNonQuery();
-            return rows == 0 ? 0 : id;
+            if (rows == 0)
+            {
+                throw new DatabaseException($"An error occured in ClassDataProvider.Delete(int id): Class with id {id} not found.");
+            }
+        }
+        catch (DatabaseException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -426,7 +455,7 @@ public static class ClassDataProvider
         }
     }
 
-    public static async Task<int> DeleteAsync(int id)
+    public static async Task DeleteAsync(int id)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -441,7 +470,14 @@ public static class ClassDataProvider
             };
             command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
             int rowsAsync = await command.ExecuteNonQueryAsync();
-            return rowsAsync == 0 ? 0 : id;
+            if (rowsAsync == 0)
+            {
+                throw new DatabaseException($"An error occured in ClassDataProvider.DeleteAsync(int id): Class with id {id} not found.");
+            }
+        }
+        catch (DatabaseException)
+        {
+            throw;
         }
         catch (Exception ex)
         {

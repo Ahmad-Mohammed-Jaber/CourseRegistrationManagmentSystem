@@ -152,35 +152,36 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
 
             try
             {
-                Result<User> saveResult;
                 if (_isEditMode)
                 {
-                    saveResult = await UserService.UpdateAsync(entity.Id, entity);
+                    await UserService.UpdateAsync(entity);
+                    entity.CreatedOn = _user!.CreatedOn;
+                    entity.ModifiedOn = DateTimeOffset.Now;
+                    entity.CreatedBy = _user.CreatedBy;
+                    entity.ModifiedBy = _user.ModifiedBy;
+                    SavedEntity = entity;
                 }
                 else
                 {
                     if (!string.IsNullOrWhiteSpace(txtPassword.Text))
                     {
-                        saveResult = await _authService.RegisterAdminAsync(
+                        var regResult = await _authService.RegisterAdminAsync(
                             entity.UserName, entity.FullName, entity.IsActive, txtPassword.Text);
+                        if (!regResult.IsSuccess || regResult.Value == null)
+                        {
+                            MessageBox.Show($"Error saving user: {regResult.Message}");
+                            return;
+                        }
+                        SavedEntity = regResult.Value;
                     }
                     else
                     {
-                        saveResult = await UserService.AddAsync(entity);
+                        await UserService.AddAsync(entity);
+                        entity.CreatedOn = DateTimeOffset.Now;
+                        entity.ModifiedOn = DateTimeOffset.Now;
+                        SavedEntity = entity;
                     }
                 }
-                if (!saveResult.IsSuccess || saveResult.Value == null)
-                {
-                    MessageBox.Show($"Error saving user: {saveResult.Message}");
-                    return;
-                }
-                var saved = saveResult.Value;
-                entity.Id = saved.Id;
-                entity.CreatedOn = _isEditMode && _user != null ? _user.CreatedOn : DateTimeOffset.Now;
-                entity.ModifiedOn = DateTimeOffset.Now;
-                entity.CreatedBy = _isEditMode && _user != null ? _user.CreatedBy : saved.CreatedBy;
-                entity.ModifiedBy = saved.ModifiedBy;
-                SavedEntity = entity;
                 this.DialogResult = DialogResult.OK;
             }
             catch (BusinessException ex)

@@ -31,32 +31,32 @@ public class UserRepository : IGenericRepository<User>
         return UserDataProvider.GetAllAsync();
     }
 
-    public int Add(User entity)
+    public void Add(User entity)
     {
-        return UserDataProvider.Add(entity);
+        UserDataProvider.Add(entity);
     }
 
-    public Task<int> AddAsync(User entity)
+    public Task AddAsync(User entity)
     {
         return UserDataProvider.AddAsync(entity);
     }
 
-    public int Update(int id, User entity)
+    public void Update(User entity)
     {
-        return UserDataProvider.Update(id, entity);
+        UserDataProvider.Update(entity);
     }
 
-    public Task<int> UpdateAsync(int id, User entity)
+    public Task UpdateAsync(User entity)
     {
-        return UserDataProvider.UpdateAsync(id, entity);
+        return UserDataProvider.UpdateAsync(entity);
     }
 
-    public int Delete(int id)
+    public void Delete(int id)
     {
-        return UserDataProvider.Delete(id);
+        UserDataProvider.Delete(id);
     }
 
-    public Task<int> DeleteAsync(int id)
+    public Task DeleteAsync(int id)
     {
         return UserDataProvider.DeleteAsync(id);
     }

@@ -256,27 +256,22 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
 
             try
             {
-                Result<Class> saveResult;
                 if (_isEditMode)
                 {
-                    saveResult = await ClassService.UpdateAsync(entity.Id, entity);
+                    await ClassService.UpdateAsync(entity);
                 }
                 else
                 {
-                    saveResult = await ClassService.AddAsync(entity);
+                    await ClassService.AddAsync(entity);
                 }
 
-                if (!saveResult.IsSuccess || saveResult.Value == null)
-                {
-                    MessageBox.Show($"Error saving class: {saveResult.Message}");
-                    return;
-                }
-                var saved = saveResult.Value;
-                entity.Id = saved.Id;
                 entity.CreatedOn = _isEditMode && _class != null ? _class.CreatedOn : DateTimeOffset.Now;
                 entity.ModifiedOn = DateTimeOffset.Now;
-                entity.CreatedBy = _isEditMode && _class != null ? _class.CreatedBy : saved.CreatedBy;
-                entity.ModifiedBy = saved.ModifiedBy;
+                if (_isEditMode && _class != null)
+                {
+                    entity.CreatedBy = _class.CreatedBy;
+                    entity.ModifiedBy = _class.ModifiedBy;
+                }
                 SavedEntity = entity;
                 this.DialogResult = DialogResult.OK;
             }

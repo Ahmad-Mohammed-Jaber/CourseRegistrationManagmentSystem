@@ -321,7 +321,7 @@ public static class RegistrationDataProvider
         }
     }
 
-    public static int Add(Registration entity)
+    public static void Add(Registration entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -348,13 +348,17 @@ public static class RegistrationDataProvider
 
             int rows = command.ExecuteNonQuery();
 
-            if (rows == 0)
+            int? newId = newIdParam.Value != DBNull.Value ? (int)newIdParam.Value : null;
+            if (rows == 0 || newId == null || newId <= 0)
             {
-                return 0;
+                throw new DatabaseException("An error occured in RegistrationDataProvider.Add(Registration entity): database reported no new id.");
             }
 
-            int? newId = newIdParam.Value != DBNull.Value ? (int)newIdParam.Value : null;
-            return newId ?? 0;
+            entity.Id = newId.Value;
+        }
+        catch (DatabaseException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -367,7 +371,7 @@ public static class RegistrationDataProvider
         }
     }
 
-    public static async Task<int> AddAsync(Registration entity)
+    public static async Task AddAsync(Registration entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -394,13 +398,17 @@ public static class RegistrationDataProvider
 
             int rows = await command.ExecuteNonQueryAsync();
 
-            if (rows == 0)
+            int? newId = newIdParam.Value != DBNull.Value ? (int)newIdParam.Value : null;
+            if (rows == 0 || newId == null || newId <= 0)
             {
-                return 0;
+                throw new DatabaseException("An error occured in RegistrationDataProvider.AddAsync(Registration entity): database reported no new id.");
             }
 
-            int? newId = newIdParam.Value != DBNull.Value ? (int)newIdParam.Value : null;
-            return newId ?? 0;
+            entity.Id = newId.Value;
+        }
+        catch (DatabaseException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -413,7 +421,7 @@ public static class RegistrationDataProvider
         }
     }
 
-    public static int Update(int id, Registration entity)
+    public static void Update(Registration entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -426,18 +434,25 @@ public static class RegistrationDataProvider
             {
                 CommandType = CommandType.StoredProcedure
             };
-            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+            command.Parameters.Add("@Id", SqlDbType.Int).Value = entity.Id;
             command.Parameters.Add("@StudentId", SqlDbType.Int).Value = entity.StudentId;
             command.Parameters.Add("@ClassId", SqlDbType.Int).Value = entity.ClassId;
             command.Parameters.Add("@RegistrationDate", SqlDbType.DateTime2).Value = entity.RegistrationDate;
             command.Parameters.Add("@Status", SqlDbType.NVarChar, 50).Value = entity.Status ?? string.Empty;
 
             int rows = command.ExecuteNonQuery();
-            return rows == 0 ? 0 : id;
+            if (rows == 0)
+            {
+                throw new DatabaseException($"An error occured in RegistrationDataProvider.Update(Registration entity): Registration with id {entity.Id} not found.");
+            }
+        }
+        catch (DatabaseException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
-            throw new DatabaseException("An error occured in RegistrationDataProvider.Update(int id, Registration entity)", ex);
+            throw new DatabaseException("An error occured in RegistrationDataProvider.Update(Registration entity)", ex);
         }
         finally
         {
@@ -446,7 +461,7 @@ public static class RegistrationDataProvider
         }
     }
 
-    public static async Task<int> UpdateAsync(int id, Registration entity)
+    public static async Task UpdateAsync(Registration entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -459,18 +474,25 @@ public static class RegistrationDataProvider
             {
                 CommandType = CommandType.StoredProcedure
             };
-            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+            command.Parameters.Add("@Id", SqlDbType.Int).Value = entity.Id;
             command.Parameters.Add("@StudentId", SqlDbType.Int).Value = entity.StudentId;
             command.Parameters.Add("@ClassId", SqlDbType.Int).Value = entity.ClassId;
             command.Parameters.Add("@RegistrationDate", SqlDbType.DateTime2).Value = entity.RegistrationDate;
             command.Parameters.Add("@Status", SqlDbType.NVarChar, 50).Value = entity.Status ?? string.Empty;
 
             int rowsAsync = await command.ExecuteNonQueryAsync();
-            return rowsAsync == 0 ? 0 : id;
+            if (rowsAsync == 0)
+            {
+                throw new DatabaseException($"An error occured in RegistrationDataProvider.UpdateAsync(Registration entity): Registration with id {entity.Id} not found.");
+            }
+        }
+        catch (DatabaseException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
-            throw new DatabaseException("An error occured in RegistrationDataProvider.UpdateAsync(int id, Registration entity)", ex);
+            throw new DatabaseException("An error occured in RegistrationDataProvider.UpdateAsync(Registration entity)", ex);
         }
         finally
         {
@@ -479,7 +501,7 @@ public static class RegistrationDataProvider
         }
     }
 
-    public static int Delete(int id)
+    public static void Delete(int id)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -494,7 +516,14 @@ public static class RegistrationDataProvider
             };
             command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
             int rows = command.ExecuteNonQuery();
-            return rows == 0 ? 0 : id;
+            if (rows == 0)
+            {
+                throw new DatabaseException($"An error occured in RegistrationDataProvider.Delete(int id): Registration with id {id} not found.");
+            }
+        }
+        catch (DatabaseException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -507,7 +536,7 @@ public static class RegistrationDataProvider
         }
     }
 
-    public static async Task<int> DeleteAsync(int id)
+    public static async Task DeleteAsync(int id)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -522,7 +551,14 @@ public static class RegistrationDataProvider
             };
             command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
             int rowsAsync = await command.ExecuteNonQueryAsync();
-            return rowsAsync == 0 ? 0 : id;
+            if (rowsAsync == 0)
+            {
+                throw new DatabaseException($"An error occured in RegistrationDataProvider.DeleteAsync(int id): Registration with id {id} not found.");
+            }
+        }
+        catch (DatabaseException)
+        {
+            throw;
         }
         catch (Exception ex)
         {

@@ -34,14 +34,14 @@ public static class StudentRegistrationService
         return student!.Id;
     }
 
-    public static async Task<int?> RegisterClass(int classId)
+    public static async Task RegisterClass(int classId)
     {
         try
         {
             var studentId = await RequireStudentIdAsync();
             if (studentId == null)
             {
-                return null;
+                throw new BusinessException("Student login required.");
             }
 
             var classManager = new ClassManager();
@@ -52,26 +52,26 @@ public static class StudentRegistrationService
             var exists = ClassValidator.RequireExists(@class, classId);
             if (!exists.IsSuccess)
             {
-                return null;
+                throw new BusinessException(exists.Message);
             }
 
             var active = ClassValidator.ValidateIsActive(@class!);
             if (!active.IsSuccess)
             {
-                return null;
+                throw new BusinessException(active.Message);
             }
 
             var dup = RegistrationValidator.ValidateAlreadyRegistered(
                 await registrationManager.ExistsAsync(studentId.Value, classId));
             if (!dup.IsSuccess)
             {
-                return null;
+                throw new BusinessException(dup.Message);
             }
 
             var capacity = ClassValidator.ValidateCapacityAvailable(@class!);
             if (!capacity.IsSuccess)
             {
-                return null;
+                throw new BusinessException(capacity.Message);
             }
 
             var registration = new Registration
@@ -81,17 +81,17 @@ public static class StudentRegistrationService
                 RegistrationDate = DateTime.Now,
                 Status = "Registered"
             };
-            int newId = await registrationManager.AddAsync(registration);
-            if (newId <= 0)
-            {
-                return null;
-            }
-            registration.Id = newId;
+            await registrationManager.AddAsync(registration);
 
             @class!.CurrentCapacity++;
-            await classManager.UpdateAsync(classId, @class);
+            await classManager.UpdateAsync(@class);
 
-            return registration.Id;
+            return;
+        }
+        catch (BusinessException ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw;
         }
         catch (Exception ex)
         {
@@ -100,16 +100,14 @@ public static class StudentRegistrationService
         }
     }
 
-    public static async Task<ValidationResult> DropRegistration(int registrationId)
+    public static async Task DropRegistration(int registrationId)
     {
         try
         {
             var studentId = await RequireStudentIdAsync();
             if (studentId == null)
             {
-                return new ValidationResult(
-                    ValidationStatus.Unauthorized,
-                    new[] { new ValidationError(string.Empty, "Student login required.") });
+                throw new BusinessException("Student login required.");
             }
 
             var registrationManager = new RegistrationManager();
@@ -120,7 +118,7 @@ public static class StudentRegistrationService
             var exists = RegistrationValidator.RequireExists(registration, registrationId);
             if (!exists.IsSuccess)
             {
-                return exists;
+                throw new BusinessException(exists.Message);
             }
 
             var ownership = RegistrationValidator.ValidateOwnership(registration!.StudentId, studentId.Value);
@@ -144,8 +142,8 @@ public static class StudentRegistrationService
                 @class.CurrentCapacity = 0;
             }
 
-            await classManager.UpdateAsync(@class.Id, @class);
-            return new ValidationResult(ValidationStatus.Success, Array.Empty<ValidationError>());
+            await classManager.UpdateAsync(@class);
+            return;
         }
         catch (BusinessException ex)
         {

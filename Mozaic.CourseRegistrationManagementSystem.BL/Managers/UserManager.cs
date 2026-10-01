@@ -17,17 +17,17 @@ internal class UserManager
 
     public Task<List<User>> GetAllAsync() => _userRepository.GetAllAsync();
 
-    public int Add(User user) => _userRepository.Add(user);
+    public void Add(User user) => _userRepository.Add(user);
 
-    public Task<int > AddAsync(User user) => _userRepository.AddAsync(user);
+    public Task AddAsync(User user) => _userRepository.AddAsync(user);
 
-    public int Update(int id, User user) => _userRepository.Update(id, user);
+    public void Update(User user) => _userRepository.Update(user);
 
-    public Task<int > UpdateAsync(int id, User user) => _userRepository.UpdateAsync(id, user);
+    public Task UpdateAsync(User user) => _userRepository.UpdateAsync(user);
 
-    public int Delete(int id) => _userRepository.Delete(id);
+    public void Delete(int id) => _userRepository.Delete(id);
 
-    public Task<int > DeleteAsync(int id) => _userRepository.DeleteAsync(id);
+    public Task DeleteAsync(int id) => _userRepository.DeleteAsync(id);
 
     public List<User> Search(string regex) => _userRepository.Search(regex);
 

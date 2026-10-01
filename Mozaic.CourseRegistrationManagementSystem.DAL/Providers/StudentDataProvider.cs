@@ -224,7 +224,7 @@ public static class StudentDataProvider
         }
     }
 
-    public static int Add(Student entity)
+    public static void Add(Student entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -250,13 +250,17 @@ public static class StudentDataProvider
 
             int rows = command.ExecuteNonQuery();
 
-            if (rows == 0)
+            int? newId = newIdParam.Value != DBNull.Value ? (int)newIdParam.Value : null;
+            if (rows == 0 || newId == null || newId <= 0)
             {
-                return 0;
+                throw new DatabaseException("An error occured in StudentDataProvider.Add(Student entity): database reported no new id.");
             }
 
-            int? newId = newIdParam.Value != DBNull.Value ? (int)newIdParam.Value : null;
-            return newId ?? 0;
+            entity.Id = newId.Value;
+        }
+        catch (DatabaseException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -269,7 +273,7 @@ public static class StudentDataProvider
         }
     }
 
-    public static async Task<int> AddAsync(Student entity)
+    public static async Task AddAsync(Student entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -295,13 +299,17 @@ public static class StudentDataProvider
 
             int rows = await command.ExecuteNonQueryAsync();
 
-            if (rows == 0)
+            int? newId = newIdParam.Value != DBNull.Value ? (int)newIdParam.Value : null;
+            if (rows == 0 || newId == null || newId <= 0)
             {
-                return 0;
+                throw new DatabaseException("An error occured in StudentDataProvider.AddAsync(Student entity): database reported no new id.");
             }
 
-            int? newId = newIdParam.Value != DBNull.Value ? (int)newIdParam.Value : null;
-            return newId ?? 0;
+            entity.Id = newId.Value;
+        }
+        catch (DatabaseException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -314,7 +322,7 @@ public static class StudentDataProvider
         }
     }
 
-    public static int Update(int id, Student entity)
+    public static void Update(Student entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -327,18 +335,25 @@ public static class StudentDataProvider
             {
                 CommandType = CommandType.StoredProcedure
             };
-            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+            command.Parameters.Add("@Id", SqlDbType.Int).Value = entity.Id;
             command.Parameters.Add("@UserId", SqlDbType.Int).Value = entity.UserId;
             command.Parameters.Add("@StudentNumber", SqlDbType.Int).Value = entity.StudentNumber;
             command.Parameters.Add("@Email", SqlDbType.NVarChar, 100).Value = (object?)entity.Email ?? string.Empty;
             command.Parameters.Add("@Phone", SqlDbType.NVarChar, 20).Value = (object?)entity.Phone ?? string.Empty;
 
             int rows = command.ExecuteNonQuery();
-            return rows == 0 ? 0 : id;
+            if (rows == 0)
+            {
+                throw new DatabaseException($"An error occured in StudentDataProvider.Update(Student entity): Student with id {entity.Id} not found.");
+            }
+        }
+        catch (DatabaseException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
-            throw new DatabaseException("An error occured in StudentDataProvider.Update(int id, Student entity)", ex);
+            throw new DatabaseException("An error occured in StudentDataProvider.Update(Student entity)", ex);
         }
         finally
         {
@@ -347,7 +362,7 @@ public static class StudentDataProvider
         }
     }
 
-    public static async Task<int> UpdateAsync(int id, Student entity)
+    public static async Task UpdateAsync(Student entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -360,18 +375,25 @@ public static class StudentDataProvider
             {
                 CommandType = CommandType.StoredProcedure
             };
-            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+            command.Parameters.Add("@Id", SqlDbType.Int).Value = entity.Id;
             command.Parameters.Add("@UserId", SqlDbType.Int).Value = entity.UserId;
             command.Parameters.Add("@StudentNumber", SqlDbType.Int).Value = entity.StudentNumber;
             command.Parameters.Add("@Email", SqlDbType.NVarChar, 100).Value = (object?)entity.Email ?? string.Empty;
             command.Parameters.Add("@Phone", SqlDbType.NVarChar, 20).Value = (object?)entity.Phone ?? string.Empty;
 
             int rowsAsync = await command.ExecuteNonQueryAsync();
-            return rowsAsync == 0 ? 0 : id;
+            if (rowsAsync == 0)
+            {
+                throw new DatabaseException($"An error occured in StudentDataProvider.UpdateAsync(Student entity): Student with id {entity.Id} not found.");
+            }
+        }
+        catch (DatabaseException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
-            throw new DatabaseException("An error occured in StudentDataProvider.UpdateAsync(int id, Student entity)", ex);
+            throw new DatabaseException("An error occured in StudentDataProvider.UpdateAsync(Student entity)", ex);
         }
         finally
         {
@@ -380,7 +402,7 @@ public static class StudentDataProvider
         }
     }
 
-    public static int Delete(int id)
+    public static void Delete(int id)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -395,7 +417,14 @@ public static class StudentDataProvider
             };
             command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
             int rows = command.ExecuteNonQuery();
-            return rows == 0 ? 0 : id;
+            if (rows == 0)
+            {
+                throw new DatabaseException($"An error occured in StudentDataProvider.Delete(int id): Student with id {id} not found.");
+            }
+        }
+        catch (DatabaseException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -408,7 +437,7 @@ public static class StudentDataProvider
         }
     }
 
-    public static async Task<int> DeleteAsync(int id)
+    public static async Task DeleteAsync(int id)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -423,7 +452,14 @@ public static class StudentDataProvider
             };
             command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
             int rowsAsync = await command.ExecuteNonQueryAsync();
-            return rowsAsync == 0 ? 0 : id;
+            if (rowsAsync == 0)
+            {
+                throw new DatabaseException($"An error occured in StudentDataProvider.DeleteAsync(int id): Student with id {id} not found.");
+            }
+        }
+        catch (DatabaseException)
+        {
+            throw;
         }
         catch (Exception ex)
         {

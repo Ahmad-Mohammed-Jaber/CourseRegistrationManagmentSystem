@@ -230,12 +230,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             {
                 try
                 {
-                    var dropResult = await StudentRegistrationService.DropRegistration(registrationId);
-                    if (!dropResult.IsSuccess)
-                    {
-                        MessageBox.Show($"Drop failed: {dropResult.Message}");
-                        return;
-                    }
+                    await StudentRegistrationService.DropRegistration(registrationId);
                     _data.RemoveAll(r => r.Registration.Id == registrationId);
                     RefreshGrid();
                 }

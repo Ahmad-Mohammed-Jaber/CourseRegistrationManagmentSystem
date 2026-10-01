@@ -237,12 +237,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                 {
                     try
                     {
-                        var deleteResult = await CourseService.DeleteAsync(course.Id);
-                        if (!deleteResult.IsSuccess)
-                        {
-                            MessageBox.Show($"Error deleting course: {deleteResult.Message}");
-                            return;
-                        }
+                        await CourseService.DeleteAsync(course.Id);
                         _courses.RemoveAll(c => c.Id == course.Id);
                         RefreshGrid();
                     }

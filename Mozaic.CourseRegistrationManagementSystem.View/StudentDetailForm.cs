@@ -225,7 +225,6 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
 
             try
             {
-                Result<Student> saveResult;
                 if (_isEditMode)
                 {
                     var entity = new Student
@@ -241,11 +240,15 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                         Role = User.UserRoles.Student
                     };
 
-                    saveResult = await StudentService.UpdateAsync(entity.Id, entity);
+                    await StudentService.UpdateAsync(entity);
+                    entity.CreatedOn = _student.CreatedOn;
+                    entity.CreatedBy = _student.CreatedBy;
+                    entity.ModifiedOn = DateTimeOffset.Now;
+                    SavedEntity = entity;
                 }
                 else
                 {
-                    saveResult = await _authService.RegisterStudentAsync(
+                    var regResult = await _authService.RegisterStudentAsync(
                         txtUsername.Text,
                         studentNumber,
                         txtFullName.Text,
@@ -254,32 +257,32 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                         txtPhone.Text,
                         txtPassword.Text
                     );
-                }
 
-                if (!saveResult.IsSuccess || saveResult.Value == null)
-                {
-                    MessageBox.Show($"Error saving student: {saveResult.Message}");
-                    return;
+                    if (!regResult.IsSuccess || regResult.Value == null)
+                    {
+                        MessageBox.Show($"Error saving student: {regResult.Message}");
+                        return;
+                    }
+                    var saved = regResult.Value;
+                    saved.StudentNumber = studentNumber;
+                    saved.Email = txtEmail.Text;
+                    saved.Phone = txtPhone.Text;
+                    saved.UserName = txtUsername.Text;
+                    saved.FullName = txtFullName.Text;
+                    saved.IsActive = chkActive.Checked;
+                    saved.Role = User.UserRoles.Student;
+                    if (_isEditMode && _student != null)
+                    {
+                        saved.CreatedOn = _student.CreatedOn;
+                        saved.CreatedBy = _student.CreatedBy;
+                    }
+                    else
+                    {
+                        saved.CreatedOn = DateTimeOffset.Now;
+                    }
+                    saved.ModifiedOn = DateTimeOffset.Now;
+                    SavedEntity = saved;
                 }
-                var saved = saveResult.Value;
-                saved.StudentNumber = studentNumber;
-                saved.Email = txtEmail.Text;
-                saved.Phone = txtPhone.Text;
-                saved.UserName = txtUsername.Text;
-                saved.FullName = txtFullName.Text;
-                saved.IsActive = chkActive.Checked;
-                saved.Role = User.UserRoles.Student;
-                if (_isEditMode && _student != null)
-                {
-                    saved.CreatedOn = _student.CreatedOn;
-                    saved.CreatedBy = _student.CreatedBy;
-                }
-                else
-                {
-                    saved.CreatedOn = DateTimeOffset.Now;
-                }
-                saved.ModifiedOn = DateTimeOffset.Now;
-                SavedEntity = saved;
                 DialogResult = DialogResult.OK;
             }
             catch (BusinessException ex)

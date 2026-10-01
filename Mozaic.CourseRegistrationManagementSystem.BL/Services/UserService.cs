@@ -66,26 +66,26 @@ public static class UserService
         }
     }
 
-    public static Result<User> Add(User user)
+    public static void Add(User user)
     {
         try
         {
             var auth = AccessValidator.RequireAdmin();
             if (!auth.IsSuccess)
             {
-                return Result<User>.From(auth);
+                throw new BusinessException(auth.Message);
             }
 
             var valid = UserValidator.ValidateUser(user);
             if (!valid.IsSuccess)
             {
-                return Result<User>.From(valid);
+                throw new BusinessException(valid.Message);
             }
 
             var unique = EnsureUniqueUserNameSync(user.UserName);
             if (!unique.IsSuccess)
             {
-                return Result<User>.From(unique);
+                throw new BusinessException(unique.Message);
             }
 
             var actorId = SessionManager.Current?.UserId ?? 0;
@@ -93,13 +93,12 @@ public static class UserService
             user.ModifiedBy = actorId;
 
             var userManager = new UserManager();
-            int newId = userManager.Add(user);
-            if (newId <= 0)
-            {
-                return Result<User>.Fail(ValidationStatus.Conflict, $"Failed to create user: database reported no new id.");
-            }
-            user.Id = newId;
-            return Result<User>.Ok(user);
+            userManager.Add(user);
+        }
+        catch (BusinessException ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw;
         }
         catch (Exception ex)
         {
@@ -108,26 +107,26 @@ public static class UserService
         }
     }
 
-    public static async Task<Result<User>> AddAsync(User user)
+    public static async Task AddAsync(User user)
     {
         try
         {
             var auth = AccessValidator.RequireAdmin();
             if (!auth.IsSuccess)
             {
-                return Result<User>.From(auth);
+                throw new BusinessException(auth.Message);
             }
 
             var valid = UserValidator.ValidateUser(user);
             if (!valid.IsSuccess)
             {
-                return Result<User>.From(valid);
+                throw new BusinessException(valid.Message);
             }
 
             var unique = await EnsureUniqueUserNameAsync(user.UserName);
             if (!unique.IsSuccess)
             {
-                return Result<User>.From(unique);
+                throw new BusinessException(unique.Message);
             }
 
             var actorId = SessionManager.Current?.UserId ?? 0;
@@ -135,13 +134,12 @@ public static class UserService
             user.ModifiedBy = actorId;
 
             var userManager = new UserManager();
-            int newId = await userManager.AddAsync(user);
-            if (newId <= 0)
-            {
-                return Result<User>.Fail(ValidationStatus.Conflict, $"Failed to create user: database reported no new id.");
-            }
-            user.Id = newId;
-            return Result<User>.Ok(user);
+            await userManager.AddAsync(user);
+        }
+        catch (BusinessException ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw;
         }
         catch (Exception ex)
         {
@@ -150,34 +148,34 @@ public static class UserService
         }
     }
 
-    public static Result<User> Update(int id, User user)
+    public static void Update(User user)
     {
         try
         {
             var auth = AccessValidator.RequireAdmin();
             if (!auth.IsSuccess)
             {
-                return Result<User>.From(auth);
+                throw new BusinessException(auth.Message);
             }
 
             var userManager = new UserManager();
-            var existingUser = userManager.GetById(id);
-            var exists = UserValidator.RequireExists(existingUser, id);
+            var existingUser = userManager.GetById(user.Id);
+            var exists = UserValidator.RequireExists(existingUser, user.Id);
             if (!exists.IsSuccess)
             {
-                return Result<User>.From(exists);
+                throw new BusinessException(exists.Message);
             }
 
             var valid = UserValidator.ValidateUser(user);
             if (!valid.IsSuccess)
             {
-                return Result<User>.From(valid);
+                throw new BusinessException(valid.Message);
             }
 
-            var unique = EnsureUniqueUserNameSync(user.UserName, id);
+            var unique = EnsureUniqueUserNameSync(user.UserName, user.Id);
             if (!unique.IsSuccess)
             {
-                return Result<User>.From(unique);
+                throw new BusinessException(unique.Message);
             }
 
             if (string.IsNullOrEmpty(user.PasswordHash))
@@ -188,13 +186,12 @@ public static class UserService
             user.CreatedBy = existingUser!.CreatedBy;
             user.ModifiedBy = SessionManager.Current?.UserId ?? existingUser.ModifiedBy;
 
-            int outcome = userManager.Update(id, user);
-            if (outcome <= 0)
-            {
-                return Result<User>.Fail(ValidationStatus.NotFound, $"User with id {id} not found.");
-            }
-            user.Id = id;
-            return Result<User>.Ok(user);
+            userManager.Update(user);
+        }
+        catch (BusinessException ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw;
         }
         catch (Exception ex)
         {
@@ -203,34 +200,34 @@ public static class UserService
         }
     }
 
-    public static async Task<Result<User>> UpdateAsync(int id, User user)
+    public static async Task UpdateAsync(User user)
     {
         try
         {
             var auth = AccessValidator.RequireAdmin();
             if (!auth.IsSuccess)
             {
-                return Result<User>.From(auth);
+                throw new BusinessException(auth.Message);
             }
 
             var userManager = new UserManager();
-            var existingUser = await userManager.GetByIdAsync(id);
-            var exists = UserValidator.RequireExists(existingUser, id);
+            var existingUser = await userManager.GetByIdAsync(user.Id);
+            var exists = UserValidator.RequireExists(existingUser, user.Id);
             if (!exists.IsSuccess)
             {
-                return Result<User>.From(exists);
+                throw new BusinessException(exists.Message);
             }
 
             var valid = UserValidator.ValidateUser(user);
             if (!valid.IsSuccess)
             {
-                return Result<User>.From(valid);
+                throw new BusinessException(valid.Message);
             }
 
-            var unique = await EnsureUniqueUserNameAsync(user.UserName, id);
+            var unique = await EnsureUniqueUserNameAsync(user.UserName, user.Id);
             if (!unique.IsSuccess)
             {
-                return Result<User>.From(unique);
+                throw new BusinessException(unique.Message);
             }
 
             if (string.IsNullOrEmpty(user.PasswordHash))
@@ -241,13 +238,12 @@ public static class UserService
             user.CreatedBy = existingUser!.CreatedBy;
             user.ModifiedBy = SessionManager.Current?.UserId ?? existingUser.ModifiedBy;
 
-            int outcome = await userManager.UpdateAsync(id, user);
-            if (outcome <= 0)
-            {
-                return Result<User>.Fail(ValidationStatus.NotFound, $"User with id {id} not found.");
-            }
-            user.Id = id;
-            return Result<User>.Ok(user);
+            await userManager.UpdateAsync(user);
+        }
+        catch (BusinessException ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw;
         }
         catch (Exception ex)
         {
@@ -256,14 +252,14 @@ public static class UserService
         }
     }
 
-    public static Result<int> Delete(int id)
+    public static void Delete(int id)
     {
         try
         {
             var auth = AccessValidator.RequireAdmin();
             if (!auth.IsSuccess)
             {
-                return Result<int>.From(auth);
+                throw new BusinessException(auth.Message);
             }
 
             var userManager = new UserManager();
@@ -271,15 +267,15 @@ public static class UserService
             var exists = UserValidator.RequireExists(existingUser, id);
             if (!exists.IsSuccess)
             {
-                return Result<int>.From(exists);
+                throw new BusinessException(exists.Message);
             }
 
-            int outcome = userManager.Delete(id);
-            if (outcome <= 0)
-            {
-                return Result<int>.Fail(ValidationStatus.NotFound, $"User with id {id} not found.");
-            }
-            return Result<int>.Ok(id);
+            userManager.Delete(id);
+        }
+        catch (BusinessException ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw;
         }
         catch (Exception ex)
         {
@@ -288,14 +284,14 @@ public static class UserService
         }
     }
 
-    public static async Task<Result<int>> DeleteAsync(int id)
+    public static async Task DeleteAsync(int id)
     {
         try
         {
             var auth = AccessValidator.RequireAdmin();
             if (!auth.IsSuccess)
             {
-                return Result<int>.From(auth);
+                throw new BusinessException(auth.Message);
             }
 
             var userManager = new UserManager();
@@ -303,15 +299,15 @@ public static class UserService
             var exists = UserValidator.RequireExists(existingUser, id);
             if (!exists.IsSuccess)
             {
-                return Result<int>.From(exists);
+                throw new BusinessException(exists.Message);
             }
 
-            int outcome = await userManager.DeleteAsync(id);
-            if (outcome <= 0)
-            {
-                return Result<int>.Fail(ValidationStatus.NotFound, $"User with id {id} not found.");
-            }
-            return Result<int>.Ok(id);
+            await userManager.DeleteAsync(id);
+        }
+        catch (BusinessException ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw;
         }
         catch (Exception ex)
         {

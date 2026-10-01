@@ -15,17 +15,17 @@ internal class CourseManager
 
     public Task<List<Course>> GetAllAsync() => _courseRepository.GetAllAsync();
 
-    public int Add(Course course) => _courseRepository.Add(course);
+    public void Add(Course course) => _courseRepository.Add(course);
 
-    public Task<int > AddAsync(Course course) => _courseRepository.AddAsync(course);
+    public Task AddAsync(Course course) => _courseRepository.AddAsync(course);
 
-    public int Update(int id, Course course) => _courseRepository.Update(id, course);
+    public void Update(Course course) => _courseRepository.Update(course);
 
-    public Task<int > UpdateAsync(int id, Course course) => _courseRepository.UpdateAsync(id, course);
+    public Task UpdateAsync(Course course) => _courseRepository.UpdateAsync(course);
 
-    public int Delete(int id) => _courseRepository.Delete(id);
+    public void Delete(int id) => _courseRepository.Delete(id);
 
-    public Task<int > DeleteAsync(int id) => _courseRepository.DeleteAsync(id);
+    public Task DeleteAsync(int id) => _courseRepository.DeleteAsync(id);
 
     public List<Course> Search(string regex) => _courseRepository.Search(regex);
 

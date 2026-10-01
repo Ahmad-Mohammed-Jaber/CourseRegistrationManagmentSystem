@@ -212,13 +212,17 @@ public static class UserDataProvider
 
             int rows = command.ExecuteNonQuery();
 
-            if (rows == 0)
+            int? newId = newIdParam.Value != DBNull.Value ? (int)newIdParam.Value : null;
+            if (rows == 0 || newId == null || newId <= 0)
             {
-                return 0;
+                throw new DatabaseException("An error occured in UserDataProvider.Add(User entity): database reported no new id.");
             }
 
-            int? newId = newIdParam.Value != DBNull.Value ? (int)newIdParam.Value : null;
             entity.Id = newId.Value;
+        }
+        catch (DatabaseException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -231,7 +235,7 @@ public static class UserDataProvider
         }
     }
 
-    public static async Task<int> AddAsync(User entity)
+    public static async Task AddAsync(User entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -260,13 +264,17 @@ public static class UserDataProvider
 
             int rows = await command.ExecuteNonQueryAsync();
 
-            if (rows == 0)
+            int? newId = newIdParam.Value != DBNull.Value ? (int)newIdParam.Value : null;
+            if (rows == 0 || newId == null || newId <= 0)
             {
-                return 0;
+                throw new DatabaseException("An error occured in UserDataProvider.AddAsync(User entity): database reported no new id.");
             }
 
-            int? newId = newIdParam.Value != DBNull.Value ? (int)newIdParam.Value : null;
-            return newId ?? 0;
+            entity.Id = newId.Value;
+        }
+        catch (DatabaseException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -279,7 +287,7 @@ public static class UserDataProvider
         }
     }
 
-    public static int Update(int id, User entity)
+    public static void Update(User entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -292,7 +300,7 @@ public static class UserDataProvider
             {
                 CommandType = CommandType.StoredProcedure
             };
-            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+            command.Parameters.Add("@Id", SqlDbType.Int).Value = entity.Id;
             command.Parameters.Add("@UserName", SqlDbType.NVarChar, 100).Value = entity.UserName ?? string.Empty;
             command.Parameters.Add("@PasswordHash", SqlDbType.NVarChar, 255).Value = entity.PasswordHash ?? string.Empty;
             command.Parameters.Add("@FullName", SqlDbType.NVarChar, 100).Value = entity.FullName ?? string.Empty;
@@ -301,11 +309,18 @@ public static class UserDataProvider
             command.Parameters.Add("@ModifiedBy", SqlDbType.Int).Value = entity.ModifiedBy;
 
             int rows = command.ExecuteNonQuery();
-            return rows == 0 ? 0 : id;
+            if (rows == 0)
+            {
+                throw new DatabaseException($"An error occured in UserDataProvider.Update(User entity): User with id {entity.Id} not found.");
+            }
+        }
+        catch (DatabaseException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
-            throw new DatabaseException("An error occured in UserDataProvider.Update(int id, User entity)", ex);
+            throw new DatabaseException("An error occured in UserDataProvider.Update(User entity)", ex);
         }
         finally
         {
@@ -314,7 +329,7 @@ public static class UserDataProvider
         }
     }
 
-    public static async Task<int> UpdateAsync(int id, User entity)
+    public static async Task UpdateAsync(User entity)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -327,7 +342,7 @@ public static class UserDataProvider
             {
                 CommandType = CommandType.StoredProcedure
             };
-            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
+            command.Parameters.Add("@Id", SqlDbType.Int).Value = entity.Id;
             command.Parameters.Add("@UserName", SqlDbType.NVarChar, 100).Value = entity.UserName ?? string.Empty;
             command.Parameters.Add("@PasswordHash", SqlDbType.NVarChar, 255).Value = entity.PasswordHash ?? string.Empty;
             command.Parameters.Add("@FullName", SqlDbType.NVarChar, 100).Value = entity.FullName ?? string.Empty;
@@ -336,11 +351,18 @@ public static class UserDataProvider
             command.Parameters.Add("@ModifiedBy", SqlDbType.Int).Value = entity.ModifiedBy;
 
             int rowsAsync = await command.ExecuteNonQueryAsync();
-            return rowsAsync == 0 ? 0 : id;
+            if (rowsAsync == 0)
+            {
+                throw new DatabaseException($"An error occured in UserDataProvider.UpdateAsync(User entity): User with id {entity.Id} not found.");
+            }
+        }
+        catch (DatabaseException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
-            throw new DatabaseException("An error occured in UserDataProvider.UpdateAsync(int id, User entity)", ex);
+            throw new DatabaseException("An error occured in UserDataProvider.UpdateAsync(User entity)", ex);
         }
         finally
         {
@@ -349,7 +371,7 @@ public static class UserDataProvider
         }
     }
 
-    public static int Delete(int id)
+    public static void Delete(int id)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -364,7 +386,14 @@ public static class UserDataProvider
             };
             command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
             int rows = command.ExecuteNonQuery();
-            return rows == 0 ? 0 : id;
+            if (rows == 0)
+            {
+                throw new DatabaseException($"An error occured in UserDataProvider.Delete(int id): User with id {id} not found.");
+            }
+        }
+        catch (DatabaseException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -377,7 +406,7 @@ public static class UserDataProvider
         }
     }
 
-    public static async Task<int> DeleteAsync(int id)
+    public static async Task DeleteAsync(int id)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -392,7 +421,14 @@ public static class UserDataProvider
             };
             command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
             int rowsAsync = await command.ExecuteNonQueryAsync();
-            return rowsAsync == 0 ? 0 : id;
+            if (rowsAsync == 0)
+            {
+                throw new DatabaseException($"An error occured in UserDataProvider.DeleteAsync(int id): User with id {id} not found.");
+            }
+        }
+        catch (DatabaseException)
+        {
+            throw;
         }
         catch (Exception ex)
         {

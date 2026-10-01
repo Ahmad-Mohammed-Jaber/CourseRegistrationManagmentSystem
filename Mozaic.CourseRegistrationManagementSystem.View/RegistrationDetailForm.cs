@@ -229,23 +229,15 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
 
             try
             {
-                Result<Registration> saveResult;
                 if (_isEditMode)
                 {
-                    saveResult = await RegistrationService.UpdateAsync(entity.Id, entity);
+                    await RegistrationService.UpdateAsync(entity);
                 }
                 else
                 {
-                    saveResult = await RegistrationService.AddAsync(entity);
+                    await RegistrationService.AddAsync(entity);
                 }
 
-                if (!saveResult.IsSuccess || saveResult.Value == null)
-                {
-                    MessageBox.Show($"Error saving registration: {saveResult.Message}");
-                    return;
-                }
-
-                var saved = saveResult.Value;
                 string? studentName = (cmbStudent.SelectedItem as Student)?.UserName
                     ?? (cmbStudent.SelectedItem as Student)?.FullName
                     ?? _reg?.StudentUserName;
@@ -266,24 +258,25 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                 {
                     // Display-name lookup is best-effort; grid still updates without it.
                 }
-                saved.StudentId = entity.StudentId;
-                saved.ClassId = entity.ClassId;
-                saved.RegistrationDate = dtRegDate.Value;
-                saved.Status = cmbStatus.SelectedItem?.ToString() ?? "Registered";
-                saved.StudentUserName = studentName;
-                saved.ClassName = className;
-                saved.CourseName = courseName;
+                entity.StudentId = entity.StudentId;
+                entity.ClassId = entity.ClassId;
+                entity.RegistrationDate = dtRegDate.Value;
+                entity.Status = cmbStatus.SelectedItem?.ToString() ?? "Registered";
+                entity.StudentUserName = studentName;
+                entity.ClassName = className;
+                entity.CourseName = courseName;
                 if (_isEditMode && _reg != null)
                 {
-                    saved.CreatedOn = _reg.CreatedOn;
-                    saved.CreatedBy = _reg.CreatedBy;
+                    entity.CreatedOn = _reg.CreatedOn;
+                    entity.CreatedBy = _reg.CreatedBy;
                 }
                 else
                 {
-                    saved.CreatedOn = DateTimeOffset.Now;
+                    entity.CreatedOn = DateTimeOffset.Now;
+                    entity.CreatedBy = 0;
                 }
-                saved.ModifiedOn = DateTimeOffset.Now;
-                SavedEntity = saved;
+                entity.ModifiedOn = DateTimeOffset.Now;
+                SavedEntity = entity;
 
                 DialogResult = DialogResult.OK;
             }

@@ -64,36 +64,35 @@ public static class CourseService
         }
     }
 
-    public static Result<Course> Add(Course course)
+    public static void Add(Course course)
     {
         try
         {
             var auth = AccessValidator.RequireAdmin();
             if (!auth.IsSuccess)
             {
-                return Result<Course>.From(auth);
+                throw new BusinessException(auth.Message);
             }
 
             var valid = CourseValidator.ValidateCourse(course);
             if (!valid.IsSuccess)
             {
-                return Result<Course>.From(valid);
+                throw new BusinessException(valid.Message);
             }
 
             var unique = EnsureUniqueCourseCodeSync(course.CourseCode);
             if (!unique.IsSuccess)
             {
-                return Result<Course>.From(unique);
+                throw new BusinessException(unique.Message);
             }
 
             var courseManager = new CourseManager();
-            int newId = courseManager.Add(course);
-            if (newId <= 0)
-            {
-                return Result<Course>.Fail(ValidationStatus.Conflict, $"Failed to create course: database reported no new id.");
-            }
-            course.Id = newId;
-            return Result<Course>.Ok(course);
+            courseManager.Add(course);
+        }
+        catch (BusinessException ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw;
         }
         catch (Exception ex)
         {
@@ -102,36 +101,35 @@ public static class CourseService
         }
     }
 
-    public static async Task<Result<Course>> AddAsync(Course course)
+    public static async Task AddAsync(Course course)
     {
         try
         {
             var auth = AccessValidator.RequireAdmin();
             if (!auth.IsSuccess)
             {
-                return Result<Course>.From(auth);
+                throw new BusinessException(auth.Message);
             }
 
             var valid = CourseValidator.ValidateCourse(course);
             if (!valid.IsSuccess)
             {
-                return Result<Course>.From(valid);
+                throw new BusinessException(valid.Message);
             }
 
             var unique = await EnsureUniqueCourseCodeAsync(course.CourseCode);
             if (!unique.IsSuccess)
             {
-                return Result<Course>.From(unique);
+                throw new BusinessException(unique.Message);
             }
 
             var courseManager = new CourseManager();
-            int newId = await courseManager.AddAsync(course);
-            if (newId <= 0)
-            {
-                return Result<Course>.Fail(ValidationStatus.Conflict, $"Failed to create course: database reported no new id.");
-            }
-            course.Id = newId;
-            return Result<Course>.Ok(course);
+            await courseManager.AddAsync(course);
+        }
+        catch (BusinessException ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw;
         }
         catch (Exception ex)
         {
@@ -140,43 +138,42 @@ public static class CourseService
         }
     }
 
-    public static Result<Course> Update(int id, Course course)
+    public static void Update(Course course)
     {
         try
         {
             var auth = AccessValidator.RequireAdmin();
             if (!auth.IsSuccess)
             {
-                return Result<Course>.From(auth);
+                throw new BusinessException(auth.Message);
             }
 
             var courseManager = new CourseManager();
-            var existingCourse = courseManager.GetById(id);
-            var exists = CourseValidator.RequireExists(existingCourse, id);
+            var existingCourse = courseManager.GetById(course.Id);
+            var exists = CourseValidator.RequireExists(existingCourse, course.Id);
             if (!exists.IsSuccess)
             {
-                return Result<Course>.From(exists);
+                throw new BusinessException(exists.Message);
             }
 
             var valid = CourseValidator.ValidateCourse(course);
             if (!valid.IsSuccess)
             {
-                return Result<Course>.From(valid);
+                throw new BusinessException(valid.Message);
             }
 
-            var unique = EnsureUniqueCourseCodeSync(course.CourseCode, id);
+            var unique = EnsureUniqueCourseCodeSync(course.CourseCode, course.Id);
             if (!unique.IsSuccess)
             {
-                return Result<Course>.From(unique);
+                throw new BusinessException(unique.Message);
             }
 
-            int outcome = courseManager.Update(id, course);
-            if (outcome <= 0)
-            {
-                return Result<Course>.Fail(ValidationStatus.NotFound, $"Course with id {id} not found.");
-            }
-            course.Id = id;
-            return Result<Course>.Ok(course);
+            courseManager.Update(course);
+        }
+        catch (BusinessException ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw;
         }
         catch (Exception ex)
         {
@@ -185,43 +182,42 @@ public static class CourseService
         }
     }
 
-    public static async Task<Result<Course>> UpdateAsync(int id, Course course)
+    public static async Task UpdateAsync(Course course)
     {
         try
         {
             var auth = AccessValidator.RequireAdmin();
             if (!auth.IsSuccess)
             {
-                return Result<Course>.From(auth);
+                throw new BusinessException(auth.Message);
             }
 
             var courseManager = new CourseManager();
-            var existingCourse = await courseManager.GetByIdAsync(id);
-            var exists = CourseValidator.RequireExists(existingCourse, id);
+            var existingCourse = await courseManager.GetByIdAsync(course.Id);
+            var exists = CourseValidator.RequireExists(existingCourse, course.Id);
             if (!exists.IsSuccess)
             {
-                return Result<Course>.From(exists);
+                throw new BusinessException(exists.Message);
             }
 
             var valid = CourseValidator.ValidateCourse(course);
             if (!valid.IsSuccess)
             {
-                return Result<Course>.From(valid);
+                throw new BusinessException(valid.Message);
             }
 
-            var unique = await EnsureUniqueCourseCodeAsync(course.CourseCode, id);
+            var unique = await EnsureUniqueCourseCodeAsync(course.CourseCode, course.Id);
             if (!unique.IsSuccess)
             {
-                return Result<Course>.From(unique);
+                throw new BusinessException(unique.Message);
             }
 
-            int outcome = await courseManager.UpdateAsync(id, course);
-            if (outcome <= 0)
-            {
-                return Result<Course>.Fail(ValidationStatus.NotFound, $"Course with id {id} not found.");
-            }
-            course.Id = id;
-            return Result<Course>.Ok(course);
+            await courseManager.UpdateAsync(course);
+        }
+        catch (BusinessException ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw;
         }
         catch (Exception ex)
         {
@@ -230,14 +226,14 @@ public static class CourseService
         }
     }
 
-    public static Result<int> Delete(int id)
+    public static void Delete(int id)
     {
         try
         {
             var auth = AccessValidator.RequireAdmin();
             if (!auth.IsSuccess)
             {
-                return Result<int>.From(auth);
+                throw new BusinessException(auth.Message);
             }
 
             var courseManager = new CourseManager();
@@ -245,15 +241,15 @@ public static class CourseService
             var exists = CourseValidator.RequireExists(existingCourse, id);
             if (!exists.IsSuccess)
             {
-                return Result<int>.From(exists);
+                throw new BusinessException(exists.Message);
             }
 
-            int outcome = courseManager.Delete(id);
-            if (outcome <= 0)
-            {
-                return Result<int>.Fail(ValidationStatus.NotFound, $"Course with id {id} not found.");
-            }
-            return Result<int>.Ok(id);
+            courseManager.Delete(id);
+        }
+        catch (BusinessException ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw;
         }
         catch (Exception ex)
         {
@@ -262,14 +258,14 @@ public static class CourseService
         }
     }
 
-    public static async Task<Result<int>> DeleteAsync(int id)
+    public static async Task DeleteAsync(int id)
     {
         try
         {
             var auth = AccessValidator.RequireAdmin();
             if (!auth.IsSuccess)
             {
-                return Result<int>.From(auth);
+                throw new BusinessException(auth.Message);
             }
 
             var courseManager = new CourseManager();
@@ -277,15 +273,15 @@ public static class CourseService
             var exists = CourseValidator.RequireExists(existingCourse, id);
             if (!exists.IsSuccess)
             {
-                return Result<int>.From(exists);
+                throw new BusinessException(exists.Message);
             }
 
-            int outcome = await courseManager.DeleteAsync(id);
-            if (outcome <= 0)
-            {
-                return Result<int>.Fail(ValidationStatus.NotFound, $"Course with id {id} not found.");
-            }
-            return Result<int>.Ok(id);
+            await courseManager.DeleteAsync(id);
+        }
+        catch (BusinessException ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw;
         }
         catch (Exception ex)
         {
