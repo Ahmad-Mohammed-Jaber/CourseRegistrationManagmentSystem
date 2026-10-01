@@ -1,4 +1,4 @@
-namespace CourseRegistrationManagmentSystem.View
+namespace Mozaic.CourseRegistrationManagementSystem.View
 {
     partial class LoginForm
     {

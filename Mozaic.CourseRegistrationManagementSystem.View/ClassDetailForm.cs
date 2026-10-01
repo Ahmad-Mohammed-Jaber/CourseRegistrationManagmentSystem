@@ -1,4 +1,4 @@
-using Shared.Helpers;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Helpers;
 using System.Windows.Forms;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;

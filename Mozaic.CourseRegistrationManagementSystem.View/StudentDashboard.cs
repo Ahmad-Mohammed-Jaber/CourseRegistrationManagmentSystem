@@ -1,10 +1,9 @@
 using System;
 using System.Windows.Forms;
-using View;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Session;
 using Mozaic.CourseRegistrationManagementSystem.BL.Services;
 
-namespace CourseRegistrationManagmentSystem.View
+namespace Mozaic.CourseRegistrationManagementSystem.View
 {
     public partial class StudentDashboard : Form
     {

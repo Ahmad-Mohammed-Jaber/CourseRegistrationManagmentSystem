@@ -1,5 +1,5 @@
-using BL.Managers;
-using Shared.Exceptions;
+using Mozaic.CourseRegistrationManagementSystem.BL.Managers;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
 using System.Text.RegularExpressions;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Session;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;

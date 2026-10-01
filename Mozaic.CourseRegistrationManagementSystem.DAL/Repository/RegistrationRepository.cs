@@ -1,6 +1,6 @@
 using Mozaic.CourseRegistrationManagementSystem.DAL.Interfaces;
 using Mozaic.CourseRegistrationManagementSystem.DAL.Providers;
-using Shared.Entities;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
 
 namespace Mozaic.CourseRegistrationManagementSystem.DAL.Repository;
 

@@ -8,8 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CourseRegistrationManagmentSystem.Data\CourseRegistrationManagmentSystem.Data.csproj" />
-    <ProjectReference Include="..\CourseRegistrationManagmentSystem.Shared\CourseRegistrationManagmentSystem.Shared.csproj" />
+    <ProjectReference Include="..\Mozaic.CourseRegistrationManagementSystem.BL\Mozaic.CourseRegistrationManagementSystem.BL.csproj" />
+    <ProjectReference Include="..\Mozaic.CourseRegistrationManagementSystem.DAL\Mozaic.CourseRegistrationManagementSystem.DAL.csproj" />
+    <ProjectReference Include="..\Mozaic.CourseRegistrationManagementSystem.Shared\Mozaic.CourseRegistrationManagementSystem.Shared.csproj" />
   </ItemGroup>
 
 </Project>

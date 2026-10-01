@@ -4,7 +4,7 @@ using Mozaic.CourseRegistrationManagementSystem.Shared.Logging;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Session;
 using System.Windows.Forms;
 
-namespace CourseRegistrationManagmentSystem.View
+namespace Mozaic.CourseRegistrationManagementSystem.View
 {
     public partial class LoginForm : Form
     {

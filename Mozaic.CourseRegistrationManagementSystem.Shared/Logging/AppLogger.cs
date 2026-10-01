@@ -2,7 +2,6 @@ using Mozaic.CourseRegistrationManagementSystem.Shared.Database;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Session;
 using Serilog;
-using Shared.Logging;
 using System.Runtime.CompilerServices;
 
 namespace Mozaic.CourseRegistrationManagementSystem.Shared.Logging;

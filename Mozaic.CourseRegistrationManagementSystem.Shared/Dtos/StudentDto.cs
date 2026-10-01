@@ -1,6 +1,6 @@
 namespace Mozaic.CourseRegistrationManagementSystem.Shared.Dtos;
 
-using Shared.Entities;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
 
 public class StudentDto
 {

@@ -1,4 +1,4 @@
-using Shared.Entities;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
 
 namespace Mozaic.CourseRegistrationManagementSystem.DAL.Interfaces;
 

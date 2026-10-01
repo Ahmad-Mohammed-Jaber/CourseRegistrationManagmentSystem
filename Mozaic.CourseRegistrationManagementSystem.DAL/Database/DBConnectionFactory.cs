@@ -1,5 +1,5 @@
 using Microsoft.Data.SqlClient;
-using Shared.Database;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Database;
 
 namespace Mozaic.CourseRegistrationManagementSystem.DAL.Database;
 

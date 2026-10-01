@@ -1,11 +1,9 @@
-using CourseRegistrationManagmentSystem.View;
 using Mozaic.CourseRegistrationManagementSystem.BL.Services;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Dtos;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Logging;
 using System.Drawing;
 using System.Windows.Forms;
-using View;
 
 namespace Mozaic.CourseRegistrationManagementSystem.View
 {

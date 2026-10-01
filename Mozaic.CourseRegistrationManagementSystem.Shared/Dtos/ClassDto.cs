@@ -1,7 +1,7 @@
 namespace Mozaic.CourseRegistrationManagementSystem.Shared.Dtos;
 
 using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
-using Shared.Helpers;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Helpers;
 
 public class ClassDto
 {

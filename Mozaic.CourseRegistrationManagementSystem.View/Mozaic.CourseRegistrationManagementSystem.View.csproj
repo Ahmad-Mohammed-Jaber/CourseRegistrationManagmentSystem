@@ -9,9 +9,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BL\Mozaic.CourseRegistrationManagementSystem.BL.csproj" />
-    <ProjectReference Include="..\DAL\Mozaic.CourseRegistrationManagementSystem.DAL.csproj" />
-    <ProjectReference Include="..\Shared\Mozaic.CourseRegistrationManagementSystem.Shared.csproj" />
+    <ProjectReference Include="..\Mozaic.CourseRegistrationManagementSystem.BL\Mozaic.CourseRegistrationManagementSystem.BL.csproj" />
+    <ProjectReference Include="..\Mozaic.CourseRegistrationManagementSystem.DAL\Mozaic.CourseRegistrationManagementSystem.DAL.csproj" />
+    <ProjectReference Include="..\Mozaic.CourseRegistrationManagementSystem.Shared\Mozaic.CourseRegistrationManagementSystem.Shared.csproj" />
   </ItemGroup>
 
 </Project>

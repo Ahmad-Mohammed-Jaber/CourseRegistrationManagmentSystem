@@ -1,6 +1,6 @@
 ﻿namespace Mozaic.CourseRegistrationManagementSystem.Shared.Session;
 
-using Shared.Entities;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
 
 public class UserSession
 {

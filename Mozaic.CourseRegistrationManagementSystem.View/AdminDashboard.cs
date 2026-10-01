@@ -1,9 +1,8 @@
 using System;
 using System.Windows.Forms;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Session;
-using View;
 
-namespace CourseRegistrationManagmentSystem.View
+namespace Mozaic.CourseRegistrationManagementSystem.View
 {
     public partial class AdminDashboard : Form
     {

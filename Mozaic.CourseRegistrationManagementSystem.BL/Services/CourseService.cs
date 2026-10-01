@@ -1,8 +1,8 @@
-using BL.Managers;
+using Mozaic.CourseRegistrationManagementSystem.BL.Managers;
 using Mozaic.CourseRegistrationManagementSystem.BL.Validation;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Logging;
-using Shared.Exceptions;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
 
 namespace Mozaic.CourseRegistrationManagementSystem.BL.Services;
 

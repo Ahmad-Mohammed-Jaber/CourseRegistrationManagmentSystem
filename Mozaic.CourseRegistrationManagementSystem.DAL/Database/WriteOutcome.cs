@@ -1,6 +1,6 @@
 using Microsoft.Data.SqlClient;
-using Shared.Entities;
-using Shared.Exceptions;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
 
 namespace Mozaic.CourseRegistrationManagementSystem.DAL.Database;
 

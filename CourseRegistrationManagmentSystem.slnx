@@ -1,7 +1,8 @@
 <Solution>
-  <Project Path="BL/Mozaic.CourseRegistrationManagementSystem.BL.csproj" Id="856b44d8-17ac-431b-8271-aba6130fc19d" />
-  <Project Path="Console/Mozaic.CourseRegistrationManagementSystem.Console.csproj" Id="cc72ea80-c69f-46d0-b19c-77fdcfab296a" />
-  <Project Path="DAL/Mozaic.CourseRegistrationManagementSystem.DAL.csproj" Id="f0089564-19b6-4a89-b171-19cfcb506a8b" />
-  <Project Path="Shared/Mozaic.CourseRegistrationManagementSystem.Shared.csproj" Id="3c081474-1f47-41cd-9885-186e2db8ea8f" />
-  <Project Path="View/Mozaic.CourseRegistrationManagementSystem.View.csproj" Id="b40ed3f6-1900-4156-96d7-50514a1bb980" />
+  <Project Path="Mozaic.CourseRegistrationManagementSystem.BL/Mozaic.CourseRegistrationManagementSystem.BL.csproj" Id="856b44d8-17ac-431b-8271-aba6130fc19d" />
+  <Project Path="Mozaic.CourseRegistrationManagementSystem.Console/Mozaic.CourseRegistrationManagementSystem.Console.csproj" Id="cc72ea80-c69f-46d0-b19c-77fdcfab296a" />
+  <Project Path="Mozaic.CourseRegistrationManagementSystem.DAL/Mozaic.CourseRegistrationManagementSystem.DAL.csproj" Id="f0089564-19b6-4a89-b171-19cfcb506a8b" />
+  <Project Path="Mozaic.CourseRegistrationManagementSystem.Shared/Mozaic.CourseRegistrationManagementSystem.Shared.csproj" Id="3c081474-1f47-41cd-9885-186e2db8ea8f" />
+  <Project Path="Mozaic.CourseRegistrationManagementSystem.View/Mozaic.CourseRegistrationManagementSystem.View.csproj" Id="b40ed3f6-1900-4156-96d7-50514a1bb980" />
+  <Project Path="Mozaic.CourseRegistrationManagementSystem.Testing/Testing.csproj" Id="a1b2c3d4-0000-4000-8000-000000000001" />
 </Solution>
