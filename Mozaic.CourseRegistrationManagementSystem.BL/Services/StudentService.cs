@@ -185,11 +185,6 @@ public static class StudentService
                 throw;
             }
         }
-        catch (BusinessException ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw;
-        }
         catch (Exception ex)
         {
             AppLogger.LogCaught(ex);
@@ -261,11 +256,6 @@ public static class StudentService
                 throw;
             }
         }
-        catch (BusinessException ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw;
-        }
         catch (Exception ex)
         {
             AppLogger.LogCaught(ex);
@@ -323,11 +313,6 @@ public static class StudentService
             }
             student.UserId = existingStudent.UserId;
         }
-        catch (BusinessException ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw;
-        }
         catch (Exception ex)
         {
             AppLogger.LogCaught(ex);
@@ -383,11 +368,6 @@ public static class StudentService
             }
             student.UserId = existingStudent.UserId;
         }
-        catch (BusinessException ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw;
-        }
         catch (Exception ex)
         {
             AppLogger.LogCaught(ex);
@@ -432,11 +412,6 @@ public static class StudentService
             studentManager.Delete(id);
             userManager.Delete(student!.UserId);
         }
-        catch (BusinessException ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw;
-        }
         catch (Exception ex)
         {
             AppLogger.LogCaught(ex);
@@ -465,11 +440,6 @@ public static class StudentService
 
             await studentManager.DeleteAsync(id);
             await userManager.DeleteAsync(student!.UserId);
-        }
-        catch (BusinessException ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw;
         }
         catch (Exception ex)
         {

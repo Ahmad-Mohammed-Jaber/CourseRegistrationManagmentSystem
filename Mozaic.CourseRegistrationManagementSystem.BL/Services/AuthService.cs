@@ -10,12 +10,12 @@ namespace Mozaic.CourseRegistrationManagementSystem.BL.Services;
 
 public class AuthService
 {
-    private readonly UserManager _userManager = new UserManager();
 
     public async Task<Result<UserSession>> LoginAsync(string userName, string password)
     {
         try
         {
+            UserManager _userManager = new UserManager();
             var userNameCheck = UserValidator.ValidateUserName(userName);
             if (!userNameCheck.IsSuccess)
             {
@@ -71,6 +71,7 @@ public class AuthService
     {
         try
         {
+            UserManager _userManager = new UserManager();
             bool hasUsers = (await _userManager.GetAllAsync()).Any();
             if (hasUsers)
             {
@@ -126,6 +127,7 @@ public class AuthService
     {
         try
         {
+            UserManager _userManager = new UserManager();
             var auth = AccessValidator.RequireAdmin();
             if (!auth.IsSuccess)
             {

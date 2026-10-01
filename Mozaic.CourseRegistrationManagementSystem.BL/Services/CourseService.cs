@@ -89,11 +89,6 @@ public static class CourseService
             var courseManager = new CourseManager();
             courseManager.Add(course);
         }
-        catch (BusinessException ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw;
-        }
         catch (Exception ex)
         {
             AppLogger.LogCaught(ex);
@@ -125,11 +120,6 @@ public static class CourseService
 
             var courseManager = new CourseManager();
             await courseManager.AddAsync(course);
-        }
-        catch (BusinessException ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw;
         }
         catch (Exception ex)
         {
@@ -170,11 +160,6 @@ public static class CourseService
 
             courseManager.Update(course);
         }
-        catch (BusinessException ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw;
-        }
         catch (Exception ex)
         {
             AppLogger.LogCaught(ex);
@@ -214,11 +199,6 @@ public static class CourseService
 
             await courseManager.UpdateAsync(course);
         }
-        catch (BusinessException ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw;
-        }
         catch (Exception ex)
         {
             AppLogger.LogCaught(ex);
@@ -246,11 +226,6 @@ public static class CourseService
 
             courseManager.Delete(id);
         }
-        catch (BusinessException ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw;
-        }
         catch (Exception ex)
         {
             AppLogger.LogCaught(ex);
@@ -277,11 +252,6 @@ public static class CourseService
             }
 
             await courseManager.DeleteAsync(id);
-        }
-        catch (BusinessException ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw;
         }
         catch (Exception ex)
         {

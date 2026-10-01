@@ -84,11 +84,6 @@ public static class ClassService
             var classManager = new ClassManager();
             classManager.Add(classEntity);
         }
-        catch (BusinessException ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw;
-        }
         catch (Exception ex)
         {
             AppLogger.LogCaught(ex);
@@ -114,11 +109,6 @@ public static class ClassService
 
             var classManager = new ClassManager();
             await classManager.AddAsync(classEntity);
-        }
-        catch (BusinessException ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw;
         }
         catch (Exception ex)
         {
@@ -160,11 +150,6 @@ public static class ClassService
 
             classManager.Update(classEntity);
         }
-        catch (BusinessException ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw;
-        }
         catch (Exception ex)
         {
             AppLogger.LogCaught(ex);
@@ -205,11 +190,6 @@ public static class ClassService
 
             await classManager.UpdateAsync(classEntity);
         }
-        catch (BusinessException ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw;
-        }
         catch (Exception ex)
         {
             AppLogger.LogCaught(ex);
@@ -230,11 +210,6 @@ public static class ClassService
             }
 
             classManager.Delete(id);
-        }
-        catch (BusinessException ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw;
         }
         catch (Exception ex)
         {
@@ -262,11 +237,6 @@ public static class ClassService
             }
 
             await classManager.DeleteAsync(id);
-        }
-        catch (BusinessException ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw;
         }
         catch (Exception ex)
         {

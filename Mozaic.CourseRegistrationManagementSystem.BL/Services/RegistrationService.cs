@@ -104,11 +104,6 @@ public static class RegistrationService
 
             registrationManager.Add(registration);
         }
-        catch (BusinessException ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw;
-        }
         catch (Exception ex)
         {
             AppLogger.LogCaught(ex);
@@ -153,11 +148,6 @@ public static class RegistrationService
             }
 
             await registrationManager.AddAsync(registration);
-        }
-        catch (BusinessException ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw;
         }
         catch (Exception ex)
         {
@@ -215,11 +205,6 @@ public static class RegistrationService
 
             registrationManager.Update(registration);
         }
-        catch (BusinessException ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw;
-        }
         catch (Exception ex)
         {
             AppLogger.LogCaught(ex);
@@ -275,11 +260,6 @@ public static class RegistrationService
 
             await registrationManager.UpdateAsync(registration);
         }
-        catch (BusinessException ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw;
-        }
         catch (Exception ex)
         {
             AppLogger.LogCaught(ex);
@@ -307,11 +287,6 @@ public static class RegistrationService
 
             registrationManager.Delete(id);
         }
-        catch (BusinessException ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw;
-        }
         catch (Exception ex)
         {
             AppLogger.LogCaught(ex);
@@ -338,11 +313,6 @@ public static class RegistrationService
             }
 
             await registrationManager.DeleteAsync(id);
-        }
-        catch (BusinessException ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw;
         }
         catch (Exception ex)
         {

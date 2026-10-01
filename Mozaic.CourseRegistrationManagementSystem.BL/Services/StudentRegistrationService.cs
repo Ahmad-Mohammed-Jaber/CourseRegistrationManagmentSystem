@@ -88,11 +88,6 @@ public static class StudentRegistrationService
 
             return;
         }
-        catch (BusinessException ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw;
-        }
         catch (Exception ex)
         {
             AppLogger.LogCaught(ex);
@@ -144,11 +139,6 @@ public static class StudentRegistrationService
 
             await classManager.UpdateAsync(@class);
             return;
-        }
-        catch (BusinessException ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw;
         }
         catch (Exception ex)
         {

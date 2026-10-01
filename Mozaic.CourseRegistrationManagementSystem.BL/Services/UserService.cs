@@ -95,11 +95,6 @@ public static class UserService
             var userManager = new UserManager();
             userManager.Add(user);
         }
-        catch (BusinessException ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw;
-        }
         catch (Exception ex)
         {
             AppLogger.LogCaught(ex);
@@ -135,11 +130,6 @@ public static class UserService
 
             var userManager = new UserManager();
             await userManager.AddAsync(user);
-        }
-        catch (BusinessException ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw;
         }
         catch (Exception ex)
         {
@@ -188,11 +178,6 @@ public static class UserService
 
             userManager.Update(user);
         }
-        catch (BusinessException ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw;
-        }
         catch (Exception ex)
         {
             AppLogger.LogCaught(ex);
@@ -240,11 +225,6 @@ public static class UserService
 
             await userManager.UpdateAsync(user);
         }
-        catch (BusinessException ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw;
-        }
         catch (Exception ex)
         {
             AppLogger.LogCaught(ex);
@@ -272,11 +252,6 @@ public static class UserService
 
             userManager.Delete(id);
         }
-        catch (BusinessException ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw;
-        }
         catch (Exception ex)
         {
             AppLogger.LogCaught(ex);
@@ -303,11 +278,6 @@ public static class UserService
             }
 
             await userManager.DeleteAsync(id);
-        }
-        catch (BusinessException ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw;
         }
         catch (Exception ex)
         {
