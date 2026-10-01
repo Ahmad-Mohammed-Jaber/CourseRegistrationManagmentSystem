@@ -1,5 +1,5 @@
 using Mozaic.CourseRegistrationManagementSystem.BL.Services;
-using Mozaic.CourseRegistrationManagementSystem.Shared.Dtos;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Logging;
 using System.Drawing;
@@ -12,7 +12,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
         private DataGridView dgvRegs;
         private Button btnDrop;
         private Panel topPanel;
-        private List<RegistrationDetailsDto> _regs = new();
+        private List<(Registration Registration, Class Class)> _data = new();
 
         public MyRegistrationsForm()
         {
@@ -66,14 +66,9 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
         {
             try
             {
-                var regs = await StudentRegistrationService.GetRegistrationsAsync();
+                _data = await StudentRegistrationService.GetRegistrationsAsync();
 
-                _regs = regs
-                    .Select(x => x.Registration.ToDetailsDto(x.Class))
-                    .ToList();
-
-                dgvRegs.DataSource = null;
-                dgvRegs.DataSource = _regs;
+                RefreshGrid();
             }
             catch (BusinessException ex)
             {
@@ -84,6 +79,24 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                 AppLogger.LogViewError(ex);
                 MessageBox.Show("Error loading registrations due to an unexpected error.");
             }
+        }
+
+        private void RefreshGrid()
+        {
+            dgvRegs.DataSource = null;
+            dgvRegs.DataSource = _data
+                .Select(x => new
+                {
+                    RegistrationId = x.Registration.Id,
+                    ClassName = x.Class.ClassName,
+                    Instructor = x.Class.Instructor,
+                    Schedule = x.Class.ScheduleDisplay,
+                    StartDate = x.Class.StartDate,
+                    EndDate = x.Class.EndDate,
+                    RegistrationDate = x.Registration.RegistrationDate,
+                    Status = x.Registration.Status
+                })
+                .ToList();
         }
 
 
@@ -113,6 +126,11 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             if (dgvRegs.Columns["ClassName"] != null)
             {
                 dgvRegs.Columns["ClassName"].HeaderText = "Class";
+            }
+
+            if (dgvRegs.Columns["Instructor"] != null)
+            {
+                dgvRegs.Columns["Instructor"].HeaderText = "Instructor";
             }
 
             if (dgvRegs.Columns["InstructorName"] != null)
@@ -152,6 +170,11 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                 dgvRegs.Columns["ClassName"].DisplayIndex = index++;
             }
 
+            if (dgvRegs.Columns["Instructor"] != null)
+            {
+                dgvRegs.Columns["Instructor"].DisplayIndex = index++;
+            }
+
             if (dgvRegs.Columns["InstructorName"] != null)
             {
                 dgvRegs.Columns["InstructorName"].DisplayIndex = index++;
@@ -182,43 +205,49 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
 
         private async void btnDrop_Click(object sender, EventArgs e)
         {
-            if (dgvRegs.CurrentRow?.DataBoundItem is RegistrationDetailsDto reg)
-            {
-                var result = MessageBox.Show(
-                    "Are you sure you want to drop this class?",
-                    "Confirm Drop",
-                    MessageBoxButtons.YesNo,
-                    MessageBoxIcon.Question);
-
-
-                if (result == DialogResult.Yes)
-                {
-                    try
-                    {
-                        var dropResult = await StudentRegistrationService.DropRegistration(reg.RegistrationId);
-                        if (!dropResult.IsSuccess)
-                        {
-                            MessageBox.Show($"Drop failed: {dropResult.Message}");
-                            return;
-                        }
-                        _regs.RemoveAll(r => r.RegistrationId == reg.RegistrationId);
-                        dgvRegs.DataSource = null;
-                        dgvRegs.DataSource = _regs;
-                    }
-                    catch (BusinessException ex)
-                    {
-                        MessageBox.Show(ex.Message);
-                    }
-                    catch (Exception ex)
-                    {
-                        AppLogger.LogViewError(ex);
-                        MessageBox.Show("Drop failed due to an unexpected error.");
-                    }
-                }
-            }
-            else
+            var item = dgvRegs.CurrentRow?.DataBoundItem;
+            if (item == null)
             {
                 MessageBox.Show("Please select a registration to drop.");
+                return;
+            }
+
+            var idProp = item.GetType().GetProperty("RegistrationId");
+            if (idProp == null || idProp.GetValue(item) is not int registrationId)
+            {
+                MessageBox.Show("Please select a registration to drop.");
+                return;
+            }
+
+            var result = MessageBox.Show(
+                "Are you sure you want to drop this class?",
+                "Confirm Drop",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+
+
+            if (result == DialogResult.Yes)
+            {
+                try
+                {
+                    var dropResult = await StudentRegistrationService.DropRegistration(registrationId);
+                    if (!dropResult.IsSuccess)
+                    {
+                        MessageBox.Show($"Drop failed: {dropResult.Message}");
+                        return;
+                    }
+                    _data.RemoveAll(r => r.Registration.Id == registrationId);
+                    RefreshGrid();
+                }
+                catch (BusinessException ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+                catch (Exception ex)
+                {
+                    AppLogger.LogViewError(ex);
+                    MessageBox.Show("Drop failed due to an unexpected error.");
+                }
             }
         }
     }

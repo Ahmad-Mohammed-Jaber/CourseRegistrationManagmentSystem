@@ -1,5 +1,5 @@
 using Mozaic.CourseRegistrationManagementSystem.BL.Services;
-using Mozaic.CourseRegistrationManagementSystem.Shared.Dtos;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Logging;
 using System.Drawing;
@@ -17,7 +17,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
         private TextBox txtSearch;
         private Button btnSearch;
         private Panel topPanel;
-        private List<ClassDto> _classes = new();
+        private List<Class> _classes = new();
 
         public ClassListForm()
         {
@@ -100,7 +100,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             try
             {
                 var classes = await ClassService.GetAllAsync();
-                _classes = classes.Select(c => c.ToDto()).ToList()!;
+                _classes = classes.ToList();
                 RefreshGrid();
             }
             catch (BusinessException ex)
@@ -125,7 +125,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
         {
             foreach (DataGridViewRow row in dgvClasses.Rows)
             {
-                if (row.DataBoundItem is ClassDto dto && dto.Id == id)
+                if (row.DataBoundItem is Class entity && entity.Id == id)
                 {
                     row.Selected = true;
                     dgvClasses.CurrentCell = row.Cells[0];
@@ -141,9 +141,9 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                 dgvClasses.Columns["Schedule"].Visible = false;
             }
 
-            if (dgvClasses.Columns["ScheduleString"] != null)
+            if (dgvClasses.Columns["ScheduleDisplay"] != null)
             {
-                dgvClasses.Columns["ScheduleString"].HeaderText = "Schedule";
+                dgvClasses.Columns["ScheduleDisplay"].HeaderText = "Schedule";
             }
 
             if (dgvClasses.Columns["CurrentCapacity"] != null && dgvClasses.Columns["MaxCapacity"] != null)
@@ -186,7 +186,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                 if (!string.IsNullOrWhiteSpace(txtSearch.Text))
                 {
                     var classes = await ClassService.SearchAsync(txtSearch.Text);
-                    _classes = classes.Select(c => c.ToDto()).ToList()!;
+                    _classes = classes.ToList();
                     RefreshGrid();
                 }
                 else
@@ -209,26 +209,26 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
         {
             using var form = new ClassDetailForm();
 
-            if (form.ShowDialog() == DialogResult.OK && form.SavedDto != null)
+            if (form.ShowDialog() == DialogResult.OK && form.SavedEntity != null)
             {
-                _classes.Add(form.SavedDto);
+                _classes.Add(form.SavedEntity);
                 RefreshGrid();
-                SelectRowById(form.SavedDto.Id);
+                SelectRowById(form.SavedEntity.Id);
             }
         }
 
         private void btnEdit_Click(object sender, EventArgs e)
         {
-            if (dgvClasses.CurrentRow?.DataBoundItem is ClassDto cls)
+            if (dgvClasses.CurrentRow?.DataBoundItem is Class cls)
             {
                 using var form = new ClassDetailForm(cls);
 
-                if (form.ShowDialog() == DialogResult.OK && form.SavedDto != null)
+                if (form.ShowDialog() == DialogResult.OK && form.SavedEntity != null)
                 {
                     int index = _classes.FindIndex(c => c.Id == cls.Id);
                     if (index >= 0)
                     {
-                        _classes[index] = form.SavedDto;
+                        _classes[index] = form.SavedEntity;
                     }
                     RefreshGrid();
                     SelectRowById(cls.Id);
@@ -242,7 +242,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
 
         private async void btnDelete_Click(object sender, EventArgs e)
         {
-            if (dgvClasses.CurrentRow?.DataBoundItem is ClassDto cls)
+            if (dgvClasses.CurrentRow?.DataBoundItem is Class cls)
             {
                 var result = MessageBox.Show(
                     $"Are you sure you want to delete class {cls.ClassName}?",

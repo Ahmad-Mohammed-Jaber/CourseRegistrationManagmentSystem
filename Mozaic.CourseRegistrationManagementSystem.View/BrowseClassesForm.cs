@@ -1,7 +1,7 @@
 using System.Drawing;
 using System.Windows.Forms;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
-using Mozaic.CourseRegistrationManagementSystem.Shared.Dtos;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Logging;
 using Mozaic.CourseRegistrationManagementSystem.BL.Services;
 
@@ -12,7 +12,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
         private DataGridView dgvClasses;
         private Button btnRegister;
         private Panel topPanel;
-        private List<ClassDto> _classes = new();
+        private List<Class> _classes = new();
 
         public BrowseClassesForm()
         {
@@ -146,7 +146,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             try
             {
                 var classes = await ClassService.GetAllAsync();
-                _classes = classes.Select(c => c.ToDto()).ToList()!;
+                _classes = classes.ToList();
                 dgvClasses.DataSource = null;
                 dgvClasses.DataSource = _classes;
             }
@@ -163,7 +163,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
 
         private async void btnRegister_Click(object sender, EventArgs e)
         {
-            if (dgvClasses.CurrentRow?.DataBoundItem is ClassDto cls)
+            if (dgvClasses.CurrentRow?.DataBoundItem is Class cls)
             {
                 try
                 {

@@ -2,85 +2,12 @@ using Microsoft.Data.SqlClient;
 using System.Data;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
-using Mozaic.CourseRegistrationManagementSystem.Shared.Dtos;
 using Mozaic.CourseRegistrationManagementSystem.DAL.Database;
 
 namespace Mozaic.CourseRegistrationManagementSystem.DAL.Providers;
 
 public static class StudentDataProvider
 {
-    public static StudentProfile? GetProfileByUserId(int userId)
-    {
-        SqlConnection? connection = null;
-        SqlCommand? command = null;
-        SqlDataReader? reader = null;
-        try
-        {
-            connection = DBConnectionFactory.CreateConnection();
-            connection.Open();
-
-            command = new SqlCommand("usp_GetStudentProfileByUserId", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.Add("@UserId", SqlDbType.Int).Value = userId;
-
-            reader = command.ExecuteReader();
-            if (reader.Read())
-            {
-                return MapStudentProfile(reader);
-            }
-
-            return null;
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in StudentDataProvider.GetProfileByUserId(int userId)", ex);
-        }
-        finally
-        {
-            reader?.Dispose();
-            command?.Dispose();
-            connection?.Dispose();
-        }
-    }
-
-    public static async Task<StudentProfile?> GetProfileByUserIdAsync(int userId)
-    {
-        SqlConnection? connection = null;
-        SqlCommand? command = null;
-        SqlDataReader? reader = null;
-        try
-        {
-            connection = DBConnectionFactory.CreateConnection();
-            await connection.OpenAsync();
-
-            command = new SqlCommand("usp_GetStudentProfileByUserId", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.Add("@UserId", SqlDbType.Int).Value = userId;
-
-            reader = await command.ExecuteReaderAsync();
-            if (await reader.ReadAsync())
-            {
-                return MapStudentProfile(reader);
-            }
-
-            return null;
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in StudentDataProvider.GetProfileByUserIdAsync(int userId)", ex);
-        }
-        finally
-        {
-            reader?.Dispose();
-            command?.Dispose();
-            connection?.Dispose();
-        }
-    }
-
     public static Student? GetById(int id)
     {
         SqlConnection? connection = null;
@@ -581,31 +508,6 @@ public static class StudentDataProvider
             command?.Dispose();
             connection?.Dispose();
         }
-    }
-
-    private static StudentProfile MapStudentProfile(SqlDataReader reader)
-    {
-        object roleVal = reader.GetValue(reader.GetOrdinal("Role"));
-        string roleStr = roleVal is int i ? ((User.UserRoles)i).ToString() : roleVal?.ToString() ?? string.Empty;
-
-        // Canonical columns: StudentId + UserId. Fall back to legacy "Id" (StudentId).
-        int studentId = HasColumn(reader, "StudentId") && !reader.IsDBNull(reader.GetOrdinal("StudentId"))
-            ? reader.GetInt32(reader.GetOrdinal("StudentId"))
-            : reader.GetInt32(reader.GetOrdinal("Id"));
-        int userId = HasColumn(reader, "UserId") && !reader.IsDBNull(reader.GetOrdinal("UserId"))
-            ? reader.GetInt32(reader.GetOrdinal("UserId"))
-            : studentId;
-
-        return new StudentProfile(
-            studentId,
-            userId,
-            reader.GetString(reader.GetOrdinal("UserName")),
-            reader.GetString(reader.GetOrdinal("FullName")),
-            roleStr,
-            reader.IsDBNull(reader.GetOrdinal("StudentNumber")) ? 0 : reader.GetInt32(reader.GetOrdinal("StudentNumber")),
-            reader.IsDBNull(reader.GetOrdinal("Email")) ? string.Empty : reader.GetString(reader.GetOrdinal("Email")),
-            reader.IsDBNull(reader.GetOrdinal("Phone")) ? string.Empty : reader.GetString(reader.GetOrdinal("Phone"))
-        );
     }
 
     private static Student MapStudent(SqlDataReader reader)

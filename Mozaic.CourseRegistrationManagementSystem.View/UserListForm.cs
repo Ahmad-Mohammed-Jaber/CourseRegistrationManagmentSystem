@@ -1,6 +1,6 @@
 using System.Windows.Forms;
 using System.Windows;
-using Mozaic.CourseRegistrationManagementSystem.Shared.Dtos;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Logging;
 using Mozaic.CourseRegistrationManagementSystem.BL.Services;
@@ -18,7 +18,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
         private TextBox txtSearch;
         private Button btnSearch;
         private Panel topPanel;
-        private List<UserDto> _users = new();
+        private List<User> _users = new();
 
         public UserListForm()
         {
@@ -92,7 +92,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             try
             {
                 var users = await UserService.GetAllAsync();
-                _users = users.Select(u => u.ToDto()).ToList()!;
+                _users = users.ToList();
                 RefreshGrid();
             }
             catch (BusinessException ex)
@@ -117,7 +117,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
         {
             foreach (DataGridViewRow row in dgvUsers.Rows)
             {
-                if (row.DataBoundItem is UserDto dto && dto.Id == id)
+                if (row.DataBoundItem is User entity && entity.Id == id)
                 {
                     row.Selected = true;
                     dgvUsers.CurrentCell = row.Cells[0];
@@ -128,6 +128,11 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
 
         private void ConfigureColumns()
         {
+            if (dgvUsers.Columns["PasswordHash"] != null)
+            {
+                dgvUsers.Columns["PasswordHash"].Visible = false;
+            }
+
             if (dgvUsers.Columns["CreatedOn"] != null)
             {
                 dgvUsers.Columns["CreatedOn"].Visible = true;
@@ -160,7 +165,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                 if (!string.IsNullOrWhiteSpace(txtSearch.Text))
                 {
                     var users = await UserService.SearchAsync(txtSearch.Text);
-                    _users = users.Select(u => u.ToDto()).ToList()!;
+                    _users = users.ToList();
                     RefreshGrid();
                 }
                 else
@@ -183,27 +188,27 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
         {
             using (var form = new UserDetailForm())
             {
-                if (form.ShowDialog() == DialogResult.OK && form.SavedDto != null)
+                if (form.ShowDialog() == DialogResult.OK && form.SavedEntity != null)
                 {
-                    _users.Add(form.SavedDto);
+                    _users.Add(form.SavedEntity);
                     RefreshGrid();
-                    SelectRowById(form.SavedDto.Id);
+                    SelectRowById(form.SavedEntity.Id);
                 }
             }
         }
 
         private void btnEdit_Click(object sender, EventArgs e)
         {
-            if (dgvUsers.CurrentRow?.DataBoundItem is UserDto user)
+            if (dgvUsers.CurrentRow?.DataBoundItem is User user)
             {
                 using (var form = new UserDetailForm(user))
                 {
-                    if (form.ShowDialog() == DialogResult.OK && form.SavedDto != null)
+                    if (form.ShowDialog() == DialogResult.OK && form.SavedEntity != null)
                     {
                         int index = _users.FindIndex(u => u.Id == user.Id);
                         if (index >= 0)
                         {
-                            _users[index] = form.SavedDto;
+                            _users[index] = form.SavedEntity;
                         }
                         RefreshGrid();
                         SelectRowById(user.Id);
@@ -217,7 +222,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
         }
         private async void btnDelete_Click(object sender, EventArgs e)
         {
-            if (dgvUsers.CurrentRow?.DataBoundItem is UserDto user)
+            if (dgvUsers.CurrentRow?.DataBoundItem is User user)
             {
                 var result = MessageBox.Show(
                     $"Are you sure you want to delete user {user.UserName}?",

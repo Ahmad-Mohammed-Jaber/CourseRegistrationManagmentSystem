@@ -44,4 +44,7 @@ public class Class
     public int ModifiedBy { get; set; }
 
     public int CreatedBy { get; set; }
+
+    // Transient (not a DB column): friendly schedule text for grid display.
+    public string ScheduleDisplay => Helpers.ScheduleHelper.GetScheduleString(Schedule);
 }

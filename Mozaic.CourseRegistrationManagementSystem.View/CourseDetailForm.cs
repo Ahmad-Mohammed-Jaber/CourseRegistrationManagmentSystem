@@ -1,6 +1,5 @@
 using Mozaic.CourseRegistrationManagementSystem.BL.Services;
 using Mozaic.CourseRegistrationManagementSystem.BL.Validation;
-using Mozaic.CourseRegistrationManagementSystem.Shared.Dtos;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Logging;
@@ -10,7 +9,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
 {
     public partial class CourseDetailForm : Form
     {
-        private CourseDto? _course;
+        private Course? _course;
         private bool _isEditMode;
 
         private TextBox txtCode;
@@ -25,9 +24,9 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
         private Button btnSave;
         private Button btnCancel;
 
-        public CourseDto? SavedDto { get; private set; }
+        public Course? SavedEntity { get; private set; }
 
-        public CourseDetailForm(CourseDto? course = null)
+        public CourseDetailForm(Course? course = null)
         {
             _course = course;
             _isEditMode = course != null;
@@ -116,7 +115,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
 
         private async void btnSave_Click(object sender, EventArgs e)
         {
-            var dto = new CourseDto
+            var entity = new Course
             {
                 Id = _isEditMode ? _course!.Id : 0,
                 CourseCode = txtCode.Text,
@@ -126,7 +125,6 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                 IsActive = chkActive.Checked
             };
 
-            var entity = dto.ToEntity();
             var validation = CourseValidator.ValidateCourse(entity);
             if (!validation.IsSuccess)
             {
@@ -152,19 +150,12 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                     return;
                 }
                 var saved = saveResult.Value;
-                SavedDto = new CourseDto
-                {
-                    Id = saved.Id,
-                    CourseCode = txtCode.Text,
-                    CourseName = txtName.Text,
-                    CreditHours = (int)numCredits.Value,
-                    Description = txtDesc.Text,
-                    IsActive = chkActive.Checked,
-                    CreatedOn = _isEditMode && _course != null ? _course.CreatedOn : DateTimeOffset.Now,
-                    ModifiedOn = DateTimeOffset.Now,
-                    CreatedBy = _isEditMode && _course != null ? _course.CreatedBy : saved.CreatedBy,
-                    ModifiedBy = saved.ModifiedBy
-                };
+                entity.Id = saved.Id;
+                entity.CreatedOn = _isEditMode && _course != null ? _course.CreatedOn : DateTimeOffset.Now;
+                entity.ModifiedOn = DateTimeOffset.Now;
+                entity.CreatedBy = _isEditMode && _course != null ? _course.CreatedBy : saved.CreatedBy;
+                entity.ModifiedBy = saved.ModifiedBy;
+                SavedEntity = entity;
                 this.DialogResult = DialogResult.OK;
             }
             catch (BusinessException ex)

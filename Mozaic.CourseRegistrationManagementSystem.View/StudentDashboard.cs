@@ -46,7 +46,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
 
             try
             {
-                var profile = await StudentService.GetCurrentProfileAsync();
+                var profile = await StudentService.GetCurrentStudentAsync();
                 if (profile != null)
                 {
                     lblWelcome.Text = $"{baseText} - Student #{profile.StudentNumber}";

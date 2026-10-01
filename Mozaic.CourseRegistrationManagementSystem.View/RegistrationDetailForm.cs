@@ -1,6 +1,5 @@
 using Mozaic.CourseRegistrationManagementSystem.BL.Services;
 using Mozaic.CourseRegistrationManagementSystem.BL.Validation;
-using Mozaic.CourseRegistrationManagementSystem.Shared.Dtos;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Logging;
@@ -10,7 +9,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
 {
     public partial class RegistrationDetailForm : Form
     {
-        private RegistrationDto? _reg;
+        private Registration? _reg;
         private bool _isEditMode;
 
         private ComboBox cmbStudent;
@@ -26,10 +25,10 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
         private Button btnSave;
         private Button btnCancel;
 
-        public RegistrationDto? SavedDto { get; private set; }
+        public Registration? SavedEntity { get; private set; }
 
 
-        public RegistrationDetailForm(RegistrationDto? reg = null)
+        public RegistrationDetailForm(Registration? reg = null)
         {
             _reg = reg;
             _isEditMode = reg != null;
@@ -205,7 +204,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
 
         private async void btnSave_Click(object sender, EventArgs e)
         {
-            var dto = new RegistrationDto
+            var entity = new Registration
             {
                 Id = _isEditMode
                     ? _reg!.Id
@@ -221,7 +220,6 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                 RegistrationDate = dtRegDate.Value
             };
 
-            var entity = dto.ToEntity();
             var validation = RegistrationValidator.ValidateRegistration(entity);
             if (!validation.IsSuccess)
             {
@@ -268,21 +266,24 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                 {
                     // Display-name lookup is best-effort; grid still updates without it.
                 }
-                SavedDto = new RegistrationDto
+                saved.StudentId = entity.StudentId;
+                saved.ClassId = entity.ClassId;
+                saved.RegistrationDate = dtRegDate.Value;
+                saved.Status = cmbStatus.SelectedItem?.ToString() ?? "Registered";
+                saved.StudentUserName = studentName;
+                saved.ClassName = className;
+                saved.CourseName = courseName;
+                if (_isEditMode && _reg != null)
                 {
-                    Id = saved.Id,
-                    StudentId = saved.StudentId,
-                    StudentUserName = studentName,
-                    ClassId = saved.ClassId,
-                    ClassName = className,
-                    CourseName = courseName,
-                    RegistrationDate = dtRegDate.Value,
-                    Status = cmbStatus.SelectedItem?.ToString() ?? "Registered",
-                    CreatedOn = _isEditMode && _reg != null ? _reg.CreatedOn : DateTimeOffset.Now,
-                    ModifiedOn = DateTimeOffset.Now,
-                    CreatedBy = _isEditMode && _reg != null ? _reg.CreatedBy : saved.CreatedBy,
-                    ModifiedBy = saved.ModifiedBy
-                };
+                    saved.CreatedOn = _reg.CreatedOn;
+                    saved.CreatedBy = _reg.CreatedBy;
+                }
+                else
+                {
+                    saved.CreatedOn = DateTimeOffset.Now;
+                }
+                saved.ModifiedOn = DateTimeOffset.Now;
+                SavedEntity = saved;
 
                 DialogResult = DialogResult.OK;
             }

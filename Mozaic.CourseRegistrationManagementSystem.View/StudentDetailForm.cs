@@ -1,6 +1,5 @@
 using Mozaic.CourseRegistrationManagementSystem.BL.Services;
 using Mozaic.CourseRegistrationManagementSystem.BL.Validation;
-using Mozaic.CourseRegistrationManagementSystem.Shared.Dtos;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Logging;
@@ -13,7 +12,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
     {
         private readonly AuthService _authService = new AuthService();
 
-        private StudentDto? _student;
+        private Student? _student;
         private bool _isEditMode;
 
         private TextBox txtNumber;
@@ -35,9 +34,9 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
         private Button btnSave;
         private Button btnCancel;
 
-        public StudentDto? SavedDto { get; private set; }
+        public Student? SavedEntity { get; private set; }
 
-        public StudentDetailForm(StudentDto? student = null)
+        public StudentDetailForm(Student? student = null)
         {
             _student = student;
             _isEditMode = student != null;
@@ -229,7 +228,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                 Result<Student> saveResult;
                 if (_isEditMode)
                 {
-                    var dto = new StudentDto
+                    var entity = new Student
                     {
                         Id = _student!.Id,
                         UserId = _student.UserId,
@@ -242,7 +241,6 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                         Role = User.UserRoles.Student
                     };
 
-                    var entity = dto.ToEntity();
                     saveResult = await StudentService.UpdateAsync(entity.Id, entity);
                 }
                 else
@@ -264,22 +262,24 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                     return;
                 }
                 var saved = saveResult.Value;
-                SavedDto = new StudentDto
+                saved.StudentNumber = studentNumber;
+                saved.Email = txtEmail.Text;
+                saved.Phone = txtPhone.Text;
+                saved.UserName = txtUsername.Text;
+                saved.FullName = txtFullName.Text;
+                saved.IsActive = chkActive.Checked;
+                saved.Role = User.UserRoles.Student;
+                if (_isEditMode && _student != null)
                 {
-                    Id = saved.Id,
-                    UserId = saved.UserId,
-                    StudentNumber = studentNumber,
-                    Email = txtEmail.Text,
-                    Phone = txtPhone.Text,
-                    UserName = txtUsername.Text,
-                    FullName = txtFullName.Text,
-                    IsActive = chkActive.Checked,
-                    Role = User.UserRoles.Student,
-                    CreatedOn = _isEditMode && _student != null ? _student.CreatedOn : DateTimeOffset.Now,
-                    ModifiedOn = DateTimeOffset.Now,
-                    CreatedBy = _isEditMode && _student != null ? _student.CreatedBy : saved.CreatedBy,
-                    ModifiedBy = saved.ModifiedBy
-                };
+                    saved.CreatedOn = _student.CreatedOn;
+                    saved.CreatedBy = _student.CreatedBy;
+                }
+                else
+                {
+                    saved.CreatedOn = DateTimeOffset.Now;
+                }
+                saved.ModifiedOn = DateTimeOffset.Now;
+                SavedEntity = saved;
                 DialogResult = DialogResult.OK;
             }
             catch (BusinessException ex)

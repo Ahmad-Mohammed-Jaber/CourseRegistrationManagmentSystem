@@ -1,8 +1,6 @@
-using Mozaic.CourseRegistrationManagementSystem.Shared.Helpers;
 using System.Windows.Forms;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
-using Mozaic.CourseRegistrationManagementSystem.Shared.Dtos;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Logging;
 using Mozaic.CourseRegistrationManagementSystem.BL.Validation;
 using Mozaic.CourseRegistrationManagementSystem.BL.Services;
@@ -11,7 +9,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
 {
     public partial class ClassDetailForm : Form
     {
-        private ClassDto? _class;
+        private Class? _class;
         private bool _isEditMode;
 
         private ComboBox cmbCourse;
@@ -33,9 +31,9 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
         private Button btnSave;
         private Button btnCancel;
 
-        public ClassDto? SavedDto { get; private set; }
+        public Class? SavedEntity { get; private set; }
 
-        public ClassDetailForm(ClassDto? cls = null)
+        public ClassDetailForm(Class? cls = null)
         {
             _class = cls;
             _isEditMode = cls != null;
@@ -234,13 +232,14 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
 
         private async void btnSave_Click(object sender, EventArgs e)
         {
-            var dto = new ClassDto
+            var entity = new Class
             {
                 Id = _isEditMode ? _class!.Id : 0,
                 CourseId = cmbCourse.SelectedValue is int cid ? cid : 0,
                 ClassName = txtName.Text,
                 Instructor = txtInstructor.Text,
                 MaxCapacity = (int)numCapacity.Value,
+                CurrentCapacity = _isEditMode && _class != null ? _class.CurrentCapacity : 0,
                 Schedule = chkDays.Where(kvp => kvp.Value.Checked)
                                   .Aggregate(Class.DaysOfWeek.None, (acc, kvp) => acc | kvp.Key),
                 StartDate = dtStart.Value,
@@ -248,7 +247,6 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                 IsActive = chkActive.Checked
             };
 
-            var entity = dto.ToEntity();
             var validation = ClassValidator.ValidateClass(entity);
             if (!validation.IsSuccess)
             {
@@ -274,23 +272,12 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                     return;
                 }
                 var saved = saveResult.Value;
-                SavedDto = new ClassDto
-                {
-                    Id = saved.Id,
-                    CourseId = dto.CourseId,
-                    ClassName = dto.ClassName,
-                    Instructor = dto.Instructor,
-                    MaxCapacity = dto.MaxCapacity,
-                    CurrentCapacity = _isEditMode && _class != null ? _class.CurrentCapacity : 0,
-                    StartDate = dto.StartDate,
-                    EndDate = dto.EndDate,
-                    Schedule = dto.Schedule,
-                    IsActive = dto.IsActive,
-                    CreatedOn = _isEditMode && _class != null ? _class.CreatedOn : DateTimeOffset.Now,
-                    ModifiedOn = DateTimeOffset.Now,
-                    CreatedBy = _isEditMode && _class != null ? _class.CreatedBy : saved.CreatedBy,
-                    ModifiedBy = saved.ModifiedBy
-                };
+                entity.Id = saved.Id;
+                entity.CreatedOn = _isEditMode && _class != null ? _class.CreatedOn : DateTimeOffset.Now;
+                entity.ModifiedOn = DateTimeOffset.Now;
+                entity.CreatedBy = _isEditMode && _class != null ? _class.CreatedBy : saved.CreatedBy;
+                entity.ModifiedBy = saved.ModifiedBy;
+                SavedEntity = entity;
                 this.DialogResult = DialogResult.OK;
             }
             catch (BusinessException ex)

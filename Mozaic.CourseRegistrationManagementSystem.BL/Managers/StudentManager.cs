@@ -1,5 +1,4 @@
 using Mozaic.CourseRegistrationManagementSystem.DAL.Repository;
-using Mozaic.CourseRegistrationManagementSystem.Shared.Dtos;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
 
 namespace Mozaic.CourseRegistrationManagementSystem.BL.Managers;
@@ -15,10 +14,6 @@ internal class StudentManager
     public Student? GetByUserId(int userId) => _studentRepository.GetByUserId(userId);
 
     public Task<Student?> GetByUserIdAsync(int userId) => _studentRepository.GetByUserIdAsync(userId);
-
-    public StudentProfile? GetProfileByUserId(int userId) => _studentRepository.GetProfileByUserId(userId);
-
-    public Task<StudentProfile?> GetProfileByUserIdAsync(int userId) => _studentRepository.GetProfileByUserIdAsync(userId);
 
     public List<Student> GetAll() => _studentRepository.GetAll();
 

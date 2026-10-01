@@ -1,6 +1,5 @@
 using Mozaic.CourseRegistrationManagementSystem.BL.Managers;
 using Mozaic.CourseRegistrationManagementSystem.BL.Validation;
-using Mozaic.CourseRegistrationManagementSystem.Shared.Dtos;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Logging;
@@ -603,41 +602,6 @@ public static class StudentService
             }
 
             return student;
-        }
-        catch (Exception ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw new BusinessException("An error occurred while retrieving current student profile.", ex);
-        }
-    }
-
-
-    public static async Task<StudentProfile?> GetProfileByUserIdAsync(int userId)
-    {
-        try
-        {
-            var studentManager = new StudentManager();
-            return await studentManager.GetProfileByUserIdAsync(userId);
-        }
-        catch (Exception ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw new BusinessException("An error occurred while retrieving student profile.", ex);
-        }
-    }
-
-    public static async Task<StudentProfile?> GetCurrentProfileAsync()
-    {
-        try
-        {
-            var current = SessionManager.Current;
-            if (current == null)
-            {
-                return null;
-            }
-
-            var studentManager = new StudentManager();
-            return await studentManager.GetProfileByUserIdAsync(current.UserId);
         }
         catch (Exception ex)
         {

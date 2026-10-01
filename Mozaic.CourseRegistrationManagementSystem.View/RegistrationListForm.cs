@@ -1,5 +1,5 @@
 using Mozaic.CourseRegistrationManagementSystem.BL.Services;
-using Mozaic.CourseRegistrationManagementSystem.Shared.Dtos;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Logging;
 using System.Drawing;
@@ -17,7 +17,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
         private TextBox txtSearch;
         private Button btnSearch;
         private Panel topPanel;
-        private List<RegistrationDto> _regs = new();
+        private List<Registration> _regs = new();
 
         public RegistrationListForm()
         {
@@ -101,20 +101,12 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             {
                 var details = await RegistrationService.GetAllDetailedAsync();
                 _regs = details
-                    .Select(x => new RegistrationDto
+                    .Select(x =>
                     {
-                        Id = x.Registration.Id,
-                        StudentId = x.Registration.StudentId,
-                        StudentUserName = x.Student.UserName,
-                        ClassId = x.Registration.ClassId,
-                        ClassName = x.Class.ClassName,
-                        CourseName = x.Course.CourseName,
-                        RegistrationDate = x.Registration.RegistrationDate,
-                        Status = x.Registration.Status,
-                        CreatedOn = x.Registration.CreatedOn,
-                        ModifiedOn = x.Registration.ModifiedOn,
-                        CreatedBy = x.Registration.CreatedBy,
-                        ModifiedBy = x.Registration.ModifiedBy
+                        x.Registration.StudentUserName = x.Student.UserName;
+                        x.Registration.ClassName = x.Class.ClassName;
+                        x.Registration.CourseName = x.Course.CourseName;
+                        return x.Registration;
                     })
                     .ToList();
 
@@ -142,7 +134,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
         {
             foreach (DataGridViewRow row in dgvRegs.Rows)
             {
-                if (row.DataBoundItem is RegistrationDto dto && dto.Id == id)
+                if (row.DataBoundItem is Registration entity && entity.Id == id)
                 {
                     row.Selected = true;
                     dgvRegs.CurrentCell = row.Cells[0];
@@ -159,20 +151,12 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                 {
                     var details = await RegistrationService.SearchDetailedAsync(txtSearch.Text);
                     _regs = details
-                        .Select(x => new RegistrationDto
+                        .Select(x =>
                         {
-                            Id = x.Registration.Id,
-                            StudentId = x.Registration.StudentId,
-                            StudentUserName = x.Student.UserName,
-                            ClassId = x.Registration.ClassId,
-                            ClassName = x.Class.ClassName,
-                            CourseName = x.Course.CourseName,
-                            RegistrationDate = x.Registration.RegistrationDate,
-                            Status = x.Registration.Status,
-                            CreatedOn = x.Registration.CreatedOn,
-                            ModifiedOn = x.Registration.ModifiedOn,
-                            CreatedBy = x.Registration.CreatedBy,
-                            ModifiedBy = x.Registration.ModifiedBy
+                            x.Registration.StudentUserName = x.Student.UserName;
+                            x.Registration.ClassName = x.Class.ClassName;
+                            x.Registration.CourseName = x.Course.CourseName;
+                            return x.Registration;
                         })
                         .ToList();
 
@@ -265,26 +249,26 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
         {
             using var form = new RegistrationDetailForm();
 
-            if (form.ShowDialog() == DialogResult.OK && form.SavedDto != null)
+            if (form.ShowDialog() == DialogResult.OK && form.SavedEntity != null)
             {
-                _regs.Add(form.SavedDto);
+                _regs.Add(form.SavedEntity);
                 RefreshGrid();
-                SelectRowById(form.SavedDto.Id);
+                SelectRowById(form.SavedEntity.Id);
             }
         }
 
         private void btnEdit_Click(object sender, EventArgs e)
         {
-            if (dgvRegs.CurrentRow?.DataBoundItem is RegistrationDto reg)
+            if (dgvRegs.CurrentRow?.DataBoundItem is Registration reg)
             {
                 using var form = new RegistrationDetailForm(reg);
 
-                if (form.ShowDialog() == DialogResult.OK && form.SavedDto != null)
+                if (form.ShowDialog() == DialogResult.OK && form.SavedEntity != null)
                 {
                     int index = _regs.FindIndex(r => r.Id == reg.Id);
                     if (index >= 0)
                     {
-                        _regs[index] = form.SavedDto;
+                        _regs[index] = form.SavedEntity;
                     }
                     RefreshGrid();
                     SelectRowById(reg.Id);
@@ -298,7 +282,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
 
         private async void btnDelete_Click(object sender, EventArgs e)
         {
-            if (dgvRegs.CurrentRow?.DataBoundItem is RegistrationDto reg)
+            if (dgvRegs.CurrentRow?.DataBoundItem is Registration reg)
             {
                 var result = MessageBox.Show(
                     $"Are you sure you want to delete registration {reg.Id}?",

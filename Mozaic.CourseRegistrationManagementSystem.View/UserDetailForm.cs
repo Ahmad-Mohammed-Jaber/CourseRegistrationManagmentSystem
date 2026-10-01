@@ -1,6 +1,5 @@
 using Mozaic.CourseRegistrationManagementSystem.BL.Services;
 using Mozaic.CourseRegistrationManagementSystem.BL.Validation;
-using Mozaic.CourseRegistrationManagementSystem.Shared.Dtos;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Logging;
@@ -11,7 +10,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
     public partial class UserDetailForm : Form
     {
         private readonly AuthService _authService = new AuthService();
-        private UserDto? _user;
+        private User? _user;
         private bool _isEditMode;
 
         private TextBox txtUsername;
@@ -26,9 +25,9 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
         private Button btnSave;
         private Button btnCancel;
 
-        public UserDto? SavedDto { get; private set; }
+        public User? SavedEntity { get; private set; }
 
-        public UserDetailForm(UserDto? user = null)
+        public UserDetailForm(User? user = null)
         {
             _user = user;
             _isEditMode = user != null;
@@ -131,7 +130,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
 
         private async void btnSave_Click(object sender, EventArgs e)
         {
-            var dto = new UserDto
+            var entity = new User
             {
                 Id = _isEditMode ? _user!.Id : 0,
                 UserName = txtUsername.Text,
@@ -141,10 +140,10 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             };
 
             var validation = _isEditMode
-                ? UserValidator.ValidateUser(dto.ToEntity())
+                ? UserValidator.ValidateUser(entity)
                 : string.IsNullOrWhiteSpace(txtPassword.Text)
-                    ? UserValidator.ValidateUser(dto.ToEntity())
-                    : UserValidator.ValidateAdminRegistration(dto.UserName, dto.FullName, txtPassword.Text);
+                    ? UserValidator.ValidateUser(entity)
+                    : UserValidator.ValidateAdminRegistration(entity.UserName, entity.FullName, txtPassword.Text);
             if (!validation.IsSuccess)
             {
                 MessageBox.Show(validation.Message);
@@ -156,18 +155,18 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                 Result<User> saveResult;
                 if (_isEditMode)
                 {
-                    saveResult = await UserService.UpdateAsync(dto.Id, dto.ToEntity());
+                    saveResult = await UserService.UpdateAsync(entity.Id, entity);
                 }
                 else
                 {
                     if (!string.IsNullOrWhiteSpace(txtPassword.Text))
                     {
                         saveResult = await _authService.RegisterAdminAsync(
-                            dto.UserName, dto.FullName, dto.IsActive, txtPassword.Text);
+                            entity.UserName, entity.FullName, entity.IsActive, txtPassword.Text);
                     }
                     else
                     {
-                        saveResult = await UserService.AddAsync(dto.ToEntity());
+                        saveResult = await UserService.AddAsync(entity);
                     }
                 }
                 if (!saveResult.IsSuccess || saveResult.Value == null)
@@ -176,18 +175,12 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                     return;
                 }
                 var saved = saveResult.Value;
-                SavedDto = new UserDto
-                {
-                    Id = saved.Id,
-                    UserName = txtUsername.Text,
-                    FullName = txtFullName.Text,
-                    Role = dto.Role,
-                    IsActive = chkIsActive.Checked,
-                    CreatedOn = _isEditMode && _user != null ? _user.CreatedOn : DateTimeOffset.Now,
-                    ModifiedOn = DateTimeOffset.Now,
-                    CreatedBy = _isEditMode && _user != null ? _user.CreatedBy : saved.CreatedBy,
-                    ModifiedBy = saved.ModifiedBy
-                };
+                entity.Id = saved.Id;
+                entity.CreatedOn = _isEditMode && _user != null ? _user.CreatedOn : DateTimeOffset.Now;
+                entity.ModifiedOn = DateTimeOffset.Now;
+                entity.CreatedBy = _isEditMode && _user != null ? _user.CreatedBy : saved.CreatedBy;
+                entity.ModifiedBy = saved.ModifiedBy;
+                SavedEntity = entity;
                 this.DialogResult = DialogResult.OK;
             }
             catch (BusinessException ex)

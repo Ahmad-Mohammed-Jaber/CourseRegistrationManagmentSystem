@@ -1,5 +1,5 @@
 using Mozaic.CourseRegistrationManagementSystem.BL.Services;
-using Mozaic.CourseRegistrationManagementSystem.Shared.Dtos;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Logging;
 using System.Drawing;
@@ -18,7 +18,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
         private TextBox txtSearch;
         private Button btnSearch;
         private Panel topPanel;
-        private List<CourseDto> _courses = new();
+        private List<Course> _courses = new();
 
         public CourseListForm()
         {
@@ -101,7 +101,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             try
             {
                 var courses = await CourseService.GetAllAsync();
-                _courses = courses.Select(c => c.ToDto()).ToList()!;
+                _courses = courses.ToList();
                 RefreshGrid();
             }
             catch (BusinessException ex)
@@ -126,7 +126,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
         {
             foreach (DataGridViewRow row in dgvCourses.Rows)
             {
-                if (row.DataBoundItem is CourseDto dto && dto.Id == id)
+                if (row.DataBoundItem is Course entity && entity.Id == id)
                 {
                     row.Selected = true;
                     dgvCourses.CurrentCell = row.Cells[0];
@@ -169,7 +169,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                 if (!string.IsNullOrWhiteSpace(txtSearch.Text))
                 {
                     var courses = await CourseService.SearchAsync(txtSearch.Text);
-                    _courses = courses.Select(c => c.ToDto()).ToList()!;
+                    _courses = courses.ToList();
                     RefreshGrid();
                 }
                 else
@@ -192,26 +192,26 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
         {
             using var form = new CourseDetailForm();
 
-            if (form.ShowDialog() == DialogResult.OK && form.SavedDto != null)
+            if (form.ShowDialog() == DialogResult.OK && form.SavedEntity != null)
             {
-                _courses.Add(form.SavedDto);
+                _courses.Add(form.SavedEntity);
                 RefreshGrid();
-                SelectRowById(form.SavedDto.Id);
+                SelectRowById(form.SavedEntity.Id);
             }
         }
 
         private void btnEdit_Click(object sender, EventArgs e)
         {
-            if (dgvCourses.CurrentRow?.DataBoundItem is CourseDto course)
+            if (dgvCourses.CurrentRow?.DataBoundItem is Course course)
             {
                 using var form = new CourseDetailForm(course);
 
-                if (form.ShowDialog() == DialogResult.OK && form.SavedDto != null)
+                if (form.ShowDialog() == DialogResult.OK && form.SavedEntity != null)
                 {
                     int index = _courses.FindIndex(c => c.Id == course.Id);
                     if (index >= 0)
                     {
-                        _courses[index] = form.SavedDto;
+                        _courses[index] = form.SavedEntity;
                     }
                     RefreshGrid();
                     SelectRowById(course.Id);
@@ -225,7 +225,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
 
         private async void btnDelete_Click(object sender, EventArgs e)
         {
-            if (dgvCourses.CurrentRow?.DataBoundItem is CourseDto course)
+            if (dgvCourses.CurrentRow?.DataBoundItem is Course course)
             {
                 var result = MessageBox.Show(
                     $"Are you sure you want to delete course {course.CourseName}?",

@@ -1,5 +1,5 @@
 using Mozaic.CourseRegistrationManagementSystem.BL.Services;
-using Mozaic.CourseRegistrationManagementSystem.Shared.Dtos;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Logging;
 using System.Drawing;
@@ -17,7 +17,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
         private TextBox txtSearch;
         private Button btnSearch;
         private Panel topPanel;
-        private List<StudentDto> _students = new();
+        private List<Student> _students = new();
 
         public StudentListForm()
         {
@@ -106,6 +106,11 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                 return;
             }
 
+            if (dgvStudents.Columns.Contains("PasswordHash"))
+            {
+                dgvStudents.Columns["PasswordHash"].Visible = false;
+            }
+
             if (dgvStudents.Columns.Contains("Id"))
             {
                 dgvStudents.Columns["Id"].DisplayIndex = 0;
@@ -176,7 +181,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             try
             {
                 var students = await StudentService.GetAllAsync();
-                _students = students.Select(s => s.ToDto()).ToList()!;
+                _students = students.ToList();
                 RefreshGrid();
             }
             catch (BusinessException ex)
@@ -200,7 +205,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
         {
             foreach (DataGridViewRow row in dgvStudents.Rows)
             {
-                if (row.DataBoundItem is StudentDto dto && dto.Id == id)
+                if (row.DataBoundItem is Student entity && entity.Id == id)
                 {
                     row.Selected = true;
                     dgvStudents.CurrentCell = row.Cells[0];
@@ -216,7 +221,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                 if (!string.IsNullOrWhiteSpace(txtSearch.Text))
                 {
                     var students = await StudentService.SearchAsync(txtSearch.Text);
-                    _students = students.Select(s => s.ToDto()).ToList()!;
+                    _students = students.ToList();
                     RefreshGrid();
                 }
                 else
@@ -239,26 +244,26 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
         {
             using var form = new StudentDetailForm();
 
-            if (form.ShowDialog() == DialogResult.OK && form.SavedDto != null)
+            if (form.ShowDialog() == DialogResult.OK && form.SavedEntity != null)
             {
-                _students.Add(form.SavedDto);
+                _students.Add(form.SavedEntity);
                 RefreshGrid();
-                SelectRowById(form.SavedDto.Id);
+                SelectRowById(form.SavedEntity.Id);
             }
         }
 
         private void btnEdit_Click(object sender, EventArgs e)
         {
-            if (dgvStudents.CurrentRow?.DataBoundItem is StudentDto student)
+            if (dgvStudents.CurrentRow?.DataBoundItem is Student student)
             {
                 using var form = new StudentDetailForm(student);
 
-                if (form.ShowDialog() == DialogResult.OK && form.SavedDto != null)
+                if (form.ShowDialog() == DialogResult.OK && form.SavedEntity != null)
                 {
                     int index = _students.FindIndex(s => s.Id == student.Id);
                     if (index >= 0)
                     {
-                        _students[index] = form.SavedDto;
+                        _students[index] = form.SavedEntity;
                     }
                     RefreshGrid();
                     SelectRowById(student.Id);
@@ -272,7 +277,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
 
         private async void btnDelete_Click(object sender, EventArgs e)
         {
-            if (dgvStudents.CurrentRow?.DataBoundItem is StudentDto student)
+            if (dgvStudents.CurrentRow?.DataBoundItem is Student student)
             {
                 var result = MessageBox.Show(
                     $"Are you sure you want to delete student {student.FullName}?",
