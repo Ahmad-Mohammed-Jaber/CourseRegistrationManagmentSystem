@@ -35,7 +35,23 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
 
             InitializeComponent();
 
+            InitializeStatusItems();
+            this.Text = _isEditMode ? "Edit Registration" : "Add Registration";
+
             LoadDataAsync();
+        }
+
+        private void InitializeStatusItems()
+        {
+            cmbStatus.Items.AddRange(new string[]
+            {
+                "Registered",
+                "Pending",
+                "Confirmed",
+                "Cancelled"
+            });
+
+            cmbStatus.SelectedItem = "Registered";
         }
 
 
@@ -85,16 +101,6 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             cmbStatus.Size = new Size(200, 25);
             cmbStatus.DropDownStyle = ComboBoxStyle.DropDownList;
 
-            cmbStatus.Items.AddRange(new string[]
-            {
-                "Registered",
-                "Pending",
-                "Confirmed",
-                "Cancelled"
-            });
-
-            cmbStatus.SelectedItem = "Registered";
-
 
             lblDate.Text = "Date:";
             lblDate.Location = new Point(20, 140);
@@ -113,10 +119,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             btnCancel.Text = "Cancel";
             btnCancel.Location = new Point(210, 180);
             btnCancel.Size = new Size(80, 30);
-            btnCancel.Click += (s, e) =>
-            {
-                DialogResult = DialogResult.Cancel;
-            };
+            btnCancel.Click += btnCancel_Click;
 
 
             ClientSize = new Size(380, 250);
@@ -138,15 +141,18 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             });
 
 
-            Text = _isEditMode
-                ? "Edit Registration"
-                : "Add Registration";
+            Text = "Add Registration";
 
             StartPosition = FormStartPosition.CenterParent;
 
 
             ResumeLayout(false);
             PerformLayout();
+        }
+
+        private void btnCancel_Click(object sender, EventArgs e)
+        {
+            DialogResult = DialogResult.Cancel;
         }
 
 

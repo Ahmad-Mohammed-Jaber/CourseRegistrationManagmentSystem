@@ -10,8 +10,6 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
         public StudentDashboard()
         {
             InitializeComponent();
-
-            Load += StudentDashboard_Load;
         }
 
         private async void StudentDashboard_Load(object sender, EventArgs e)

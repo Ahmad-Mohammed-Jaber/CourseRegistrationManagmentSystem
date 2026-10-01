@@ -44,7 +44,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             this.btnBack.Location = new Point(10, 10);
             this.btnBack.Size = new Size(80, 30);
             this.btnBack.Text = "Back";
-            this.btnBack.Click += (s, e) => this.Close();
+            this.btnBack.Click += btnBack_Click;
 
             this.btnAdd.Location = new Point(100, 10);
             this.btnAdd.Size = new Size(100, 30);
@@ -85,6 +85,11 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             this.StartPosition = FormStartPosition.CenterParent;
             this.ResumeLayout(false);
             this.PerformLayout();
+        }
+
+        private void btnBack_Click(object sender, EventArgs e)
+        {
+            this.Close();
         }
 
         private async void LoadUsers()

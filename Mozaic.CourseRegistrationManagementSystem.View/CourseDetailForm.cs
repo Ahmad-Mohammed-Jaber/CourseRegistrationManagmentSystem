@@ -31,6 +31,10 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             _course = course;
             _isEditMode = course != null;
             InitializeComponent();
+
+            // Moved out of InitializeComponent so designer doesn't break
+            this.Text = _isEditMode ? "Edit Course" : "Add Course";
+
             if (_isEditMode)
             {
                 LoadData();
@@ -89,11 +93,10 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             this.btnCancel.Text = "Cancel";
             this.btnCancel.Location = new Point(210, 250);
             this.btnCancel.Size = new Size(80, 30);
-            this.btnCancel.Click += (s, e) => this.DialogResult = DialogResult.Cancel;
+            this.btnCancel.Click += btnCancel_Click;   // fixed: no lambda
 
             this.ClientSize = new Size(380, 320);
             this.Controls.AddRange(new Control[] { lblCode, txtCode, lblName, txtName, lblCredits, numCredits, lblDesc, txtDesc, chkActive, btnSave, btnCancel });
-            this.Text = _isEditMode ? "Edit Course" : "Add Course";
             this.StartPosition = FormStartPosition.CenterParent;
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -163,5 +166,11 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                 MessageBox.Show("Error saving course due to an unexpected error.");
             }
         }
+
+        // New method for cancel button
+        private void btnCancel_Click(object sender, EventArgs e)
+        {
+            this.DialogResult = DialogResult.Cancel;
+        }
     }
-}
+}2

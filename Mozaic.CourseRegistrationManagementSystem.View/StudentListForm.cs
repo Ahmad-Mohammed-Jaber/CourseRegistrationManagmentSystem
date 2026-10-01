@@ -44,7 +44,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             btnBack.Location = new Point(10, 10);
             btnBack.Size = new Size(80, 30);
             btnBack.Text = "Back";
-            btnBack.Click += (s, e) => Close();
+            btnBack.Click += btnBack_Click;
 
             btnAdd.Location = new Point(100, 10);
             btnAdd.Size = new Size(100, 30);
@@ -97,6 +97,11 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             Text = "Manage Students";
 
             ResumeLayout(false);
+        }
+
+        private void btnBack_Click(object sender, EventArgs e)
+        {
+            Close();
         }
 
         private void dgvStudents_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)

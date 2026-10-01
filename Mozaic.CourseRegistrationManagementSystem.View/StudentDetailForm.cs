@@ -43,6 +43,8 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
 
             InitializeComponent();
 
+            this.Text = _isEditMode ? "Edit Student" : "Add Student";
+
             if (_isEditMode)
             {
                 LoadData();
@@ -72,66 +74,63 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
 
             SuspendLayout();
 
-            int labelX = 20;
-            int inputX = 130;
-            int y = 20;
-            int spacing = 40;
+            lblNumber.Text = "Student #:";
+            lblNumber.Location = new Point(20, 20);
+            lblNumber.AutoSize = true;
 
-            void SetupLabel(Label label, string text, int top)
-            {
-                label.Text = text;
-                label.Location = new Point(labelX, top);
-                label.AutoSize = true;
-            }
+            txtNumber.Location = new Point(130, 20);
+            txtNumber.Size = new Size(200, 25);
 
-            void SetupTextBox(TextBox box, int top)
-            {
-                box.Location = new Point(inputX, top);
-                box.Size = new Size(200, 25);
-            }
+            lblUsername.Text = "Username:";
+            lblUsername.Location = new Point(20, 60);
+            lblUsername.AutoSize = true;
 
-            SetupLabel(lblNumber, "Student #:", y);
-            SetupTextBox(txtNumber, y);
+            txtUsername.Location = new Point(130, 60);
+            txtUsername.Size = new Size(200, 25);
 
-            y += spacing;
-            SetupLabel(lblUsername, "Username:", y);
-            SetupTextBox(txtUsername, y);
+            lblFullName.Text = "Full Name:";
+            lblFullName.Location = new Point(20, 100);
+            lblFullName.AutoSize = true;
 
-            y += spacing;
-            SetupLabel(lblFullName, "Full Name:", y);
-            SetupTextBox(txtFullName, y);
+            txtFullName.Location = new Point(130, 100);
+            txtFullName.Size = new Size(200, 25);
 
-            y += spacing;
-            SetupLabel(lblEmail, "Email:", y);
-            SetupTextBox(txtEmail, y);
+            lblEmail.Text = "Email:";
+            lblEmail.Location = new Point(20, 140);
+            lblEmail.AutoSize = true;
 
-            y += spacing;
-            SetupLabel(lblPhone, "Phone:", y);
-            SetupTextBox(txtPhone, y);
+            txtEmail.Location = new Point(130, 140);
+            txtEmail.Size = new Size(200, 25);
 
-            y += spacing;
-            SetupLabel(lblPassword, "Password:", y);
-            SetupTextBox(txtPassword, y);
+            lblPhone.Text = "Phone:";
+            lblPhone.Location = new Point(20, 180);
+            lblPhone.AutoSize = true;
+
+            txtPhone.Location = new Point(130, 180);
+            txtPhone.Size = new Size(200, 25);
+
+            lblPassword.Text = "Password:";
+            lblPassword.Location = new Point(20, 220);
+            lblPassword.AutoSize = true;
+
+            txtPassword.Location = new Point(130, 220);
+            txtPassword.Size = new Size(200, 25);
 
             txtPassword.PasswordChar = '*';
 
-            y += spacing;
-
             chkActive.Text = "Is Active";
-            chkActive.Location = new Point(inputX, y);
+            chkActive.Location = new Point(130, 260);
             chkActive.AutoSize = true;
 
-            y += 40;
-
             btnSave.Text = "Save";
-            btnSave.Location = new Point(inputX, y);
+            btnSave.Location = new Point(130, 300);
             btnSave.Size = new Size(80, 30);
             btnSave.Click += btnSave_Click;
 
             btnCancel.Text = "Cancel";
-            btnCancel.Location = new Point(inputX + 90, y);
+            btnCancel.Location = new Point(220, 300);
             btnCancel.Size = new Size(80, 30);
-            btnCancel.Click += (s, e) => DialogResult = DialogResult.Cancel;
+            btnCancel.Click += btnCancel_Click;
 
 
             Controls.AddRange(new Control[]
@@ -146,12 +145,17 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                 btnSave, btnCancel
             });
 
-            ClientSize = new Size(380, y + 70);
-            Text = _isEditMode ? "Edit Student" : "Add Student";
+            ClientSize = new Size(380, 370);
+            Text = "Add Student";
             StartPosition = FormStartPosition.CenterParent;
 
             ResumeLayout(false);
             PerformLayout();
+        }
+
+        private void btnCancel_Click(object sender, EventArgs e)
+        {
+            DialogResult = DialogResult.Cancel;
         }
 
 

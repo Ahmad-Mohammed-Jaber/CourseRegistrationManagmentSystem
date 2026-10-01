@@ -38,10 +38,60 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             _class = cls;
             _isEditMode = cls != null;
             InitializeComponent();
+            ApplyTitle();
+            BuildScheduleGrid();
             LoadCourses();
             if (_isEditMode)
             {
                 LoadData();
+            }
+        }
+
+        private void ApplyTitle()
+        {
+            this.Text = _isEditMode ? "Edit Class" : "Add Class";
+        }
+
+        private void BuildScheduleGrid()
+        {
+            this.pnlSchedule.ColumnStyles.Clear();
+            this.pnlSchedule.RowStyles.Clear();
+            this.pnlSchedule.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            this.pnlSchedule.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+
+            for (int i = 0; i < 4; i++)
+            {
+                this.pnlSchedule.RowStyles.Add(new RowStyle(SizeType.Percent, 25F));
+            }
+
+            var orderedDays = new[]
+            {
+                Class.DaysOfWeek.Sunday,
+                Class.DaysOfWeek.Monday,
+                Class.DaysOfWeek.Tuesday,
+                Class.DaysOfWeek.Wednesday,
+                Class.DaysOfWeek.Thursday,
+                Class.DaysOfWeek.Friday,
+                Class.DaysOfWeek.Saturday
+            };
+
+            chkDays.Clear();
+
+            for (int i = 0; i < orderedDays.Length; i++)
+            {
+                var chk = new CheckBox
+                {
+                    Text = orderedDays[i].ToString(),
+                    AutoSize = true,
+                    Anchor = AnchorStyles.Left
+                };
+
+                chkDays.Add(orderedDays[i], chk);
+
+                int row = i % 4;
+                int col = i / 4;
+
+                this.pnlSchedule.Controls.Add(chk, col, row);
             }
         }
         private void InitializeComponent()
@@ -69,7 +119,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
 
             this.ClientSize = new Size(420, 520);
             this.StartPosition = FormStartPosition.CenterParent;
-            this.Text = _isEditMode ? "Edit Class" : "Add Class";
+            this.Text = "Add Class";
 
             this.lblCourse.AutoSize = true;
             this.lblCourse.Location = new Point(20, 20);
@@ -110,47 +160,8 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             this.pnlSchedule.Size = new Size(250, 120);
             this.pnlSchedule.ColumnCount = 2;
             this.pnlSchedule.RowCount = 4;
-            this.pnlSchedule.ColumnStyles.Clear();
-            this.pnlSchedule.RowStyles.Clear();
-            this.pnlSchedule.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            this.pnlSchedule.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-
-            for (int i = 0; i < 4; i++)
-            {
-                this.pnlSchedule.RowStyles.Add(new RowStyle(SizeType.Percent, 25F));
-            }
 
             this.pnlSchedule.GrowStyle = TableLayoutPanelGrowStyle.FixedSize;
-
-            var orderedDays = new[]
-            {
-        Class.DaysOfWeek.Sunday,
-        Class.DaysOfWeek.Monday,
-        Class.DaysOfWeek.Tuesday,
-        Class.DaysOfWeek.Wednesday,
-        Class.DaysOfWeek.Thursday,
-        Class.DaysOfWeek.Friday,
-        Class.DaysOfWeek.Saturday
-    };
-
-            chkDays.Clear();
-
-            for (int i = 0; i < orderedDays.Length; i++)
-            {
-                var chk = new CheckBox
-                {
-                    Text = orderedDays[i].ToString(),
-                    AutoSize = true,
-                    Anchor = AnchorStyles.Left
-                };
-
-                chkDays.Add(orderedDays[i], chk);
-
-                int row = i % 4;
-                int col = i / 4;
-
-                this.pnlSchedule.Controls.Add(chk, col, row);
-            }
 
             this.lblStart.AutoSize = true;
             this.lblStart.Location = new Point(20, 320);
@@ -178,7 +189,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             this.btnCancel.Location = new Point(220, 445);
             this.btnCancel.Size = new Size(90, 35);
             this.btnCancel.Text = "Cancel";
-            this.btnCancel.Click += (s, e) => this.DialogResult = DialogResult.Cancel;
+            this.btnCancel.Click += btnCancel_Click;
 
             this.Controls.Add(this.lblCourse);
             this.Controls.Add(this.cmbCourse);
@@ -284,6 +295,11 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                 AppLogger.LogViewError(ex);
                 MessageBox.Show("Error saving class due to an unexpected error.");
             }
+        }
+
+        private void btnCancel_Click(object sender, EventArgs e)
+        {
+            this.DialogResult = DialogResult.Cancel;
         }
     }
 }

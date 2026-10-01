@@ -32,6 +32,22 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             _user = user;
             _isEditMode = user != null;
             InitializeComponent();
+            PopulateRoles();
+            ApplyModeSettings();
+        }
+
+        private void PopulateRoles()
+        {
+            foreach (User.UserRoles role in Enum.GetValues(typeof(User.UserRoles)))
+            {
+                cmbRole.Items.Add(role);
+            }
+        }
+
+        private void ApplyModeSettings()
+        {
+            this.Text = _isEditMode ? "Edit User" : "Add User";
+            this.txtPassword.Enabled = !_isEditMode;
             if (_isEditMode)
             {
                 LoadUserData();
@@ -78,10 +94,6 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             this.cmbRole.Location = new Point(120, 100);
             this.cmbRole.Size = new Size(200, 25);
             this.cmbRole.DropDownStyle = ComboBoxStyle.DropDownList;
-            foreach (User.UserRoles role in Enum.GetValues(typeof(User.UserRoles)))
-            {
-                this.cmbRole.Items.Add(role);
-            }
             this.cmbRole.Enabled = false;
 
             this.lblPassword.Text = "Password:";
@@ -91,7 +103,6 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             this.txtPassword.Location = new Point(120, 140);
             this.txtPassword.Size = new Size(200, 25);
             this.txtPassword.PasswordChar = '*';
-            this.txtPassword.Enabled = !_isEditMode;
 
             this.chkIsActive.Text = "Is Active";
             this.chkIsActive.Location = new Point(120, 180);
@@ -105,14 +116,19 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             this.btnCancel.Text = "Cancel";
             this.btnCancel.Location = new Point(210, 220);
             this.btnCancel.Size = new Size(80, 30);
-            this.btnCancel.Click += (s, e) => this.DialogResult = DialogResult.Cancel;
+            this.btnCancel.Click += btnCancel_Click;
 
             this.ClientSize = new Size(380, 300);
             this.Controls.AddRange(new Control[] { lblUsername, txtUsername, lblFullName, txtFullName, lblRole, cmbRole, lblPassword, txtPassword, chkIsActive, btnSave, btnCancel });
-            this.Text = _isEditMode ? "Edit User" : "Add User";
+            this.Text = "Add User";
             this.StartPosition = FormStartPosition.CenterParent;
             this.ResumeLayout(false);
             this.PerformLayout();
+        }
+
+        private void btnCancel_Click(object sender, EventArgs e)
+        {
+            this.DialogResult = DialogResult.Cancel;
         }
 
         private void LoadUserData()
