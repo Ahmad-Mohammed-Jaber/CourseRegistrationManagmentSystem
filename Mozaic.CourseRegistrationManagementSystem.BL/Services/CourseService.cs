@@ -68,12 +68,6 @@ public static class CourseService
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                throw new BusinessException(auth.Message);
-            }
-
             var valid = CourseValidator.ValidateCourse(course);
             if (!valid.IsSuccess)
             {
@@ -100,12 +94,6 @@ public static class CourseService
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                throw new BusinessException(auth.Message);
-            }
-
             var valid = CourseValidator.ValidateCourse(course);
             if (!valid.IsSuccess)
             {
@@ -132,12 +120,6 @@ public static class CourseService
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                throw new BusinessException(auth.Message);
-            }
-
             var courseManager = new CourseManager();
             var existingCourse = courseManager.GetById(course.Id);
             var exists = CourseValidator.RequireExists(existingCourse, course.Id);
@@ -171,12 +153,6 @@ public static class CourseService
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                throw new BusinessException(auth.Message);
-            }
-
             var courseManager = new CourseManager();
             var existingCourse = await courseManager.GetByIdAsync(course.Id);
             var exists = CourseValidator.RequireExists(existingCourse, course.Id);
@@ -210,12 +186,6 @@ public static class CourseService
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                throw new BusinessException(auth.Message);
-            }
-
             var courseManager = new CourseManager();
             var existingCourse = courseManager.GetById(id);
             var exists = CourseValidator.RequireExists(existingCourse, id);
@@ -237,12 +207,6 @@ public static class CourseService
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                throw new BusinessException(auth.Message);
-            }
-
             var courseManager = new CourseManager();
             var existingCourse = await courseManager.GetByIdAsync(id);
             var exists = CourseValidator.RequireExists(existingCourse, id);

@@ -70,18 +70,6 @@ public static class UserService
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                throw new BusinessException(auth.Message);
-            }
-
-            var valid = UserValidator.ValidateUser(user);
-            if (!valid.IsSuccess)
-            {
-                throw new BusinessException(valid.Message);
-            }
-
             var unique = EnsureUniqueUserNameSync(user.UserName);
             if (!unique.IsSuccess)
             {
@@ -106,12 +94,6 @@ public static class UserService
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                throw new BusinessException(auth.Message);
-            }
-
             var valid = UserValidator.ValidateUser(user);
             if (!valid.IsSuccess)
             {
@@ -142,12 +124,6 @@ public static class UserService
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                throw new BusinessException(auth.Message);
-            }
-
             var userManager = new UserManager();
             var existingUser = userManager.GetById(user.Id);
             var exists = UserValidator.RequireExists(existingUser, user.Id);
@@ -189,12 +165,6 @@ public static class UserService
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                throw new BusinessException(auth.Message);
-            }
-
             var userManager = new UserManager();
             var existingUser = await userManager.GetByIdAsync(user.Id);
             var exists = UserValidator.RequireExists(existingUser, user.Id);
@@ -236,12 +206,6 @@ public static class UserService
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                throw new BusinessException(auth.Message);
-            }
-
             var userManager = new UserManager();
             var existingUser = userManager.GetById(id);
             var exists = UserValidator.RequireExists(existingUser, id);
@@ -263,12 +227,6 @@ public static class UserService
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                throw new BusinessException(auth.Message);
-            }
-
             var userManager = new UserManager();
             var existingUser = await userManager.GetByIdAsync(id);
             var exists = UserValidator.RequireExists(existingUser, id);

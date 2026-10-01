@@ -69,12 +69,6 @@ public static class RegistrationService
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                throw new BusinessException(auth.Message);
-            }
-
             var valid = RegistrationValidator.ValidateRegistration(registration);
             if (!valid.IsSuccess)
             {
@@ -115,12 +109,6 @@ public static class RegistrationService
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                throw new BusinessException(auth.Message);
-            }
-
             var valid = RegistrationValidator.ValidateRegistration(registration);
             if (!valid.IsSuccess)
             {
@@ -160,12 +148,6 @@ public static class RegistrationService
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                throw new BusinessException(auth.Message);
-            }
-
             var valid = RegistrationValidator.ValidateRegistration(registration);
             if (!valid.IsSuccess)
             {
@@ -216,12 +198,6 @@ public static class RegistrationService
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                throw new BusinessException(auth.Message);
-            }
-
             var valid = RegistrationValidator.ValidateRegistration(registration);
             if (!valid.IsSuccess)
             {
@@ -271,12 +247,6 @@ public static class RegistrationService
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                throw new BusinessException(auth.Message);
-            }
-
             var registrationManager = new RegistrationManager();
             var existing = registrationManager.GetById(id);
             var exists = RegistrationValidator.RequireExists(existing, id);
@@ -298,12 +268,6 @@ public static class RegistrationService
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                throw new BusinessException(auth.Message);
-            }
-
             var registrationManager = new RegistrationManager();
             var existing = await registrationManager.GetByIdAsync(id);
             var exists = RegistrationValidator.RequireExists(existing, id);

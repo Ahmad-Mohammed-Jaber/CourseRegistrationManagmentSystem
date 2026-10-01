@@ -222,12 +222,6 @@ public static class ClassService
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                throw new BusinessException(auth.Message);
-            }
-
             var classManager = new ClassManager();
             var existingClass = await classManager.GetByIdAsync(id);
             var exists = ClassValidator.RequireExists(existingClass, id);

@@ -69,154 +69,119 @@ public class AuthService
 
     public async Task<Result<User>> RegisterAdminAsync(string userName, string fullName, bool isActive, string password)
     {
-        try
+        var _userManager = new UserManager();
+        var fields = UserValidator.ValidateAdminRegistration(userName, fullName, password);
+        if (!fields.IsSuccess)
         {
-            UserManager _userManager = new UserManager();
-            bool hasUsers = (await _userManager.GetAllAsync()).Any();
-            if (hasUsers)
-            {
-                var auth = AccessValidator.RequireAdmin();
-                if (!auth.IsSuccess)
-                {
-                    return Result<User>.From(auth);
-                }
-            }
-            var fields = UserValidator.ValidateAdminRegistration(userName, fullName, password);
-            if (!fields.IsSuccess)
-            {
-                return Result<User>.From(fields);
-            }
-
-            if (await _userManager.GetByUserNameAsync(userName) != null)
-            {
-                return new Result<User>(
-                    ValidationStatus.Conflict,
-                    new[] { new ValidationError(nameof(User.UserName), $"A user with username '{userName}' already exists.") },
-                    default);
-            }
-
-            string passwordHash = HashPassword(password);
-
-            var actorId = SessionManager.Current?.UserId ?? 0;
-
-            var user = new User
-            {
-                UserName = userName,
-                FullName = fullName,
-                IsActive = isActive,
-                PasswordHash = passwordHash,
-                Role = User.UserRoles.Admin,
-                CreatedBy = actorId,
-                ModifiedBy = actorId
-            };
-            await _userManager.AddAsync(user);
-            if (user.Id <= 0)
-            {
-                return Result<User>.Fail(ValidationStatus.Conflict, $"Failed to create user: database reported no new id.");
-            }
-            return Result<User>.Ok(user);
+            return Result<User>.From(fields);
         }
-        catch (Exception ex)
+
+        if (await _userManager.GetByUserNameAsync(userName) != null)
         {
-            AppLogger.LogCaught(ex);
-            throw new BusinessException("An error occurred while trying RegisterAdminAsync()", ex);
+            return new Result<User>(
+                ValidationStatus.Conflict,
+                new[] { new ValidationError(nameof(User.UserName), $"A user with username '{userName}' already exists.") },
+                default);
         }
+
+        string passwordHash = HashPassword(password);
+
+        var actorId = SessionManager.Current?.UserId ?? 0;
+
+        var user = new User
+        {
+            UserName = userName,
+            FullName = fullName,
+            IsActive = isActive,
+            PasswordHash = passwordHash,
+            Role = User.UserRoles.Admin,
+            CreatedBy = actorId,
+            ModifiedBy = actorId
+        };
+        await _userManager.AddAsync(user);
+        if (user.Id <= 0)
+        {
+            return Result<User>.Fail(ValidationStatus.Conflict, $"Failed to create user: database reported no new id.");
+        }
+        return Result<User>.Ok(user);
     }
 
     public async Task<Result<Student>> RegisterStudentAsync(string userName, int studentNumber, string fullName, bool isActive, string email, string phone, string password)
     {
+        var _userManager = new UserManager();
+        var _studentManager = new StudentManager();
+        var fields = StudentValidator.ValidateStudentRegistration(
+            userName, studentNumber, fullName, email, phone, password);
+        if (!fields.IsSuccess)
+        {
+            return Result<Student>.From(fields);
+        }
+
+        if (await _userManager.GetByUserNameAsync(userName) != null)
+        {
+            return new Result<Student>(
+                ValidationStatus.Conflict,
+                new[] { new ValidationError(nameof(User.UserName), $"A user with username '{userName}' already exists.") },
+                default);
+        }
+
+        string passwordHash = HashPassword(password);
+        var actorId = SessionManager.Current?.UserId ?? 0;
+        User user = new User
+        {
+            UserName = userName,
+            FullName = fullName,
+            IsActive = isActive,
+            PasswordHash = passwordHash,
+            Role = User.UserRoles.Student,
+            CreatedBy = actorId,
+            ModifiedBy = actorId,
+        };
+
+        await _userManager.AddAsync(user);
+        var createdUser = user.Id > 0
+            ? await _userManager.GetByIdAsync(user.Id) ?? await _userManager.GetByUserNameAsync(userName)
+            : await _userManager.GetByUserNameAsync(userName);
+        if (createdUser == null)
+        {
+            throw new BusinessException("Failed to create student user.");
+        }
+
+        Student student = new Student
+        {
+            UserId = createdUser.Id,
+            UserName = userName,
+            FullName = fullName,
+            IsActive = isActive,
+            Email = email,
+            Phone = phone,
+            StudentNumber = studentNumber,
+            CreatedBy = actorId,
+            ModifiedBy = actorId,
+        };
+
         try
         {
-            UserManager _userManager = new UserManager();
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
+            await _studentManager.AddAsync(student);
+            if (student.Id <= 0)
             {
-                return Result<Student>.From(auth);
+                return Result<Student>.Fail(ValidationStatus.Conflict, $"Failed to create student: database reported no new id.");
             }
-
-            var fields = StudentValidator.ValidateStudentRegistration(
-                userName, studentNumber, fullName, email, phone, password);
-            if (!fields.IsSuccess)
-            {
-                return Result<Student>.From(fields);
-            }
-
-            if (await _userManager.GetByUserNameAsync(userName) != null)
-            {
-                return new Result<Student>(
-                    ValidationStatus.Conflict,
-                    new[] { new ValidationError(nameof(User.UserName), $"A user with username '{userName}' already exists.") },
-                    default);
-            }
-
-            string passwordHash = HashPassword(password);
-            var actorId = SessionManager.Current?.UserId ?? 0;
-            User user = new User
-            {
-                UserName = userName,
-                FullName = fullName,
-                IsActive = isActive,
-                PasswordHash = passwordHash,
-                Role = User.UserRoles.Student,
-                CreatedBy = actorId,
-                ModifiedBy = actorId,
-            };
-
-            await _userManager.AddAsync(user);
-            var createdUser = user.Id > 0
-                ? await _userManager.GetByIdAsync(user.Id) ?? await _userManager.GetByUserNameAsync(userName)
-                : await _userManager.GetByUserNameAsync(userName);
-            if (createdUser == null)
-            {
-                throw new BusinessException("Failed to create student user.");
-            }
-
-            Student student = new Student
-            {
-                UserId = createdUser.Id,
-                UserName = userName,
-                FullName = fullName,
-                IsActive = isActive,
-                Email = email,
-                Phone = phone,
-                StudentNumber = studentNumber,
-                CreatedBy = actorId,
-                ModifiedBy = actorId,
-            };
-
-            var studentManager = new StudentManager();
+        }
+        catch
+        {
             try
             {
-                await studentManager.AddAsync(student);
-                if (student.Id <= 0)
-                {
-                    return Result<Student>.Fail(ValidationStatus.Conflict, $"Failed to create student: database reported no new id.");
-                }
+                await _userManager.DeleteAsync(createdUser.Id);
             }
-            catch
+            catch (Exception ex)
             {
-                try
-                {
-                    await _userManager.DeleteAsync(createdUser.Id);
-                }
-                catch (Exception ex)
-                {
-                    AppLogger.LogCaught(ex);
-                }
-
-                throw;
+                AppLogger.LogCaught(ex);
             }
-            return Result<Student>.Ok(student);
-        }
-        catch (BusinessException ex)
-        {
-            AppLogger.LogCaught(ex);
+
             throw;
         }
-        catch (Exception ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw new BusinessException("An error occurred while trying RegisterStudentAsync()", ex);
-        }
+
+        return Result<Student>.Ok(student);
     }
 }

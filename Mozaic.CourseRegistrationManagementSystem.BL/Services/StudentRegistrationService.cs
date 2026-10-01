@@ -11,12 +11,6 @@ public static class StudentRegistrationService
 {
     private static async Task<int?> RequireStudentIdAsync()
     {
-        var auth = AccessValidator.RequireStudent();
-        if (!auth.IsSuccess)
-        {
-            return null;
-        }
-
         var session = SessionManager.Current;
         if (session == null)
         {

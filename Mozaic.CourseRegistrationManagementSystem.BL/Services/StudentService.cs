@@ -123,12 +123,6 @@ public static class StudentService
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                throw new BusinessException(auth.Message);
-            }
-
             var valid = StudentValidator.ValidateStudent(student);
             if (!valid.IsSuccess)
             {
@@ -196,12 +190,6 @@ public static class StudentService
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                throw new BusinessException(auth.Message);
-            }
-
             var valid = StudentValidator.ValidateStudent(student);
             if (!valid.IsSuccess)
             {
@@ -267,12 +255,6 @@ public static class StudentService
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                throw new BusinessException(auth.Message);
-            }
-
             var valid = StudentValidator.ValidateStudent(student);
             if (!valid.IsSuccess)
             {
@@ -324,12 +306,6 @@ public static class StudentService
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                throw new BusinessException(auth.Message);
-            }
-
             var valid = StudentValidator.ValidateStudent(student);
             if (!valid.IsSuccess)
             {
@@ -394,12 +370,6 @@ public static class StudentService
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                throw new BusinessException(auth.Message);
-            }
-
             var studentManager = new StudentManager();
             var userManager = new UserManager();
             var student = studentManager.GetById(id);
@@ -423,12 +393,6 @@ public static class StudentService
     {
         try
         {
-            var auth = AccessValidator.RequireAdmin();
-            if (!auth.IsSuccess)
-            {
-                throw new BusinessException(auth.Message);
-            }
-
             var studentManager = new StudentManager();
             var userManager = new UserManager();
             var student = await studentManager.GetByIdAsync(id);
