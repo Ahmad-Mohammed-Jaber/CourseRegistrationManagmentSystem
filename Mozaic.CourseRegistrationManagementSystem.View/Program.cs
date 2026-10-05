@@ -51,32 +51,29 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
 
         static void Run()
         {
-            bool keepRunning = true;
-            while (keepRunning)
+            while (true)
             {
-                LoginForm loginForm = new LoginForm();
-                if (loginForm.ShowDialog() == DialogResult.OK)
+                using var loginForm = new LoginForm();
+
+                if (loginForm.ShowDialog() != DialogResult.OK)
+                    break;
+
+                var session = SessionManager.Current;
+
+                if (session?.Role == User.UserRoles.Admin)
                 {
-                    var session = SessionManager.Current;
-                    if (session?.Role == User.UserRoles.Admin)
-                    {
-                        Application.Run(new AdminDashboard());
-                    }
-                    else
-                    {
-                        Application.Run(new StudentDashboard());
-                    }
-                    if (SessionManager.IsLoggedIn)
-                    {
-                        SessionManager.Logout();
-                    }
+                    Application.Run(new AdminDashboard());
                 }
                 else
                 {
-                    keepRunning = false;
+                    Application.Run(new StudentDashboard());
+                }
+
+                if (SessionManager.IsLoggedIn)
+                {
+                    SessionManager.Logout();
                 }
             }
         }
-
     }
 }
