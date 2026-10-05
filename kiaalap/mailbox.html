@@ -1,0 +1,345 @@
+{{> head}}
+
+{{> sidebar}}
+
+<!-- Main Content Wrapper -->
+<div class="main-wrapper" id="mainWrapper">
+    {{> header}}
+
+    <!-- Main Content -->
+    <main class="dashboard-content" id="main-content">
+        <div class="container-fluid">
+            <!-- Page Header -->
+            <div class="mb-4">
+                <h1 class="h3 font-bold">Mailbox</h1>
+                <p class="text-muted text-sm">Manage your messages and communications</p>
+            </div>
+
+            <!-- Mailbox Layout -->
+            <div class="row g-3">
+                <!-- Sidebar -->
+                <div class="col-lg-3">
+                    <div class="card shadow-sm">
+                        <div class="card-body p-4">
+                            <a href="mailbox-compose.html" class="btn btn-primary w-100 mb-3">
+                                <i class="bi bi-pencil-square me-2"></i>Compose
+                            </a>
+
+                            <div class="mailbox-sidebar">
+                                <ul class="list-unstyled">
+                                    <li class="mb-2">
+                                        <a href="mailbox.html" class="d-flex align-items-center text-decoration-none text-dark active">
+                                            <i class="bi bi-inbox-fill me-2"></i>
+                                            <span>Inbox</span>
+                                            <span class="badge bg-primary ms-auto">12</span>
+                                        </a>
+                                    </li>
+                                    <li class="mb-2">
+                                        <a href="#" class="d-flex align-items-center text-decoration-none text-muted">
+                                            <i class="bi bi-send me-2"></i>
+                                            <span>Sent</span>
+                                        </a>
+                                    </li>
+                                    <li class="mb-2">
+                                        <a href="#" class="d-flex align-items-center text-decoration-none text-muted">
+                                            <i class="bi bi-file-earmark-text me-2"></i>
+                                            <span>Drafts</span>
+                                            <span class="badge bg-secondary ms-auto">3</span>
+                                        </a>
+                                    </li>
+                                    <li class="mb-2">
+                                        <a href="#" class="d-flex align-items-center text-decoration-none text-muted">
+                                            <i class="bi bi-star me-2"></i>
+                                            <span>Important</span>
+                                        </a>
+                                    </li>
+                                    <li class="mb-2">
+                                        <a href="#" class="d-flex align-items-center text-decoration-none text-muted">
+                                            <i class="bi bi-trash me-2"></i>
+                                            <span>Trash</span>
+                                        </a>
+                                    </li>
+                                </ul>
+
+                                <hr>
+
+                                <h6 class="text-muted text-uppercase small mb-3">Labels</h6>
+                                <ul class="list-unstyled">
+                                    <li class="mb-2">
+                                        <a href="#" class="d-flex align-items-center text-decoration-none text-muted">
+                                            <span class="badge rounded-circle bg-success me-2" style="width: 10px; height: 10px;"></span>
+                                            <span>Academic</span>
+                                        </a>
+                                    </li>
+                                    <li class="mb-2">
+                                        <a href="#" class="d-flex align-items-center text-decoration-none text-muted">
+                                            <span class="badge rounded-circle bg-warning me-2" style="width: 10px; height: 10px;"></span>
+                                            <span>Administrative</span>
+                                        </a>
+                                    </li>
+                                    <li class="mb-2">
+                                        <a href="#" class="d-flex align-items-center text-decoration-none text-muted">
+                                            <span class="badge rounded-circle bg-info me-2" style="width: 10px; height: 10px;"></span>
+                                            <span>Students</span>
+                                        </a>
+                                    </li>
+                                    <li class="mb-2">
+                                        <a href="#" class="d-flex align-items-center text-decoration-none text-muted">
+                                            <span class="badge rounded-circle bg-danger me-2" style="width: 10px; height: 10px;"></span>
+                                            <span>Urgent</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mail List -->
+                <div class="col-lg-9">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-white border-bottom p-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex align-items-center">
+                                    <div class="form-check me-3">
+                                        <input class="form-check-input" type="checkbox" id="selectAll">
+                                    </div>
+                                    <div class="btn-group" role="group">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" aria-label="Archive">
+                                            <i aria-hidden="true" class="bi bi-archive"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" aria-label="Exclamation octagon">
+                                            <i aria-hidden="true" class="bi bi-exclamation-octagon"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" aria-label="Delete">
+                                            <i aria-hidden="true" class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                    <div class="dropdown ms-2">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                            More
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" href="#">Mark as read</a></li>
+                                            <li><a class="dropdown-item" href="#">Mark as unread</a></li>
+                                            <li><a class="dropdown-item" href="#">Add star</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" aria-label="Refresh">
+                                        <i aria-hidden="true" class="bi bi-arrow-clockwise"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-body p-0">
+                            <!-- Mail Items -->
+                            <div class="list-group list-group-flush">
+                                <!-- Mail Item 1 -->
+                                <div class="list-group-item d-flex align-items-center">
+                                    <div class="form-check me-3">
+                                        <input class="form-check-input" type="checkbox" aria-label="Select message">
+                                    </div>
+                                    <a href="mailbox-view.html" class="list-group-item-action d-flex align-items-center flex-grow-1 text-decoration-none text-reset">
+                                        <div class="flex-shrink-0 me-3">
+                                            <img src="https://ui-avatars.com/api/?name=Sarah+Johnson&background=10b981&color=fff" alt="Avatar" class="rounded-circle" width="40" height="40" loading="lazy" decoding="async">
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div>
+                                                    <h6 class="mb-1">Sarah Johnson <span class="badge bg-success ms-2">Academic</span></h6>
+                                                    <p class="mb-1 text-dark">Course Schedule Update - Fall Semester 2024</p>
+                                                    <p class="mb-0 text-muted small">Dear Faculty, Please note the updated course schedule for the upcoming fall semester...</p>
+                                                </div>
+                                                <div class="text-end">
+                                                    <small class="text-muted">10:30 AM</small>
+                                                    <div class="mt-1">
+                                                        <i class="bi bi-star text-warning"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </div>
+
+                                <!-- Mail Item 2 -->
+                                <div class="list-group-item d-flex align-items-center">
+                                    <div class="form-check me-3">
+                                        <input class="form-check-input" type="checkbox" aria-label="Select message">
+                                    </div>
+                                    <a href="mailbox-view.html" class="list-group-item-action d-flex align-items-center flex-grow-1 text-decoration-none text-reset">
+                                        <div class="flex-shrink-0 me-3">
+                                            <img src="https://ui-avatars.com/api/?name=Mike+Chen&background=6366f1&color=fff" alt="Avatar" class="rounded-circle" width="40" height="40" loading="lazy" decoding="async">
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div>
+                                                    <h6 class="mb-1 fw-bold">Mike Chen <span class="badge bg-danger ms-2">Urgent</span></h6>
+                                                    <p class="mb-1 text-dark fw-bold">Faculty Meeting - Urgent Update</p>
+                                                    <p class="mb-0 text-muted small">All faculty members are requested to attend the emergency meeting scheduled for...</p>
+                                                </div>
+                                                <div class="text-end">
+                                                    <small class="text-muted">9:15 AM</small>
+                                                    <div class="mt-1">
+                                                        <span class="badge bg-primary rounded-circle" style="width: 8px; height: 8px;"></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </div>
+
+                                <!-- Mail Item 3 -->
+                                <div class="list-group-item d-flex align-items-center">
+                                    <div class="form-check me-3">
+                                        <input class="form-check-input" type="checkbox" aria-label="Select message">
+                                    </div>
+                                    <a href="mailbox-view.html" class="list-group-item-action d-flex align-items-center flex-grow-1 text-decoration-none text-reset">
+                                        <div class="flex-shrink-0 me-3">
+                                            <img src="https://ui-avatars.com/api/?name=Emily+Davis&background=f59e0b&color=fff" alt="Avatar" class="rounded-circle" width="40" height="40" loading="lazy" decoding="async">
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div>
+                                                    <h6 class="mb-1">Emily Davis <span class="badge bg-warning ms-2">Administrative</span></h6>
+                                                    <p class="mb-1 text-dark">Budget Allocation for Research Department</p>
+                                                    <p class="mb-0 text-muted small">Please review the attached budget proposal for the upcoming fiscal year...</p>
+                                                </div>
+                                                <div class="text-end">
+                                                    <small class="text-muted">Yesterday</small>
+                                                    <div class="mt-1">
+                                                        <i class="bi bi-paperclip"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </div>
+
+                                <!-- Mail Item 4 -->
+                                <div class="list-group-item d-flex align-items-center">
+                                    <div class="form-check me-3">
+                                        <input class="form-check-input" type="checkbox" aria-label="Select message">
+                                    </div>
+                                    <a href="mailbox-view.html" class="list-group-item-action d-flex align-items-center flex-grow-1 text-decoration-none text-reset">
+                                        <div class="flex-shrink-0 me-3">
+                                            <img src="https://ui-avatars.com/api/?name=John+Smith&background=8b5cf6&color=fff" alt="Avatar" class="rounded-circle" width="40" height="40" loading="lazy" decoding="async">
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div>
+                                                    <h6 class="mb-1">John Smith <span class="badge bg-info ms-2">Students</span></h6>
+                                                    <p class="mb-1 text-dark">Student Council Meeting Minutes</p>
+                                                    <p class="mb-0 text-muted small">Attached are the minutes from yesterday's student council meeting...</p>
+                                                </div>
+                                                <div class="text-end">
+                                                    <small class="text-muted">2 days ago</small>
+                                                    <div class="mt-1">
+                                                        <i class="bi bi-paperclip"></i>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </div>
+
+                                <!-- Mail Item 5 -->
+                                <div class="list-group-item d-flex align-items-center">
+                                    <div class="form-check me-3">
+                                        <input class="form-check-input" type="checkbox" aria-label="Select message">
+                                    </div>
+                                    <a href="mailbox-view.html" class="list-group-item-action d-flex align-items-center flex-grow-1 text-decoration-none text-reset">
+                                        <div class="flex-shrink-0 me-3">
+                                            <img src="https://ui-avatars.com/api/?name=Lisa+Anderson&background=ec4899&color=fff" alt="Avatar" class="rounded-circle" width="40" height="40" loading="lazy" decoding="async">
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div>
+                                                    <h6 class="mb-1">Lisa Anderson</h6>
+                                                    <p class="mb-1 text-dark">Library Resources Update</p>
+                                                    <p class="mb-0 text-muted small">New digital resources are now available in the library database...</p>
+                                                </div>
+                                                <div class="text-end">
+                                                    <small class="text-muted">3 days ago</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pagination -->
+                        <div class="card-footer bg-white border-top p-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted">Showing 1-5 of 12 messages</span>
+                                <nav>
+                                    <ul class="pagination pagination-sm mb-0">
+                                        <li class="page-item disabled">
+                                            <a class="page-link" href="#" aria-label="Previous"><i aria-hidden="true" class="bi bi-chevron-left"></i></a>
+                                        </li>
+                                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                        <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                        <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="#" aria-label="Next"><i aria-hidden="true" class="bi bi-chevron-right"></i></a>
+                                        </li>
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    {{> footer}}
+</div>
+
+<style>
+.mailbox-sidebar a.active {
+    color: var(--bs-primary) !important;
+    font-weight: 500;
+}
+
+.mailbox-sidebar a:hover {
+    color: var(--bs-primary) !important;
+}
+
+.list-group-item-action:hover {
+    background-color: #f8f9fa;
+}
+
+.list-group-item.unread {
+    background-color: #f0f8ff;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Select all checkbox functionality
+    const selectAll = document.getElementById('selectAll');
+    const checkboxes = document.querySelectorAll('.list-group-item .form-check-input');
+
+    if (selectAll) {
+        selectAll.addEventListener('change', function() {
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAll.checked;
+            });
+        });
+    }
+
+    // Individual checkbox click handling
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    });
+});
+</script>
+
+
+{{> scripts}}

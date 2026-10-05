@@ -1,0 +1,318 @@
+{{> head}}
+
+{{> sidebar}}
+
+<!-- Main Content Wrapper -->
+<div class="main-wrapper" id="mainWrapper">
+    {{> header}}
+
+    <!-- Main Content -->
+    <main class="dashboard-content" id="main-content">
+        <div class="container-fluid">
+            <!-- Back Button and Page Header -->
+            <div class="mb-4">
+                <a href="mailbox.html" class="btn btn-outline-secondary btn-sm mb-3">
+                    <i class="bi bi-arrow-left me-2"></i>Back to Inbox
+                </a>
+                <h1 class="h3 font-bold">Message Details</h1>
+            </div>
+
+            <!-- Message View -->
+            <div class="row g-3">
+                <!-- Sidebar -->
+                <div class="col-lg-3">
+                    <div class="card shadow-sm">
+                        <div class="card-body p-4">
+                            <a href="mailbox-compose.html" class="btn btn-primary w-100 mb-3">
+                                <i class="bi bi-pencil-square me-2"></i>Compose
+                            </a>
+
+                            <div class="mailbox-sidebar">
+                                <ul class="list-unstyled">
+                                    <li class="mb-2">
+                                        <a href="mailbox.html" class="d-flex align-items-center text-decoration-none text-dark">
+                                            <i class="bi bi-inbox-fill me-2"></i>
+                                            <span>Inbox</span>
+                                            <span class="badge bg-primary ms-auto">12</span>
+                                        </a>
+                                    </li>
+                                    <li class="mb-2">
+                                        <a href="#" class="d-flex align-items-center text-decoration-none text-muted">
+                                            <i class="bi bi-send me-2"></i>
+                                            <span>Sent</span>
+                                        </a>
+                                    </li>
+                                    <li class="mb-2">
+                                        <a href="#" class="d-flex align-items-center text-decoration-none text-muted">
+                                            <i class="bi bi-file-earmark-text me-2"></i>
+                                            <span>Drafts</span>
+                                            <span class="badge bg-secondary ms-auto">3</span>
+                                        </a>
+                                    </li>
+                                    <li class="mb-2">
+                                        <a href="#" class="d-flex align-items-center text-decoration-none text-muted">
+                                            <i class="bi bi-star me-2"></i>
+                                            <span>Important</span>
+                                        </a>
+                                    </li>
+                                    <li class="mb-2">
+                                        <a href="#" class="d-flex align-items-center text-decoration-none text-muted">
+                                            <i class="bi bi-trash me-2"></i>
+                                            <span>Trash</span>
+                                        </a>
+                                    </li>
+                                </ul>
+
+                                <hr>
+
+                                <h6 class="text-muted text-uppercase small mb-3">Labels</h6>
+                                <ul class="list-unstyled">
+                                    <li class="mb-2">
+                                        <a href="#" class="d-flex align-items-center text-decoration-none text-muted">
+                                            <span class="badge rounded-circle bg-success me-2" style="width: 10px; height: 10px;"></span>
+                                            <span>Academic</span>
+                                        </a>
+                                    </li>
+                                    <li class="mb-2">
+                                        <a href="#" class="d-flex align-items-center text-decoration-none text-muted">
+                                            <span class="badge rounded-circle bg-warning me-2" style="width: 10px; height: 10px;"></span>
+                                            <span>Administrative</span>
+                                        </a>
+                                    </li>
+                                    <li class="mb-2">
+                                        <a href="#" class="d-flex align-items-center text-decoration-none text-muted">
+                                            <span class="badge rounded-circle bg-info me-2" style="width: 10px; height: 10px;"></span>
+                                            <span>Students</span>
+                                        </a>
+                                    </li>
+                                    <li class="mb-2">
+                                        <a href="#" class="d-flex align-items-center text-decoration-none text-muted">
+                                            <span class="badge rounded-circle bg-danger me-2" style="width: 10px; height: 10px;"></span>
+                                            <span>Urgent</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mail Content -->
+                <div class="col-lg-9">
+                    <div class="card shadow-sm">
+                        <!-- Message Actions Bar -->
+                        <div class="card-header bg-white border-bottom p-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.location.href='mailbox-compose.html'">
+                                        <i class="bi bi-reply"></i> Reply
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary">
+                                        <i class="bi bi-reply-all"></i> Reply All
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary">
+                                        <i class="bi bi-arrow-right"></i> Forward
+                                    </button>
+                                </div>
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" aria-label="Favourite">
+                                        <i aria-hidden="true" class="bi bi-star"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" aria-label="Print">
+                                        <i aria-hidden="true" class="bi bi-printer"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" aria-label="Delete">
+                                        <i aria-hidden="true" class="bi bi-trash"></i>
+                                    </button>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-label="More options">
+                                            <i aria-hidden="true" class="bi bi-three-dots-vertical"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li><a class="dropdown-item" href="#">Mark as unread</a></li>
+                                            <li><a class="dropdown-item" href="#">Add label</a></li>
+                                            <li><a class="dropdown-item" href="#">Block sender</a></li>
+                                            <li><a class="dropdown-item" href="#">Report spam</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Message Content -->
+                        <div class="card-body p-4">
+                            <!-- Message Header -->
+                            <div class="message-header mb-4">
+                                <h4 class="mb-3">Course Schedule Update - Fall Semester 2024</h4>
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="d-flex align-items-center">
+                                        <img src="https://ui-avatars.com/api/?name=Sarah+Johnson&background=10b981&color=fff" alt="Avatar" class="rounded-circle me-3" width="50" height="50" loading="lazy" decoding="async">
+                                        <div>
+                                            <h6 class="mb-0">Sarah Johnson <span class="badge bg-success ms-2">Academic</span></h6>
+                                            <div class="text-muted small">
+                                                <span>From: sarah.johnson@kiaalap.edu</span><br>
+                                                <span>To: faculty@kiaalap.edu</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="text-end text-muted small">
+                                        <div>Oct 15, 2024, 10:30 AM</div>
+                                        <div class="mt-1">
+                                            <i class="bi bi-star text-warning"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            <!-- Message Body -->
+                            <div class="message-body">
+                                <p>Dear Faculty Members,</p>
+
+                                <p>I hope this email finds you well. I am writing to inform you about important updates to the course schedule for the upcoming Fall Semester 2024. Please review these changes carefully as they may affect your teaching assignments and classroom allocations.</p>
+
+                                <h5 class="mt-4 mb-3">Schedule Changes</h5>
+                                <p>The following adjustments have been made to accommodate increased enrollment and facility renovations:</p>
+
+                                <ul>
+                                    <li><strong>Computer Science Department:</strong> All morning classes will now start at 8:00 AM instead of 8:30 AM</li>
+                                    <li><strong>Engineering Labs:</strong> Lab sessions have been extended by 30 minutes to provide more hands-on experience</li>
+                                    <li><strong>Business School:</strong> Evening MBA classes will now be held on both Tuesday and Thursday</li>
+                                    <li><strong>Liberal Arts:</strong> Writing workshops have been moved to the new Media Center in Building C</li>
+                                </ul>
+
+                                <h5 class="mt-4 mb-3">Important Dates</h5>
+                                <table class="table table-bordered">
+                                    <tbody>
+                                        <tr>
+                                            <td><strong>Faculty Orientation:</strong></td>
+                                            <td>August 15-16, 2024</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>First Day of Classes:</strong></td>
+                                            <td>August 26, 2024</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Add/Drop Period:</strong></td>
+                                            <td>August 26 - September 6, 2024</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Midterm Week:</strong></td>
+                                            <td>October 14-18, 2024</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                                <h5 class="mt-4 mb-3">New Classroom Technology</h5>
+                                <p>We're excited to announce that all classrooms in Buildings A and B have been equipped with new interactive whiteboards and enhanced audio-visual systems. Training sessions for these new technologies will be offered during the faculty orientation week.</p>
+
+                                <h5 class="mt-4 mb-3">Action Required</h5>
+                                <p>Please confirm your availability for the assigned teaching slots by <strong>July 31, 2024</strong>. You can do this through the Faculty Portal or by replying to this email. If you have any conflicts or concerns, please contact the Academic Affairs office immediately.</p>
+
+                                <p>Additionally, please update your course syllabi to reflect the new schedule and submit them to the department head by <strong>August 5, 2024</strong>.</p>
+
+                                <p class="mt-4">Thank you for your cooperation and dedication to our students' success. If you have any questions or need clarification on any of these changes, please don't hesitate to reach out.</p>
+
+                                <p>Best regards,</p>
+                                <p>
+                                    <strong>Dr. Sarah Johnson</strong><br>
+                                    <em>Vice President of Academic Affairs</em><br>
+                                    Kiaalap University<br>
+                                    Phone: (555) 123-4567<br>
+                                    Email: sarah.johnson@kiaalap.edu
+                                </p>
+                            </div>
+
+                            <hr>
+
+                            <!-- Attachments -->
+                            <div class="attachments mt-4">
+                                <h6 class="mb-3">Attachments (2)</h6>
+                                <div class="row g-2">
+                                    <div class="col-md-6">
+                                        <div class="attachment-item border rounded p-3 d-flex align-items-center">
+                                            <i class="bi bi-file-pdf text-danger fs-3 me-3"></i>
+                                            <div class="flex-grow-1">
+                                                <div class="fw-semibold">Fall_2024_Schedule.pdf</div>
+                                                <small class="text-muted">2.4 MB</small>
+                                            </div>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" aria-label="Download">
+                                                <i aria-hidden="true" class="bi bi-download"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="attachment-item border rounded p-3 d-flex align-items-center">
+                                            <i class="bi bi-file-excel text-success fs-3 me-3"></i>
+                                            <div class="flex-grow-1">
+                                                <div class="fw-semibold">Classroom_Assignments.xlsx</div>
+                                                <small class="text-muted">458 KB</small>
+                                            </div>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" aria-label="Download">
+                                                <i aria-hidden="true" class="bi bi-download"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Quick Reply -->
+                            <div class="quick-reply mt-5">
+                                <h6 class="mb-3">Quick Reply</h6>
+                                <form>
+                                    <div class="mb-3">
+                                        <textarea class="form-control" rows="5" placeholder="Type your reply here..."></textarea>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary me-2">
+                                                <i class="bi bi-paperclip"></i> Attach
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" aria-label="Emoji smile">
+                                                <i aria-hidden="true" class="bi bi-emoji-smile"></i>
+                                            </button>
+                                        </div>
+                                        <div>
+                                            <button type="button" class="btn btn-sm btn-secondary me-2">Save Draft</button>
+                                            <button type="submit" class="btn btn-sm btn-primary">Send Reply</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    {{> footer}}
+</div>
+
+<style>
+.mailbox-sidebar a.active {
+    color: var(--bs-primary) !important;
+    font-weight: 500;
+}
+
+.mailbox-sidebar a:hover {
+    color: var(--bs-primary) !important;
+}
+
+.attachment-item:hover {
+    background-color: #f8f9fa;
+}
+
+.message-body {
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.quick-reply textarea {
+    resize: vertical;
+}
+</style>
+
+
+{{> scripts}}

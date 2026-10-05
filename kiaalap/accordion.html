@@ -1,0 +1,826 @@
+{{> head}}
+
+<style>
+/* Dashboard Grid System */
+        .dashboard-row { margin-bottom: 24px; }
+        .dashboard-grid { display: grid; gap: 24px; }
+        .grid-cols-1 { grid-template-columns: 1fr; }
+        .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+        .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+        .grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+        .grid-cols-2-1 { grid-template-columns: 2fr 1fr; }
+        .grid-cols-3-1 { grid-template-columns: 3fr 1fr; }
+
+        @media (max-width: 1200px) {
+            .grid-cols-4 { grid-template-columns: repeat(2, 1fr); }
+            .grid-cols-3 { grid-template-columns: repeat(2, 1fr); }
+            .grid-cols-2-1, .grid-cols-3-1 { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 768px) {
+            .dashboard-grid { gap: 16px; }
+            .grid-cols-4, .grid-cols-3, .grid-cols-2, .grid-cols-2-1, .grid-cols-3-1 { grid-template-columns: 1fr; }
+        }
+
+        /* Card Spacing */
+        .dashboard-card {
+            margin-bottom: 24px;
+        }
+
+        .dashboard-card:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Accordion Customizations */
+        .accordion {
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .accordion-item {
+            border: none;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .accordion-item:last-child {
+            border-bottom: none;
+        }
+
+        .accordion-header {
+            margin-bottom: 0;
+        }
+
+        .accordion-button {
+            background: #f8f9fa;
+            border: none;
+            border-radius: 0;
+            padding: 20px 24px;
+            font-weight: 500;
+            color: #1f2937;
+            transition: all 0.3s ease;
+        }
+
+        .accordion-button:not(.collapsed) {
+            background: #4361ee;
+            color: white;
+            box-shadow: none;
+        }
+
+        .accordion-button:focus {
+            border-color: #4361ee;
+            box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.25);
+        }
+
+        .accordion-button::after {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23212529'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+        }
+
+        .accordion-button:not(.collapsed)::after {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23ffffff'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+        }
+
+        .accordion-body {
+            padding: 24px;
+            background: white;
+        }
+
+        /* Custom Academic Accordion */
+        .academic-accordion .accordion-button {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-left: 4px solid transparent;
+        }
+
+        .academic-accordion .accordion-button:not(.collapsed) {
+            background: linear-gradient(135deg, #4361ee, #6366f1);
+            border-left: 4px solid #ffc107;
+        }
+
+        /* Course Accordion Item */
+        .course-accordion-item {
+            margin-bottom: 16px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            overflow: hidden;
+        }
+
+        .course-accordion-header {
+            background: #f8f9fa;
+            padding: 16px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .course-accordion-header:hover {
+            background: #e9ecef;
+        }
+
+        .course-accordion-content {
+            padding: 20px;
+            background: white;
+            display: none;
+        }
+
+        .course-accordion-item.active .course-accordion-content {
+            display: block;
+        }
+
+        .course-accordion-item.active .course-accordion-header {
+            background: #4361ee;
+            color: white;
+        }
+
+        /* Stats Items */
+        .stat-item {
+            text-align: center;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #4361ee;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        /* Progress Indicator */
+        .progress-indicator {
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            margin: 16px 0;
+        }
+
+        .progress-indicator .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4361ee, #6366f1);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        /* FAQ Styles */
+        .faq-accordion .accordion-button::before {
+            content: "Q: ";
+            font-weight: 700;
+            color: #4361ee;
+            margin-right: 8px;
+        }
+
+        .faq-accordion .accordion-button:not(.collapsed)::before {
+            color: white;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .accordion-button {
+                padding: 16px 20px;
+                font-size: 0.9rem;
+            }
+        }
+</style>
+
+{{> sidebar}}
+
+<!-- Main Content Wrapper -->
+<div class="main-wrapper" id="mainWrapper">
+    {{> header}}
+
+    <!-- Main Content -->
+    <main class="dashboard-content" id="main-content">
+        <div class="container-fluid">
+            <!-- Page Header -->
+            <div class="mb-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="h3 mb-0 text-gray-800">Accordion Components</h1>
+                        <p class="text-muted mb-0">Bootstrap 5 accordion components for organizing collapsible academic content</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Basic Accordion -->
+            <div class="dashboard-card">
+                <div class="dashboard-card-header py-4 px-4">
+                    <h5 class="mb-0">Basic Academic Accordion</h5>
+                </div>
+                <div class="dashboard-card-body px-4 py-4">
+                    <div class="accordion" id="basicAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="studentInfo">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseStudentInfo" aria-expanded="true" aria-controls="collapseStudentInfo">
+                                    <i class="bi bi-person-badge me-3"></i>
+                                    Student Information Management
+                                </button>
+                            </h2>
+                            <div id="collapseStudentInfo" class="accordion-collapse collapse show" aria-labelledby="studentInfo" data-bs-parent="#basicAccordion" role="region">
+                                <div class="accordion-body">
+                                    <div class="dashboard-grid grid-cols-3-1">
+                                        <div>
+                                            <p><strong>Overview:</strong> Comprehensive student information management system that allows you to maintain detailed records of all enrolled students.</p>
+                                            <h6>Key Features:</h6>
+                                            <ul>
+                                                <li>Complete student profile management</li>
+                                                <li>Academic history tracking</li>
+                                                <li>Contact information and emergency contacts</li>
+                                                <li>Enrollment status and course registration</li>
+                                                <li>Academic performance monitoring</li>
+                                            </ul>
+                                        </div>
+                                        <div>
+                                            <div class="stat-item">
+                                                <div class="stat-value">1,245</div>
+                                                <div class="stat-label">Total Students</div>
+                                            </div>
+                                            <div class="stat-item">
+                                                <div class="stat-value">98%</div>
+                                                <div class="stat-label">Active Enrollment</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="courseManagement">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCourseManagement" aria-expanded="false" aria-controls="collapseCourseManagement">
+                                    <i class="bi bi-book me-3"></i>
+                                    Course Management System
+                                </button>
+                            </h2>
+                            <div id="collapseCourseManagement" class="accordion-collapse collapse" aria-labelledby="courseManagement" data-bs-parent="#basicAccordion" role="region">
+                                <div class="accordion-body">
+                                    <p><strong>Description:</strong> Advanced course management system for creating, scheduling, and maintaining academic courses.</p>
+
+                                    <div class="dashboard-grid grid-cols-2 mt-3">
+                                        <div>
+                                            <h6>Course Creation &amp; Setup</h6>
+                                            <ul>
+                                                <li>Course curriculum design</li>
+                                                <li>Schedule and classroom assignment</li>
+                                                <li>Prerequisites management</li>
+                                                <li>Credit hour allocation</li>
+                                            </ul>
+                                        </div>
+                                        <div>
+                                            <h6>Enrollment &amp; Progress</h6>
+                                            <div class="progress-indicator">
+                                                <div class="progress-bar" style="width: 85%"></div>
+                                            </div>
+                                            <small class="text-muted">Current semester progress: 85%</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="gradeManagement">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseGradeManagement" aria-expanded="false" aria-controls="collapseGradeManagement">
+                                    <i class="bi bi-graph-up me-3"></i>
+                                    Grade Management &amp; Analytics
+                                </button>
+                            </h2>
+                            <div id="collapseGradeManagement" class="accordion-collapse collapse" aria-labelledby="gradeManagement" data-bs-parent="#basicAccordion" role="region">
+                                <div class="accordion-body">
+                                    <p><strong>Analytics Dashboard:</strong> Comprehensive grade management with real-time analytics and performance tracking.</p>
+
+                                    <div class="dashboard-grid grid-cols-4">
+                                        <div>
+                                            <div class="card text-center">
+                                                <div class="card-body">
+                                                    <h5 class="text-success">A</h5>
+                                                    <p class="card-text">Average Grade</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div class="card text-center">
+                                                <div class="card-body">
+                                                    <h5 class="text-primary">3.85</h5>
+                                                    <p class="card-text">GPA</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div class="card text-center">
+                                                <div class="card-body">
+                                                    <h5 class="text-warning">92%</h5>
+                                                    <p class="card-text">Pass Rate</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div class="card text-center">
+                                                <div class="card-body">
+                                                    <h5 class="text-info">156</h5>
+                                                    <p class="card-text">Assignments</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="reportingSystem">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseReportingSystem" aria-expanded="false" aria-controls="collapseReportingSystem">
+                                    <i class="bi bi-file-text me-3"></i>
+                                    Reporting &amp; Communication
+                                </button>
+                            </h2>
+                            <div id="collapseReportingSystem" class="accordion-collapse collapse" aria-labelledby="reportingSystem" data-bs-parent="#basicAccordion" role="region">
+                                <div class="accordion-body">
+                                    <p><strong>Communication Hub:</strong> Integrated reporting and communication system for stakeholders.</p>
+
+                                    <div class="alert alert-info">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        <strong>Latest Update:</strong> New parent portal has been launched with real-time grade access.
+                                    </div>
+
+                                    <div class="dashboard-grid grid-cols-2">
+                                        <div>
+                                            <h6>Available Reports</h6>
+                                            <div class="list-group">
+                                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                    Academic Progress Report
+                                                    <span class="badge bg-primary rounded-pill">PDF</span>
+                                                </div>
+                                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                    Attendance Summary
+                                                    <span class="badge bg-success rounded-pill">Excel</span>
+                                                </div>
+                                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                                    Grade Distribution
+                                                    <span class="badge bg-warning rounded-pill">Chart</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <h6>Quick Actions</h6>
+                                            <div class="d-grid gap-2">
+                                                <button type="button" class="btn btn-primary">Send Parent Notification</button>
+                                                <button type="button" class="btn btn-outline-secondary">Generate Report</button>
+                                                <button type="button" class="btn btn-outline-info">Schedule Meeting</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ Accordion -->
+            <div class="dashboard-card">
+                <div class="dashboard-card-header py-4 px-4">
+                    <h5 class="mb-0">Frequently Asked Questions</h5>
+                </div>
+                <div class="dashboard-card-body px-4 py-4">
+                    <div class="accordion faq-accordion" id="faqAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faq1">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFaq1" aria-expanded="false" aria-controls="collapseFaq1">
+                                    How do I enroll in a new course for Spring 2025?
+                                </button>
+                            </h2>
+                            <div id="collapseFaq1" class="accordion-collapse collapse" aria-labelledby="faq1" data-bs-parent="#faqAccordion" role="region">
+                                <div class="accordion-body">
+                                    <p><strong>Answer:</strong> To enroll in a new course for Spring 2025, follow these steps:</p>
+                                    <ol>
+                                        <li>Log in to the student portal using your credentials</li>
+                                        <li>Navigate to the "Course Registration" section</li>
+                                        <li>Browse available courses for Spring 2025 semester</li>
+                                        <li>Check prerequisites and schedule compatibility</li>
+                                        <li>Click "Add to Cart" for desired courses</li>
+                                        <li>Review your selection and click "Confirm Enrollment"</li>
+                                        <li>Wait for advisor approval (typically 24-48 hours)</li>
+                                    </ol>
+                                    <div class="alert alert-warning mt-3">
+                                        <i class="bi bi-exclamation-triangle me-2"></i>
+                                        <strong>Important:</strong> Registration deadline for Spring 2025 is December 15, 2024.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faq2">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFaq2" aria-expanded="false" aria-controls="collapseFaq2">
+                                    What are the graduation requirements for 2025?
+                                </button>
+                            </h2>
+                            <div id="collapseFaq2" class="accordion-collapse collapse" aria-labelledby="faq2" data-bs-parent="#faqAccordion" role="region">
+                                <div class="accordion-body">
+                                    <p><strong>Answer:</strong> Graduation requirements for 2025 include:</p>
+                                    <ul>
+                                        <li>Complete minimum 120 credit hours</li>
+                                        <li>Maintain a cumulative GPA of 2.0 or higher</li>
+                                        <li>Complete all major-specific requirements</li>
+                                        <li>Fulfill general education requirements</li>
+                                        <li>Complete capstone project or thesis</li>
+                                        <li>Clear all financial obligations</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faq3">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFaq3" aria-expanded="false" aria-controls="collapseFaq3">
+                                    How can I access my academic transcript?
+                                </button>
+                            </h2>
+                            <div id="collapseFaq3" class="accordion-collapse collapse" aria-labelledby="faq3" data-bs-parent="#faqAccordion" role="region">
+                                <div class="accordion-body">
+                                    <p><strong>Answer:</strong> You can access your academic transcript through multiple methods:</p>
+                                    <div class="dashboard-grid grid-cols-2">
+                                        <div>
+                                            <h6>Online Access</h6>
+                                            <ul>
+                                                <li>Login to student portal</li>
+                                                <li>Navigate to "Academic Records"</li>
+                                                <li>Select "View/Download Transcript"</li>
+                                                <li>Choose format (PDF or HTML)</li>
+                                            </ul>
+                                        </div>
+                                        <div>
+                                            <h6>Official Transcript Request</h6>
+                                            <ul>
+                                                <li>Visit Registrar's Office</li>
+                                                <li>Fill out transcript request form</li>
+                                                <li>Pay $10 processing fee</li>
+                                                <li>Allow 3-5 business days</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faq4">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFaq4" aria-expanded="false" aria-controls="collapseFaq4">
+                                    What financial aid options are available for 2025-2026?
+                                </button>
+                            </h2>
+                            <div id="collapseFaq4" class="accordion-collapse collapse" aria-labelledby="faq4" data-bs-parent="#faqAccordion" role="region">
+                                <div class="accordion-body">
+                                    <p><strong>Answer:</strong> Various financial aid options are available for the 2025-2026 academic year:</p>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <h6 class="card-title">Merit-Based Scholarships</h6>
+                                                    <p class="card-text">Awards ranging from $1,000 to full tuition based on academic achievement</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <h6 class="card-title">Need-Based Grants</h6>
+                                                    <p class="card-text">Financial assistance based on demonstrated financial need</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <h6 class="card-title">Work-Study Programs</h6>
+                                                    <p class="card-text">Part-time employment opportunities on campus</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <h6 class="card-title">Student Loans</h6>
+                                                    <p class="card-text">Federal and private loan options with competitive rates</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Course Schedule Accordion -->
+            <div class="dashboard-card">
+                <div class="dashboard-card-header py-4 px-4">
+                    <h5 class="mb-0">Fall 2025 Course Schedule</h5>
+                </div>
+                <div class="dashboard-card-body px-4 py-4">
+                    <div class="accordion academic-accordion" id="scheduleAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="monday">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseMonday" aria-expanded="true" aria-controls="collapseMonday">
+                                    <i class="bi bi-calendar-day me-3"></i>
+                                    Monday Schedule
+                                    <span class="badge bg-warning ms-auto me-2">3 Classes</span>
+                                </button>
+                            </h2>
+                            <div id="collapseMonday" class="accordion-collapse collapse show" aria-labelledby="monday" data-bs-parent="#scheduleAccordion" role="region">
+                                <div class="accordion-body">
+                                    <div class="list-group">
+                                        <div class="list-group-item">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <h6 class="mb-1">Advanced Computer Science</h6>
+                                                    <p class="mb-0 text-muted">CS-401 • Dr. Jane Smith • Room 301</p>
+                                                </div>
+                                                <span class="badge bg-primary">10:00 - 11:30 AM</span>
+                                            </div>
+                                        </div>
+                                        <div class="list-group-item">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <h6 class="mb-1">Linear Algebra</h6>
+                                                    <p class="mb-0 text-muted">MATH-301 • Dr. Emily Davis • Room 205</p>
+                                                </div>
+                                                <span class="badge bg-success">1:00 - 2:00 PM</span>
+                                            </div>
+                                        </div>
+                                        <div class="list-group-item">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <h6 class="mb-1">Physics Lab</h6>
+                                                    <p class="mb-0 text-muted">PHY-201L • Prof. Michael Brown • Lab 102</p>
+                                                </div>
+                                                <span class="badge bg-info">3:00 - 5:00 PM</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="tuesday">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTuesday" aria-expanded="false" aria-controls="collapseTuesday">
+                                    <i class="bi bi-calendar-day me-3"></i>
+                                    Tuesday Schedule
+                                    <span class="badge bg-warning ms-auto me-2">2 Classes</span>
+                                </button>
+                            </h2>
+                            <div id="collapseTuesday" class="accordion-collapse collapse" aria-labelledby="tuesday" data-bs-parent="#scheduleAccordion" role="region">
+                                <div class="accordion-body">
+                                    <div class="list-group">
+                                        <div class="list-group-item">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <h6 class="mb-1">Data Structures</h6>
+                                                    <p class="mb-0 text-muted">CS-302 • Dr. Robert Brown • Room 401</p>
+                                                </div>
+                                                <span class="badge bg-primary">2:00 - 3:30 PM</span>
+                                            </div>
+                                        </div>
+                                        <div class="list-group-item">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <h6 class="mb-1">Technical Writing</h6>
+                                                    <p class="mb-0 text-muted">ENG-220 • Prof. Sarah Wilson • Room 115</p>
+                                                </div>
+                                                <span class="badge bg-warning">4:00 - 5:30 PM</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="wednesday">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseWednesday" aria-expanded="false" aria-controls="collapseWednesday">
+                                    <i class="bi bi-calendar-day me-3"></i>
+                                    Wednesday Schedule
+                                    <span class="badge bg-warning ms-auto me-2">3 Classes</span>
+                                </button>
+                            </h2>
+                            <div id="collapseWednesday" class="accordion-collapse collapse" aria-labelledby="wednesday" data-bs-parent="#scheduleAccordion" role="region">
+                                <div class="accordion-body">
+                                    <p class="text-muted">Same as Monday schedule</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="thursday">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThursday" aria-expanded="false" aria-controls="collapseThursday">
+                                    <i class="bi bi-calendar-day me-3"></i>
+                                    Thursday Schedule
+                                    <span class="badge bg-warning ms-auto me-2">2 Classes</span>
+                                </button>
+                            </h2>
+                            <div id="collapseThursday" class="accordion-collapse collapse" aria-labelledby="thursday" data-bs-parent="#scheduleAccordion" role="region">
+                                <div class="accordion-body">
+                                    <p class="text-muted">Same as Tuesday schedule</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="friday">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFriday" aria-expanded="false" aria-controls="collapseFriday">
+                                    <i class="bi bi-calendar-day me-3"></i>
+                                    Friday Schedule
+                                    <span class="badge bg-success ms-auto me-2">2 Classes</span>
+                                </button>
+                            </h2>
+                            <div id="collapseFriday" class="accordion-collapse collapse" aria-labelledby="friday" data-bs-parent="#scheduleAccordion" role="region">
+                                <div class="accordion-body">
+                                    <div class="list-group">
+                                        <div class="list-group-item">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <h6 class="mb-1">Advanced Computer Science</h6>
+                                                    <p class="mb-0 text-muted">CS-401 • Dr. Jane Smith • Room 301</p>
+                                                </div>
+                                                <span class="badge bg-primary">10:00 - 11:30 AM</span>
+                                            </div>
+                                        </div>
+                                        <div class="list-group-item">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <h6 class="mb-1">Linear Algebra</h6>
+                                                    <p class="mb-0 text-muted">MATH-301 • Dr. Emily Davis • Room 205</p>
+                                                </div>
+                                                <span class="badge bg-success">1:00 - 2:00 PM</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Custom Course Accordion -->
+            <div class="dashboard-card">
+                <div class="dashboard-card-header py-4 px-4">
+                    <h5 class="mb-0">Interactive Course Accordion</h5>
+                </div>
+                <div class="dashboard-card-body px-4 py-4">
+                    <div id="customAccordion">
+                        <div class="course-accordion-item">
+                            <div class="course-accordion-header" data-target="course1">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-0"><i class="bi bi-cpu me-2"></i>Machine Learning Fundamentals</h6>
+                                        <small class="text-muted">CS-450 • Spring 2025</small>
+                                    </div>
+                                    <span class="badge bg-primary">3 Credits</span>
+                                </div>
+                            </div>
+                            <div class="course-accordion-content" id="course1">
+                                <p>Introduction to machine learning algorithms and applications.</p>
+                                <div class="dashboard-grid grid-cols-2">
+                                    <div>
+                                        <strong>Prerequisites:</strong>
+                                        <ul>
+                                            <li>Data Structures (CS-302)</li>
+                                            <li>Linear Algebra (MATH-301)</li>
+                                            <li>Statistics (STAT-201)</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <strong>Schedule:</strong>
+                                        <p>Tuesdays &amp; Thursdays<br>10:00 AM - 11:30 AM<br>Room 405</p>
+                                        <button type="button" class="btn btn-sm btn-primary">Enroll Now</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="course-accordion-item">
+                            <div class="course-accordion-header" data-target="course2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-0"><i class="bi bi-shield-lock me-2"></i>Cybersecurity Principles</h6>
+                                        <small class="text-muted">CS-480 • Spring 2025</small>
+                                    </div>
+                                    <span class="badge bg-warning">4 Credits</span>
+                                </div>
+                            </div>
+                            <div class="course-accordion-content" id="course2">
+                                <p>Comprehensive study of cybersecurity concepts and practices.</p>
+                                <div class="alert alert-warning">
+                                    <i class="bi bi-exclamation-triangle me-2"></i>
+                                    Limited seats available - Only 5 spots remaining!
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="course-accordion-item">
+                            <div class="course-accordion-header" data-target="course3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-0"><i class="bi bi-globe me-2"></i>Web Development Advanced</h6>
+                                        <small class="text-muted">CS-390 • Spring 2025</small>
+                                    </div>
+                                    <span class="badge bg-success">3 Credits</span>
+                                </div>
+                            </div>
+                            <div class="course-accordion-content" id="course3">
+                                <p>Advanced web development using modern frameworks and technologies.</p>
+                                <div class="progress-indicator mb-3">
+                                    <div class="progress-bar" style="width: 70%"></div>
+                                </div>
+                                <small class="text-muted">Enrollment: 21/30 students</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    {{> footer}}
+</div>
+
+<script>
+// Custom accordion functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Custom course accordion
+    const courseHeaders = document.querySelectorAll('.course-accordion-header');
+
+    courseHeaders.forEach(header => {
+        header.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-target');
+            const content = document.getElementById(targetId);
+            const parentItem = this.parentElement;
+
+            // Close all other accordion items
+            document.querySelectorAll('.course-accordion-item').forEach(item => {
+                if (item !== parentItem) {
+                    item.classList.remove('active');
+                }
+            });
+
+            // Toggle current item
+            parentItem.classList.toggle('active');
+        });
+    });
+
+    // Smooth scroll for accordion items
+    const accordionButtons = document.querySelectorAll('.accordion-button');
+    accordionButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            setTimeout(() => {
+                const target = this.getAttribute('data-bs-target');
+                const element = document.querySelector(target);
+                if (element && !this.classList.contains('collapsed')) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            }, 350);
+        });
+    });
+
+    // Add animation classes
+    const accordionCollapses = document.querySelectorAll('.accordion-collapse');
+    accordionCollapses.forEach(collapse => {
+        collapse.addEventListener('shown.bs.collapse', function() {
+            this.classList.add('fade-in');
+        });
+
+        collapse.addEventListener('hidden.bs.collapse', function() {
+            this.classList.remove('fade-in');
+        });
+    });
+});
+
+// Add fade-in animation style
+const style = document.createElement('style');
+style.textContent = `
+    .fade-in {
+        animation: fadeIn 0.3s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+`;
+document.head.appendChild(style);
+</script>
+
+{{> scripts}}

@@ -1,0 +1,440 @@
+{{> head}}
+
+{{> sidebar}}
+
+<!-- Main Content Wrapper -->
+<div class="main-wrapper" id="mainWrapper">
+    {{> header}}
+
+    <!-- Main Content -->
+    <main class="dashboard-content" id="main-content">
+        <div class="container-fluid">
+            <!-- Back Button and Page Header -->
+            <div class="mb-4">
+                <a href="mailbox.html" class="btn btn-outline-secondary btn-sm mb-3">
+                    <i class="bi bi-arrow-left me-2"></i>Back to Inbox
+                </a>
+                <h1 class="h3 font-bold">Compose New Message</h1>
+            </div>
+
+            <!-- Compose View -->
+            <div class="row g-3">
+                <!-- Sidebar -->
+                <div class="col-lg-3">
+                    <div class="card shadow-sm">
+                        <div class="card-body p-4">
+                            <a href="mailbox-compose.html" class="btn btn-primary w-100 mb-3">
+                                <i class="bi bi-pencil-square me-2"></i>Compose
+                            </a>
+
+                            <div class="mailbox-sidebar">
+                                <ul class="list-unstyled">
+                                    <li class="mb-2">
+                                        <a href="mailbox.html" class="d-flex align-items-center text-decoration-none text-dark">
+                                            <i class="bi bi-inbox-fill me-2"></i>
+                                            <span>Inbox</span>
+                                            <span class="badge bg-primary ms-auto">12</span>
+                                        </a>
+                                    </li>
+                                    <li class="mb-2">
+                                        <a href="#" class="d-flex align-items-center text-decoration-none text-muted">
+                                            <i class="bi bi-send me-2"></i>
+                                            <span>Sent</span>
+                                        </a>
+                                    </li>
+                                    <li class="mb-2">
+                                        <a href="#" class="d-flex align-items-center text-decoration-none text-muted">
+                                            <i class="bi bi-file-earmark-text me-2"></i>
+                                            <span>Drafts</span>
+                                            <span class="badge bg-secondary ms-auto">3</span>
+                                        </a>
+                                    </li>
+                                    <li class="mb-2">
+                                        <a href="#" class="d-flex align-items-center text-decoration-none text-muted">
+                                            <i class="bi bi-star me-2"></i>
+                                            <span>Important</span>
+                                        </a>
+                                    </li>
+                                    <li class="mb-2">
+                                        <a href="#" class="d-flex align-items-center text-decoration-none text-muted">
+                                            <i class="bi bi-trash me-2"></i>
+                                            <span>Trash</span>
+                                        </a>
+                                    </li>
+                                </ul>
+
+                                <hr>
+
+                                <h6 class="text-muted text-uppercase small mb-3">Labels</h6>
+                                <ul class="list-unstyled">
+                                    <li class="mb-2">
+                                        <a href="#" class="d-flex align-items-center text-decoration-none text-muted">
+                                            <span class="badge rounded-circle bg-success me-2" style="width: 10px; height: 10px;"></span>
+                                            <span>Academic</span>
+                                        </a>
+                                    </li>
+                                    <li class="mb-2">
+                                        <a href="#" class="d-flex align-items-center text-decoration-none text-muted">
+                                            <span class="badge rounded-circle bg-warning me-2" style="width: 10px; height: 10px;"></span>
+                                            <span>Administrative</span>
+                                        </a>
+                                    </li>
+                                    <li class="mb-2">
+                                        <a href="#" class="d-flex align-items-center text-decoration-none text-muted">
+                                            <span class="badge rounded-circle bg-info me-2" style="width: 10px; height: 10px;"></span>
+                                            <span>Students</span>
+                                        </a>
+                                    </li>
+                                    <li class="mb-2">
+                                        <a href="#" class="d-flex align-items-center text-decoration-none text-muted">
+                                            <span class="badge rounded-circle bg-danger me-2" style="width: 10px; height: 10px;"></span>
+                                            <span>Urgent</span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Compose Form -->
+                <div class="col-lg-9">
+                    <div class="card shadow-sm">
+                        <div class="card-body p-4">
+                            <form id="composeForm">
+                                <!-- Recipients -->
+                                <div class="mb-3">
+                                    <div class="input-group">
+                                        <span class="input-group-text">To</span>
+                                        <input type="text" class="form-control" id="toRecipients" placeholder="Enter recipients">
+                                        <button class="btn btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#ccBccSection">
+                                            Cc/Bcc
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- CC/BCC Section (Collapsible) -->
+                                <div class="collapse" id="ccBccSection">
+                                    <div class="mb-3">
+                                        <div class="input-group">
+                                            <span class="input-group-text">Cc</span>
+                                            <input type="text" class="form-control" id="ccRecipients" placeholder="Carbon copy recipients">
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <div class="input-group">
+                                            <span class="input-group-text">Bcc</span>
+                                            <input type="text" class="form-control" id="bccRecipients" placeholder="Blind carbon copy recipients">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Subject -->
+                                <div class="mb-3">
+                                    <input type="text" class="form-control" id="subject" placeholder="Subject">
+                                </div>
+
+                                <!-- Label Selection -->
+                                <div class="mb-3">
+                                    <label class="form-label">Add Label</label>
+                                    <div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="checkbox" id="labelAcademic" value="academic">
+                                            <label class="form-check-label" for="labelAcademic">
+                                                <span class="badge rounded-circle bg-success me-1" style="width: 10px; height: 10px;"></span>
+                                                Academic
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="checkbox" id="labelAdmin" value="administrative">
+                                            <label class="form-check-label" for="labelAdmin">
+                                                <span class="badge rounded-circle bg-warning me-1" style="width: 10px; height: 10px;"></span>
+                                                Administrative
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="checkbox" id="labelStudents" value="students">
+                                            <label class="form-check-label" for="labelStudents">
+                                                <span class="badge rounded-circle bg-info me-1" style="width: 10px; height: 10px;"></span>
+                                                Students
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="checkbox" id="labelUrgent" value="urgent">
+                                            <label class="form-check-label" for="labelUrgent">
+                                                <span class="badge rounded-circle bg-danger me-1" style="width: 10px; height: 10px;"></span>
+                                                Urgent
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Message Body -->
+                                <div class="mb-3">
+                                    <div id="messageToolbar" class="border-bottom pb-2 mb-2">
+                                        <div class="btn-toolbar" role="toolbar">
+                                            <div class="btn-group me-2" role="group">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="formatText('bold')" aria-label="Type bold">
+                                                    <i aria-hidden="true" class="bi bi-type-bold"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="formatText('italic')" aria-label="Type italic">
+                                                    <i aria-hidden="true" class="bi bi-type-italic"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="formatText('underline')" aria-label="Type underline">
+                                                    <i aria-hidden="true" class="bi bi-type-underline"></i>
+                                                </button>
+                                            </div>
+                                            <div class="btn-group me-2" role="group">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="formatText('justifyLeft')" aria-label="Text left">
+                                                    <i aria-hidden="true" class="bi bi-text-left"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="formatText('justifyCenter')" aria-label="Text center">
+                                                    <i aria-hidden="true" class="bi bi-text-center"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="formatText('justifyRight')" aria-label="Text right">
+                                                    <i aria-hidden="true" class="bi bi-text-right"></i>
+                                                </button>
+                                            </div>
+                                            <div class="btn-group me-2" role="group">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="formatText('insertOrderedList')" aria-label="List ol">
+                                                    <i aria-hidden="true" class="bi bi-list-ol"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="formatText('insertUnorderedList')" aria-label="List ul">
+                                                    <i aria-hidden="true" class="bi bi-list-ul"></i>
+                                                </button>
+                                            </div>
+                                            <div class="btn-group me-2" role="group">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="insertLink()" aria-label="Link 45deg">
+                                                    <i aria-hidden="true" class="bi bi-link-45deg"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="insertImage()" aria-label="Image">
+                                                    <i aria-hidden="true" class="bi bi-image"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div contenteditable="true" id="messageBody" class="form-control message-editor" style="min-height: 300px;">
+
+                                    </div>
+                                </div>
+
+                                <!-- Attachments -->
+                                <div class="mb-3">
+                                    <label class="form-label">Attachments</label>
+                                    <div class="input-group">
+                                        <input type="file" class="form-control" id="attachments" multiple>
+                                        <button class="btn btn-outline-secondary" type="button">
+                                            <i class="bi bi-paperclip"></i> Attach Files
+                                        </button>
+                                    </div>
+                                    <div id="attachmentList" class="mt-2"></div>
+                                </div>
+
+                                <!-- Actions -->
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <button type="button" class="btn btn-outline-secondary me-2" onclick="saveDraft()">
+                                            <i class="bi bi-save"></i> Save Draft
+                                        </button>
+                                        <button type="button" class="btn btn-outline-danger" onclick="discardMessage()">
+                                            <i class="bi bi-trash"></i> Discard
+                                        </button>
+                                    </div>
+                                    <div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="checkbox" id="requestReadReceipt">
+                                            <label class="form-check-label" for="requestReadReceipt">
+                                                Request read receipt
+                                            </label>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="bi bi-send"></i> Send Message
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+
+                            <!-- Template Suggestions -->
+                            <div class="mt-4">
+                                <h6 class="text-muted mb-3">Quick Templates</h6>
+                                <div class="row g-2">
+                                    <div class="col-md-4">
+                                        <div class="template-card border rounded p-2 cursor-pointer" onclick="useTemplate('meeting')">
+                                            <i class="bi bi-calendar-event text-primary"></i>
+                                            <span class="ms-2">Meeting Request</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="template-card border rounded p-2 cursor-pointer" onclick="useTemplate('announcement')">
+                                            <i class="bi bi-megaphone text-info"></i>
+                                            <span class="ms-2">Announcement</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="template-card border rounded p-2 cursor-pointer" onclick="useTemplate('assignment')">
+                                            <i class="bi bi-clipboard-check text-success"></i>
+                                            <span class="ms-2">Assignment Notice</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    {{> footer}}
+</div>
+
+<style>
+.mailbox-sidebar a.active {
+    color: var(--bs-primary) !important;
+    font-weight: 500;
+}
+
+.mailbox-sidebar a:hover {
+    color: var(--bs-primary) !important;
+}
+
+.message-editor {
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    padding: 12px;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.message-editor:focus {
+    outline: none;
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.template-card {
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.template-card:hover {
+    background-color: #f8f9fa;
+    transform: translateY(-2px);
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+</style>
+
+<script>
+// Rich text editor functions
+function formatText(command) {
+    document.execCommand(command, false, null);
+    document.getElementById('messageBody').focus();
+}
+
+function insertLink() {
+    const url = prompt('Enter URL:');
+    if (url) {
+        document.execCommand('createLink', false, url);
+        document.getElementById('messageBody').focus();
+    }
+}
+
+function insertImage() {
+    const url = prompt('Enter image URL:');
+    if (url) {
+        document.execCommand('insertImage', false, url);
+        document.getElementById('messageBody').focus();
+    }
+}
+
+// Template functions
+function useTemplate(type) {
+    const templates = {
+        meeting: {
+            subject: 'Meeting Request - [Date]',
+            body: `<p>Dear [Recipient],</p>
+                   <p>I would like to schedule a meeting to discuss [topic].</p>
+                   <p>Proposed times:</p>
+                   <ul>
+                       <li>Option 1: [Date and Time]</li>
+                       <li>Option 2: [Date and Time]</li>
+                   </ul>
+                   <p>Please let me know which time works best for you.</p>
+                   <p>Best regards,<br>[Your Name]</p>`
+        },
+        announcement: {
+            subject: 'Important Announcement - [Title]',
+            body: `<p>Dear Students/Faculty,</p>
+                   <p>This is to inform you about [announcement details].</p>
+                   <p>Key points:</p>
+                   <ul>
+                       <li>[Point 1]</li>
+                       <li>[Point 2]</li>
+                       <li>[Point 3]</li>
+                   </ul>
+                   <p>If you have any questions, please feel free to contact me.</p>
+                   <p>Thank you,<br>[Your Name]</p>`
+        },
+        assignment: {
+            subject: 'New Assignment - [Course Name]',
+            body: `<p>Dear Students,</p>
+                   <p>A new assignment has been posted for [Course Name].</p>
+                   <p><strong>Assignment Details:</strong></p>
+                   <ul>
+                       <li>Title: [Assignment Title]</li>
+                       <li>Due Date: [Date]</li>
+                       <li>Submission Format: [Format]</li>
+                   </ul>
+                   <p>Please review the attached materials and let me know if you have any questions.</p>
+                   <p>Best regards,<br>[Your Name]</p>`
+        }
+    };
+
+    if (templates[type]) {
+        document.getElementById('subject').value = templates[type].subject;
+        document.getElementById('messageBody').innerHTML = templates[type].body;
+    }
+}
+
+// Form functions
+function saveDraft() {
+    alert('Draft saved successfully!');
+}
+
+function discardMessage() {
+    if (confirm('Are you sure you want to discard this message?')) {
+        window.location.href = 'mailbox.html';
+    }
+}
+
+// Handle file attachments
+document.getElementById('attachments')?.addEventListener('change', function(e) {
+    const files = Array.from(e.target.files);
+    const attachmentList = document.getElementById('attachmentList');
+
+    attachmentList.innerHTML = '';
+
+    files.forEach(file => {
+        const fileItem = document.createElement('div');
+        fileItem.className = 'badge bg-secondary me-2 mb-2';
+        fileItem.innerHTML = `
+            <i class="bi bi-paperclip"></i> ${file.name}
+            <span class="ms-1" style="cursor: pointer;" onclick="this.parentElement.remove()">×</span>
+        `;
+        attachmentList.appendChild(fileItem);
+    });
+});
+
+// Form submission
+document.getElementById('composeForm')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    alert('Message sent successfully!');
+    window.location.href = 'mailbox.html';
+});
+</script>
+
+
+{{> scripts}}

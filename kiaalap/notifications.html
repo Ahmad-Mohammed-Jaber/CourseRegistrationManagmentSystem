@@ -1,0 +1,235 @@
+{{> head}}
+
+<style>
+/* Notification Demo Styles */
+.notification-demo-card {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.toast-container-demo {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+}
+
+.demo-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* Alert Styles */
+.alert-dismissible {
+    position: relative;
+    padding-right: 3rem;
+}
+</style>
+
+{{> sidebar}}
+
+<!-- Main Content Wrapper -->
+<div class="main-wrapper" id="mainWrapper">
+    {{> header}}
+
+    <!-- Main Content -->
+    <main class="dashboard-content" id="main-content">
+        <div class="container-fluid">
+            <!-- Page Header -->
+            <div class="mb-4">
+                <h1 class="h3 mb-0 text-gray-800">Notifications &amp; Toasts</h1>
+                <p class="text-muted">Bootstrap 5 notification and toast components (100% jQuery-free)</p>
+            </div>
+
+            <!-- Bootstrap 5 Alerts -->
+            <div class="notification-demo-card">
+                <h5 class="mb-3">Bootstrap 5 Alerts</h5>
+                <div class="alert alert-primary" role="alert">
+                    <i class="bi bi-info-circle me-2"></i>
+                    A simple primary alert - check it out!
+                </div>
+                <div class="alert alert-secondary" role="alert">
+                    <i class="bi bi-info-circle me-2"></i>
+                    A simple secondary alert - check it out!
+                </div>
+                <div class="alert alert-success" role="alert">
+                    <i class="bi bi-check-circle me-2"></i>
+                    A simple success alert - check it out!
+                </div>
+                <div class="alert alert-danger" role="alert">
+                    <i class="bi bi-x-circle me-2"></i>
+                    A simple danger alert - check it out!
+                </div>
+                <div class="alert alert-warning" role="alert">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    A simple warning alert - check it out!
+                </div>
+                <div class="alert alert-info" role="alert">
+                    <i class="bi bi-info-circle me-2"></i>
+                    A simple info alert - check it out!
+                </div>
+            </div>
+
+            <!-- Dismissible Alerts -->
+            <div class="notification-demo-card">
+                <h5 class="mb-3">Dismissible Alerts</h5>
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle me-2"></i>
+                    <strong>Well done!</strong> You successfully read this important alert message.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong>Warning!</strong> Better check yourself, you're not looking too good.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-x-circle me-2"></i>
+                    <strong>Oh snap!</strong> Change a few things up and try submitting again.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </div>
+
+            <!-- Alert with Additional Content -->
+            <div class="notification-demo-card">
+                <h5 class="mb-3">Alert with Additional Content</h5>
+                <div class="alert alert-success" role="alert">
+                    <h4 class="alert-heading">Well done!</h4>
+                    <p>Aww yeah, you successfully completed the course module. This alert has additional content to give you more details about the achievement.</p>
+                    <hr>
+                    <p class="mb-0">You can now proceed to the next module and continue your learning journey.</p>
+                </div>
+            </div>
+
+            <!-- Bootstrap 5 Toasts Demo -->
+            <div class="notification-demo-card">
+                <h5 class="mb-3">Bootstrap 5 Toasts</h5>
+                <p class="text-muted">Click the buttons below to trigger toast notifications:</p>
+                <div class="demo-buttons">
+                    <button type="button" class="btn btn-primary" id="showToast1">
+                        <i class="bi bi-bell me-2"></i>Show Basic Toast
+                    </button>
+                    <button type="button" class="btn btn-success" id="showToast2">
+                        <i class="bi bi-check-circle me-2"></i>Show Success Toast
+                    </button>
+                    <button type="button" class="btn btn-warning" id="showToast3">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Show Warning Toast
+                    </button>
+                    <button type="button" class="btn btn-danger" id="showToast4">
+                        <i class="bi bi-x-circle me-2"></i>Show Error Toast
+                    </button>
+                    <button type="button" class="btn btn-info" id="showToast5">
+                        <i class="bi bi-info-circle me-2"></i>Show Info Toast
+                    </button>
+                </div>
+            </div>
+
+            <!-- Notification Examples -->
+            <div class="notification-demo-card">
+                <h5 class="mb-3">Notification List</h5>
+                <div class="list-group">
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1"><i class="bi bi-envelope text-primary me-2"></i>New message received</h6>
+                            <small>3 mins ago</small>
+                        </div>
+                        <p class="mb-1 text-muted">You have a new message from John Doe</p>
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1"><i class="bi bi-check-circle text-success me-2"></i>Course completed</h6>
+                            <small class="text-muted">1 hour ago</small>
+                        </div>
+                        <p class="mb-1 text-muted">You have successfully completed the Data Structures course</p>
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1"><i class="bi bi-exclamation-triangle text-warning me-2"></i>Assignment due soon</h6>
+                            <small class="text-muted">2 hours ago</small>
+                        </div>
+                        <p class="mb-1 text-muted">Your assignment is due in 2 days</p>
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1"><i class="bi bi-calendar text-info me-2"></i>Upcoming event</h6>
+                            <small class="text-muted">5 hours ago</small>
+                        </div>
+                        <p class="mb-1 text-muted">Don't forget about tomorrow's lecture at 10:00 AM</p>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    {{> footer}}
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container-demo" id="toastContainer"></div>
+
+<script>
+// Toast Notifications (Vanilla JavaScript)
+document.addEventListener('DOMContentLoaded', function() {
+    const toastContainer = document.getElementById('toastContainer');
+
+    // Function to create and show toast
+    function showToast(message, type, icon) {
+        const toastId = 'toast_' + Date.now();
+        const bgClass = type === 'success' ? 'bg-success' :
+                       type === 'warning' ? 'bg-warning' :
+                       type === 'danger' ? 'bg-danger' :
+                       type === 'info' ? 'bg-info' : 'bg-primary';
+
+        const toastHTML = `
+            <div id="${toastId}" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header ${bgClass} text-white">
+                    <i class="bi ${icon} me-2"></i>
+                    <strong class="me-auto">Notification</strong>
+                    <small>Just now</small>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body">
+                    ${message}
+                </div>
+            </div>
+        `;
+
+        toastContainer.insertAdjacentHTML('beforeend', toastHTML);
+        const toastElement = document.getElementById(toastId);
+        const toast = new bootstrap.Toast(toastElement);
+        toast.show();
+
+        // Remove toast element after it's hidden
+        toastElement.addEventListener('hidden.bs.toast', function() {
+            toastElement.remove();
+        });
+    }
+
+    // Toast button handlers
+    document.getElementById('showToast1').addEventListener('click', function() {
+        showToast('This is a basic toast notification. It will automatically dismiss after a few seconds.', 'primary', 'bi-bell');
+    });
+
+    document.getElementById('showToast2').addEventListener('click', function() {
+        showToast('Success! Your changes have been saved successfully.', 'success', 'bi-check-circle');
+    });
+
+    document.getElementById('showToast3').addEventListener('click', function() {
+        showToast('Warning! Please review your input before submitting.', 'warning', 'bi-exclamation-triangle');
+    });
+
+    document.getElementById('showToast4').addEventListener('click', function() {
+        showToast('Error! Something went wrong. Please try again.', 'danger', 'bi-x-circle');
+    });
+
+    document.getElementById('showToast5').addEventListener('click', function() {
+        showToast('Info: You have 3 new notifications waiting for you.', 'info', 'bi-info-circle');
+    });
+});
+</script>
+
+{{> scripts}}

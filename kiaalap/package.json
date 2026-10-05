@@ -1,0 +1,65 @@
+{
+  "name": "kiaalap",
+  "version": "3.0.0",
+  "description": "Modern Bootstrap 5 Education Management Dashboard - Free admin dashboard template",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "serve": "vite",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "clean": "rm -rf dist",
+    "lint:html": "html-validate \"*.html\"",
+    "lint:css": "stylelint \"src/scss/**/*.scss\"",
+    "lint:js": "eslint \"src/js/**/*.js\"",
+    "format": "prettier --write \"src/**/*.{js,scss,html}\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/puikinsh/kiaalap.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/puikinsh/kiaalap/issues"
+  },
+  "homepage": "https://github.com/puikinsh/kiaalap#readme",
+  "dependencies": {
+    "@popperjs/core": "^2.11.8",
+    "aos": "^2.3.4",
+    "bootstrap": "^5.3.8",
+    "bootstrap-icons": "^1.13.1",
+    "chart.js": "^4.5.1",
+    "countup.js": "^2.10.1",
+    "cropperjs": "^2.1.1",
+    "dayjs": "^1.11.21",
+    "fullcalendar": "^7.0.2",
+    "leaflet": "^1.9.4",
+    "prismjs": "^1.30.0",
+    "quill": "2.0.2",
+    "sass": "^1.102.0",
+    "simple-datatables": "^10.3.0",
+    "simplebar": "^6.3.3",
+    "swiper": "^14.1.0",
+    "tom-select": "^2.6.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "autoprefixer": "^10.5.4",
+    "cssnano": "^8.0.4",
+    "eslint": "^10.8.0",
+    "glob": "^13.0.6",
+    "globals": "^17.9.0",
+    "html-validate": "^11.6.2",
+    "postcss": "^8.5.26",
+    "prettier": "^3.9.6",
+    "stylelint": "^17.14.1",
+    "stylelint-config-standard-scss": "^17.0.0",
+    "terser": "^5.49.2",
+    "vite": "^8.2.1",
+    "vite-plugin-handlebars": "^2.0.3"
+  }
+}

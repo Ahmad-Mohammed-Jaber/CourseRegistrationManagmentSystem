@@ -1,50 +1,254 @@
-﻿<!DOCTYPE html>
+﻿@using Mozaic.CourseRegistrationManagmentSystem.WebApp
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Mozaic.CourseRegistrationManagmentSystem.WebApp</title>
-    <script type="importmap"></script>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/Mozaic.CourseRegistrationManagmentSystem.WebApp.styles.css" asp-append-version="true" />
+    <meta name="description" content="Mozaic - Course Registration Management" />
+    <meta name="author" content="Mozaic" />
+    <title>@ViewData["Title"] - Mozaic</title>
+
+    <link rel="icon" type="image/x-icon" href="~/kiaalap/favicon.ico" />
+    <link rel="icon" type="image/png" href="~/kiaalap/images/logo.png" />
+
+    @* Same versions as kiaalap/package.json: bootstrap 5.3.8, bootstrap-icons 1.13.1 (vendored locally). *@
+    <link rel="stylesheet" href="~/kiaalap/vendor/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/kiaalap/vendor/css/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/kiaalap/css/dashboard.css" />
+    @await RenderSectionAsync("Styles", required: false)
+
+    @* Same as kiaalap/src/partials/head.hbs diagnostic block. *@
+    <style>
+        .sidebar.collapsed {
+            width: 70px !important;
+            min-width: 70px !important;
+            max-width: 70px !important;
+        }
+
+        .sidebar.collapsed .sidebar-brand h5 {
+            font-size: 0 !important;
+        }
+
+        .sidebar.collapsed .nav-link span {
+            display: none !important;
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Mozaic.CourseRegistrationManagmentSystem.WebApp</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
+    <a href="#main-content" class="visually-hidden-focusable">Skip to main content</a>
+
+    <div class="search-backdrop" id="searchBackdrop"></div>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Sidebar (kiaalap/src/partials/sidebar.hbs structure, Mozaic routes) -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-brand">
+                <h5>
+                    <img src="~/kiaalap/images/logo.png" alt="Mozaic" width="28" height="28" />
+                    <span>Mozaic</span>
+                </h5>
+                <button class="sidebar-close" id="sidebarClose" aria-label="Close sidebar">
+                    <i class="bi bi-x-lg"></i>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="menu-section">
+                <div class="menu-section-title">Main</div>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Dashboard" asp-action="Index">
+                            <i class="bi bi-speedometer2"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            @if (User.IsInRole("Admin"))
+            {
+                <div class="menu-section">
+                    <div class="menu-section-title">Management</div>
+                    <ul class="nav flex-column">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link has-submenu" href="javascript:void(0)" data-bs-toggle="collapse" data-bs-target="#usersSubmenu" aria-expanded="false">
+                                <i class="bi bi-person-badge"></i>
+                                <span>Users</span>
+                            </a>
+                            <ul id="usersSubmenu" class="submenu collapse list-unstyled">
+                                <li><a class="nav-link" asp-controller="Users" asp-action="Index">All Users</a></li>
+                            </ul>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <a class="nav-link has-submenu" href="javascript:void(0)" data-bs-toggle="collapse" data-bs-target="#studentsSubmenu" aria-expanded="false">
+                                <i class="bi bi-people"></i>
+                                <span>Students</span>
+                            </a>
+                            <ul id="studentsSubmenu" class="submenu collapse list-unstyled">
+                                <li><a class="nav-link" asp-controller="Students" asp-action="Index">All Students</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link has-submenu" href="javascript:void(0)" data-bs-toggle="collapse" data-bs-target="#coursesSubmenu" aria-expanded="false">
+                                <i class="bi bi-book"></i>
+                                <span>Courses</span>
+                            </a>
+                            <ul id="coursesSubmenu" class="submenu collapse list-unstyled">
+                                <li><a class="nav-link" asp-controller="Courses" asp-action="Index">All Courses</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link has-submenu" href="javascript:void(0)" data-bs-toggle="collapse" data-bs-target="#classesSubmenu" aria-expanded="false">
+                                <i class="bi bi-easel"></i>
+                                <span>Classes</span>
+                            </a>
+                            <ul id="classesSubmenu" class="submenu collapse list-unstyled">
+                                <li><a class="nav-link" asp-controller="Classes" asp-action="Index">All Classes</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link has-submenu" href="javascript:void(0)" data-bs-toggle="collapse" data-bs-target="#registrationsSubmenu" aria-expanded="false">
+                                <i class="bi bi-card-list"></i>
+                                <span>Registrations</span>
+                            </a>
+                            <ul id="registrationsSubmenu" class="submenu collapse list-unstyled">
+                                <li><a class="nav-link" asp-controller="Registrations" asp-action="Index">All Registrations</a></li>
+                            </ul>
                         </li>
                     </ul>
                 </div>
+            }
+
+            @if (User.IsInRole("Student"))
+            {
+                <div class="menu-section">
+                    <div class="menu-section-title">Student</div>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Registrations" asp-action="Mine">
+                                <i class="bi bi-journal-check"></i>
+                                <span>My Registrations</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Classes" asp-action="Browse">
+                                <i class="bi bi-search"></i>
+                                <span>Browse Classes</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            }
+        </nav>
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <div class="main-wrapper" id="mainWrapper">
+        <!-- Header (kiaalap/src/partials/header.hbs structure) -->
+        <nav class="navbar top-navbar">
+            <div class="container-fluid d-flex align-items-center h-100">
+                <button class="hamburger-menu" id="sidebarToggle" aria-label="Toggle sidebar">
+                    <i class="bi bi-list"></i>
+                </button>
+
+                <nav aria-label="breadcrumb" class="d-none d-lg-block ms-3">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a asp-controller="Dashboard" asp-action="Index">Home</a></li>
+                        <li class="breadcrumb-item active">@ViewData["Title"]</li>
+                    </ol>
+                </nav>
+
+                <div class="navbar-brand d-lg-none fw-bold me-auto">Mozaic</div>
+                <div class="flex-grow-1 d-none d-lg-block"></div>
+
+                <div class="d-flex align-items-center gap-2">
+                    <div class="search-container">
+                        <button class="btn btn-light btn-icon" id="searchToggle" aria-label="Search">
+                            <i class="bi bi-search"></i>
+                        </button>
+
+                        <form class="search-form" id="searchForm" method="get" asp-controller="Dashboard" asp-action="Index">
+                            <i class="bi bi-search search-icon"></i>
+                            <input type="text"
+                                   class="form-control"
+                                   id="searchInput"
+                                   name="q"
+                                   placeholder="Search..."
+                                   data-bs-toggle="dropdown" />
+                            <button type="button" class="close-search" id="closeSearch" aria-label="Close search">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </form>
+                    </div>
+
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <div class="dropdown">
+                            <button class="btn btn-light btn-icon" data-bs-toggle="dropdown" aria-label="Quick actions">
+                                <i class="bi bi-plus-lg"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" asp-controller="Students" asp-action="Create"><i class="bi bi-person-plus me-2"></i>Add Student</a></li>
+                                <li><a class="dropdown-item" asp-controller="Courses" asp-action="Create"><i class="bi bi-book me-2"></i>Add Course</a></li>
+                                <li><a class="dropdown-item" asp-controller="Classes" asp-action="Create"><i class="bi bi-easel me-2"></i>Add Class</a></li>
+                            </ul>
+                        </div>
+                    }
+
+                    <div class="dropdown">
+                        <button class="btn btn-light d-flex align-items-center" data-bs-toggle="dropdown" aria-label="User menu">
+                            <div class="user-avatar me-2">
+                                <img src="https://ui-avatars.com/api/?name=@Uri.EscapeDataString(User.GetFullName())&background=6366f1&color=fff&size=32"
+                                     alt="@User.GetFullName()"
+                                     class="rounded-circle"
+                                     width="32"
+                                     height="32" />
+                            </div>
+                            <span class="d-none d-md-inline">@User.GetFullName()</span>
+                            <i class="bi bi-chevron-down ms-1"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><span class="dropdown-item-text"><i class="bi bi-person me-2"></i>@User.Identity?.Name</span></li>
+                            <li><hr class="dropdown-divider" /></li>
+                            <li>
+                                <form asp-controller="Auth" asp-action="Logout" method="post" class="px-0">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="dropdown-item"><i class="bi bi-box-arrow-right me-2"></i>Logout</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
+
+        <!-- Main Content -->
+        <main class="dashboard-content" id="main-content">
+            <div class="container-fluid">
+                @RenderBody()
+            </div>
         </main>
+
+        <!-- Footer (kiaalap/src/partials/footer.hbs structure) -->
+        <footer class="dashboard-footer">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-0">&copy; 2026 Mozaic. All rights reserved.</p>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <p class="mb-0">Built with <i class="bi bi-heart-fill text-danger"></i> for education</p>
+                    </div>
+                </div>
+            </div>
+        </footer>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - Mozaic.CourseRegistrationManagmentSystem.WebApp - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
-    </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/kiaalap/vendor/js/bootstrap.bundle.min.js"></script>
+    <script src="~/kiaalap/js/shell.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

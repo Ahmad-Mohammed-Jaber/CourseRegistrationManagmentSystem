@@ -1,0 +1,966 @@
+{{> head}}
+
+<style>
+/* Dashboard Grid System */
+        .dashboard-row { margin-bottom: 24px; }
+        .dashboard-grid { display: grid; gap: 24px; }
+        .grid-cols-1 { grid-template-columns: 1fr; }
+        .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+        .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+        .grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+        .grid-cols-1-3 { grid-template-columns: 1fr 3fr; }
+        .grid-cols-2-1 { grid-template-columns: 2fr 1fr; }
+        .grid-cols-3-1 { grid-template-columns: 3fr 1fr; }
+
+        @media (max-width: 1200px) {
+            .grid-cols-4 { grid-template-columns: repeat(2, 1fr); }
+            .grid-cols-3 { grid-template-columns: repeat(2, 1fr); }
+            .grid-cols-1-3, .grid-cols-2-1, .grid-cols-3-1 { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 768px) {
+            .dashboard-grid { gap: 16px; }
+            .grid-cols-4, .grid-cols-3, .grid-cols-2 { grid-template-columns: 1fr; }
+            .grid-cols-1-3, .grid-cols-2-1, .grid-cols-3-1 { grid-template-columns: 1fr; }
+        }
+
+        /* Tab Customizations */
+        .nav-tabs {
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .nav-tabs .nav-link {
+            border: none;
+            border-radius: 0;
+            padding: 16px 24px;
+            font-weight: 500;
+            color: var(--secondary-color, #6b7280);
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            background: none;
+        }
+
+        .nav-tabs .nav-link:hover {
+            border-color: transparent;
+            color: var(--sidebar-active, #4361ee);
+            border-bottom-color: rgba(67, 97, 238, 0.3);
+        }
+
+        .nav-tabs .nav-link.active {
+            color: var(--sidebar-active, #4361ee);
+            background-color: transparent;
+            border-color: transparent;
+            border-bottom-color: var(--sidebar-active, #4361ee);
+        }
+
+        .nav-pills .nav-link {
+            border-radius: 8px;
+            padding: 12px 20px;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--secondary-color, #6b7280);
+            transition: all 0.3s ease;
+        }
+
+        .nav-pills .nav-link:hover {
+            color: var(--sidebar-active, #4361ee);
+            background-color: rgba(67, 97, 238, 0.1);
+        }
+
+        .nav-pills .nav-link.active {
+            background-color: var(--sidebar-active, #4361ee);
+            color: white;
+        }
+
+        .tab-content {
+            padding-top: 24px;
+        }
+
+        .tab-pane {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Vertical Tabs */
+        .nav-tabs-vertical {
+            border-bottom: none;
+            border-right: 2px solid #e5e7eb;
+            flex-direction: column;
+        }
+
+        .nav-tabs-vertical .nav-link {
+            border-bottom: none;
+            border-right: 3px solid transparent;
+            text-align: left;
+            width: 100%;
+        }
+
+        .nav-tabs-vertical .nav-link:hover {
+            border-bottom-color: transparent;
+            border-right-color: rgba(67, 97, 238, 0.3);
+        }
+
+        .nav-tabs-vertical .nav-link.active {
+            border-bottom-color: transparent;
+            border-right-color: var(--sidebar-active, #4361ee);
+        }
+
+        /* Custom Tab Styles */
+        .academic-tabs .nav-link {
+            background: #f8f9fa;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px 8px 0 0;
+            margin-right: 4px;
+        }
+
+        .academic-tabs .nav-link.active {
+            background: white;
+            border-bottom-color: white;
+            position: relative;
+            z-index: 1;
+        }
+
+        .academic-content {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            padding: 24px;
+        }
+
+        /* Course Card */
+        .course-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .course-card:hover {
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .course-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 12px;
+        }
+
+        .course-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin: 0;
+        }
+
+        .course-code {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin: 0;
+        }
+
+        .course-meta {
+            display: flex;
+            gap: 20px;
+            margin-top: 12px;
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .badge-custom {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        /* Interactive Demo */
+        .tab-builder {
+            border: 2px dashed #e5e7eb;
+            border-radius: 8px;
+            padding: 24px;
+            text-align: center;
+            background: #f9fafb;
+            margin: 20px 0;
+        }
+
+        /* Progress Bar in Tabs */
+        .progress-custom {
+            height: 8px;
+            border-radius: 4px;
+            background-color: #e5e7eb;
+        }
+
+        .progress-custom .progress-bar {
+            border-radius: 4px;
+        }
+
+        /* Academic Statistics */
+        .stat-card {
+            text-align: center;
+            padding: 20px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #4361ee, #6366f1);
+            color: white;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+
+        /* Card Spacing */
+        .dashboard-card {
+            margin-bottom: 24px;
+        }
+
+        .dashboard-card:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-tabs {
+                flex-wrap: wrap;
+            }
+
+            .nav-tabs .nav-link {
+                padding: 12px 16px;
+            }
+        }
+</style>
+
+{{> sidebar}}
+
+<!-- Main Content Wrapper -->
+<div class="main-wrapper" id="mainWrapper">
+    {{> header}}
+
+    <!-- Main Content -->
+    <main class="dashboard-content" id="main-content">
+        <div class="container-fluid">
+            <!-- Page Header -->
+            <div class="mb-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="h3 mb-0 text-gray-800">Tabs Components</h1>
+                        <p class="text-muted mb-0">Bootstrap 5 tab components for organizing academic content and navigation</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Basic Tabs -->
+            <div class="dashboard-card">
+                <div class="dashboard-card-header py-4 px-4">
+                    <h5 class="mb-0">Basic Navigation Tabs</h5>
+                </div>
+                <div class="dashboard-card-body px-4 py-4">
+                    <ul class="nav nav-tabs" id="basicTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab">
+                                <i class="bi bi-graph-up me-2"></i>Overview
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="students-tab" data-bs-toggle="tab" data-bs-target="#students" type="button" role="tab">
+                                <i class="bi bi-people me-2"></i>Students
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="courses-tab" data-bs-toggle="tab" data-bs-target="#courses" type="button" role="tab">
+                                <i class="bi bi-book me-2"></i>Courses
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="reports-tab" data-bs-toggle="tab" data-bs-target="#reports" type="button" role="tab">
+                                <i class="bi bi-bar-chart me-2"></i>Reports
+                            </button>
+                        </li>
+                    </ul>
+                    <div class="tab-content" id="basicTabContent">
+                        <div class="tab-pane fade show active" id="overview" role="tabpanel">
+                            <div class="dashboard-grid grid-cols-4 mt-3">
+                                <div>
+                                    <div class="stat-card">
+                                        <div class="stat-number">1,245</div>
+                                        <div class="stat-label">Total Students</div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="stat-card" style="background: linear-gradient(135deg, #198754, #10b981);">
+                                        <div class="stat-number">98</div>
+                                        <div class="stat-label">Active Courses</div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="stat-card" style="background: linear-gradient(135deg, #ffc107, #f59e0b);">
+                                        <div class="stat-number">67</div>
+                                        <div class="stat-label">Professors</div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="stat-card" style="background: linear-gradient(135deg, #0dcaf0, #06b6d4);">
+                                        <div class="stat-number">12</div>
+                                        <div class="stat-label">Departments</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <h6>Academic Year Progress</h6>
+                                <div class="progress-custom">
+                                    <div class="progress-bar bg-primary" role="progressbar" style="width: 65%">65%</div>
+                                </div>
+                                <small class="text-muted mt-2 d-block">Fall 2025 semester is 65% complete</small>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="students" role="tabpanel">
+                            <div class="dashboard-grid grid-cols-2 mt-3">
+                                <div>
+                                    <div class="course-card">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <h6 class="course-title">Sarah Johnson</h6>
+                                                <p class="course-code">Student ID: 2025001</p>
+                                            </div>
+                                            <span class="badge-custom bg-success text-white">Active</span>
+                                        </div>
+                                        <div class="course-meta">
+                                            <span><i class="bi bi-book me-1"></i>Computer Science</span>
+                                            <span><i class="bi bi-star me-1"></i>GPA: 3.85</span>
+                                            <span><i class="bi bi-calendar me-1"></i>Sophomore</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="course-card">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <h6 class="course-title">Michael Brown</h6>
+                                                <p class="course-code">Student ID: 2025002</p>
+                                            </div>
+                                            <span class="badge-custom bg-warning text-dark">Pending</span>
+                                        </div>
+                                        <div class="course-meta">
+                                            <span><i class="bi bi-book me-1"></i>Mathematics</span>
+                                            <span><i class="bi bi-star me-1"></i>GPA: 3.92</span>
+                                            <span><i class="bi bi-calendar me-1"></i>Junior</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-center mt-3">
+                                <button type="button" class="btn btn-primary">
+                                    <i class="bi bi-plus me-2"></i>Add New Student
+                                </button>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="courses" role="tabpanel">
+                            <div class="dashboard-grid grid-cols-1 mt-3">
+                                <div>
+                                    <div class="course-card">
+                                        <div class="course-header d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <h6 class="course-title">Advanced Computer Science</h6>
+                                                <p class="course-code">CS-401 • Fall 2025</p>
+                                            </div>
+                                            <span class="badge-custom bg-success text-white">Active</span>
+                                        </div>
+                                        <p class="text-muted">Machine learning, AI, and distributed systems fundamentals</p>
+                                        <div class="course-meta">
+                                            <span><i class="bi bi-person me-1"></i>Dr. Jane Smith</span>
+                                            <span><i class="bi bi-people me-1"></i>28/30 Students</span>
+                                            <span><i class="bi bi-clock me-1"></i>MWF 10:00-11:30</span>
+                                            <span><i class="bi bi-credit-card me-1"></i>3 Credits</span>
+                                        </div>
+                                        <div class="mt-3">
+                                            <div class="progress-custom">
+                                                <div class="progress-bar bg-info" role="progressbar" style="width: 75%">75%</div>
+                                            </div>
+                                            <small class="text-muted mt-1 d-block">Course completion: 75%</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="reports" role="tabpanel">
+                            <div class="dashboard-grid grid-cols-3-1 mt-3">
+                                <div>
+                                    <h6>Academic Performance Trends</h6>
+                                    <div class="alert alert-info">
+                                        <i class="bi bi-graph-up me-2"></i>
+                                        Student performance has improved by 12% this semester compared to last year.
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="d-grid gap-2">
+                                        <button type="button" class="btn btn-primary">
+                                            <i class="bi bi-download me-2"></i>Export PDF
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary">
+                                            <i class="bi bi-share me-2"></i>Share Report
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pills Navigation -->
+            <div class="dashboard-card">
+                <div class="dashboard-card-header py-4 px-4">
+                    <h5 class="mb-0">Pills Navigation</h5>
+                </div>
+                <div class="dashboard-card-body px-4 py-4">
+                    <ul class="nav nav-pills mb-3" id="pillsTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="assignments-tab" data-bs-toggle="pill" data-bs-target="#assignments" type="button" role="tab">
+                                <i class="bi bi-list-task me-2"></i>Assignments
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="exams-tab" data-bs-toggle="pill" data-bs-target="#exams" type="button" role="tab">
+                                <i class="bi bi-clipboard-check me-2"></i>Exams
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="attendance-tab" data-bs-toggle="pill" data-bs-target="#attendance" type="button" role="tab">
+                                <i class="bi bi-person-check me-2"></i>Attendance
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="grades-tab" data-bs-toggle="pill" data-bs-target="#grades" type="button" role="tab">
+                                <i class="bi bi-award me-2"></i>Grades
+                            </button>
+                        </li>
+                    </ul>
+                    <div class="tab-content" id="pillsTabContent">
+                        <div class="tab-pane fade show active" id="assignments" role="tabpanel">
+                            <div class="list-group">
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">Machine Learning Project</h6>
+                                        <p class="mb-1 text-muted">Implement a neural network classifier</p>
+                                        <small class="text-danger">Due: Oct 15, 2025</small>
+                                    </div>
+                                    <span class="badge bg-danger rounded-pill">2 days left</span>
+                                </div>
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1">AI Research Paper</h6>
+                                        <p class="mb-1 text-muted">Write a 10-page research paper on deep learning</p>
+                                        <small class="text-warning">Due: Oct 22, 2025</small>
+                                    </div>
+                                    <span class="badge bg-warning rounded-pill">1 week left</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="exams" role="tabpanel">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Midterm Examination</h6>
+                                            <p class="card-text">Comprehensive exam covering weeks 1-8</p>
+                                            <p class="text-muted"><strong>Date:</strong> October 20, 2025</p>
+                                            <p class="text-muted"><strong>Duration:</strong> 2 hours</p>
+                                            <p class="text-muted"><strong>Format:</strong> In-person</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Final Examination</h6>
+                                            <p class="card-text">Cumulative final exam</p>
+                                            <p class="text-muted"><strong>Date:</strong> December 15, 2025</p>
+                                            <p class="text-muted"><strong>Duration:</strong> 3 hours</p>
+                                            <p class="text-muted"><strong>Format:</strong> In-person</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="attendance" role="tabpanel">
+                            <div class="dashboard-grid grid-cols-3">
+                                <div>
+                                    <div class="text-center">
+                                        <div class="stat-number text-success">92%</div>
+                                        <div class="stat-label text-muted">Attendance Rate</div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="text-center">
+                                        <div class="stat-number text-primary">23</div>
+                                        <div class="stat-label text-muted">Classes Attended</div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="text-center">
+                                        <div class="stat-number text-warning">2</div>
+                                        <div class="stat-label text-muted">Classes Missed</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <div class="progress-custom">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: 92%">92%</div>
+                                </div>
+                                <small class="text-muted mt-2 d-block">Excellent attendance record!</small>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="grades" role="tabpanel">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Assignment</th>
+                                            <th>Score</th>
+                                            <th>Grade</th>
+                                            <th>Weight</th>
+                                            <th>Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Quiz 1</td>
+                                            <td>85/100</td>
+                                            <td><span class="badge bg-success">B+</span></td>
+                                            <td>10%</td>
+                                            <td>Sep 15, 2025</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Project 1</td>
+                                            <td>92/100</td>
+                                            <td><span class="badge bg-success">A-</span></td>
+                                            <td>25%</td>
+                                            <td>Oct 1, 2025</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Midterm</td>
+                                            <td>88/100</td>
+                                            <td><span class="badge bg-success">B+</span></td>
+                                            <td>30%</td>
+                                            <td>Oct 10, 2025</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vertical Tabs -->
+            <div class="dashboard-card">
+                <div class="dashboard-card-header py-4 px-4">
+                    <h5 class="mb-0">Vertical Tabs Layout</h5>
+                </div>
+                <div class="dashboard-card-body px-4 py-4">
+                    <div class="dashboard-grid grid-cols-1-3">
+                        <div>
+                            <div class="nav flex-column nav-tabs nav-tabs-vertical" id="verticalTab" role="tablist">
+                                <button class="nav-link active" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab">
+                                    <i class="bi bi-person me-2"></i>Profile
+                                </button>
+                                <button class="nav-link" id="academic-tab" data-bs-toggle="tab" data-bs-target="#academic" type="button" role="tab">
+                                    <i class="bi bi-mortarboard me-2"></i>Academic Info
+                                </button>
+                                <button class="nav-link" id="enrollment-tab" data-bs-toggle="tab" data-bs-target="#enrollment" type="button" role="tab">
+                                    <i class="bi bi-list-ul me-2"></i>Enrollment
+                                </button>
+                                <button class="nav-link" id="settings-tab" data-bs-toggle="tab" data-bs-target="#settings" type="button" role="tab">
+                                    <i class="bi bi-gear me-2"></i>Settings
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="tab-content" id="verticalTabContent">
+                                <div class="tab-pane fade show active" id="profile" role="tabpanel">
+                                    <div class="text-center mb-4">
+                                        <img src="https://ui-avatars.com/api/?name=Sarah+Johnson&background=4361ee&color=fff&size=100" alt="Student" class="rounded-circle mb-3" loading="lazy" decoding="async">
+                                        <h5>Sarah Johnson</h5>
+                                        <p class="text-muted">Student ID: 2025001</p>
+                                    </div>
+                                    <div class="dashboard-grid grid-cols-2">
+                                        <div>
+                                            <p><strong>Email:</strong> sarah.johnson@university.edu</p>
+                                            <p><strong>Phone:</strong> +1 (555) 123-4567</p>
+                                            <p><strong>Date of Birth:</strong> March 15, 2004</p>
+                                        </div>
+                                        <div>
+                                            <p><strong>Address:</strong> 123 Campus Drive</p>
+                                            <p><strong>City:</strong> University City, UC 12345</p>
+                                            <p><strong>Emergency Contact:</strong> +1 (555) 987-6543</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="academic" role="tabpanel">
+                                    <div class="dashboard-grid grid-cols-2">
+                                        <div>
+                                            <h6>Academic Standing</h6>
+                                            <p><strong>Major:</strong> Computer Science</p>
+                                            <p><strong>Minor:</strong> Mathematics</p>
+                                            <p><strong>GPA:</strong> 3.85</p>
+                                            <p><strong>Class Rank:</strong> 15/120</p>
+                                        </div>
+                                        <div>
+                                            <h6>Academic Progress</h6>
+                                            <p><strong>Credits Completed:</strong> 45/120</p>
+                                            <p><strong>Current Year:</strong> Sophomore</p>
+                                            <p><strong>Expected Graduation:</strong> May 2027</p>
+                                            <p><strong>Academic Status:</strong> <span class="badge bg-success">Good Standing</span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="enrollment" role="tabpanel">
+                                    <h6>Current Semester Enrollment</h6>
+                                    <div class="list-group">
+                                        <div class="list-group-item">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h6 class="mb-1">Advanced Computer Science</h6>
+                                                <small>3 Credits</small>
+                                            </div>
+                                            <p class="mb-1">CS-401 • Dr. Jane Smith • MWF 10:00-11:30</p>
+                                        </div>
+                                        <div class="list-group-item">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h6 class="mb-1">Data Structures</h6>
+                                                <small>4 Credits</small>
+                                            </div>
+                                            <p class="mb-1">CS-302 • Dr. Robert Brown • TTH 2:00-3:30</p>
+                                        </div>
+                                        <div class="list-group-item">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h6 class="mb-1">Linear Algebra</h6>
+                                                <small>3 Credits</small>
+                                            </div>
+                                            <p class="mb-1">MATH-301 • Dr. Emily Davis • MWF 1:00-2:00</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="settings" role="tabpanel">
+                                    <h6>Account Settings</h6>
+                                    <div class="form-check form-switch mb-3">
+                                        <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
+                                        <label class="form-check-label" for="emailNotifications">
+                                            Email Notifications
+                                        </label>
+                                    </div>
+                                    <div class="form-check form-switch mb-3">
+                                        <input class="form-check-input" type="checkbox" id="smsAlerts">
+                                        <label class="form-check-label" for="smsAlerts">
+                                            SMS Alerts
+                                        </label>
+                                    </div>
+                                    <div class="form-check form-switch mb-3">
+                                        <input class="form-check-input" type="checkbox" id="publicProfile" checked>
+                                        <label class="form-check-label" for="publicProfile">
+                                            Public Profile
+                                        </label>
+                                    </div>
+                                    <hr>
+                                    <div class="d-grid gap-2">
+                                        <button type="button" class="btn btn-primary">Update Settings</button>
+                                        <button type="button" class="btn btn-outline-secondary">Reset to Default</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Custom Academic Tabs -->
+            <div class="dashboard-card">
+                <div class="dashboard-card-header py-4 px-4">
+                    <h5 class="mb-0">Custom Academic Tabs</h5>
+                </div>
+                <div class="dashboard-card-body px-4 py-4">
+                    <ul class="nav academic-tabs" id="academicTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="semester-tab" data-bs-toggle="tab" data-bs-target="#semester" type="button" role="tab">
+                                <i class="bi bi-calendar-date me-2"></i>Fall 2025
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="summer-tab" data-bs-toggle="tab" data-bs-target="#summer" type="button" role="tab">
+                                <i class="bi bi-sun me-2"></i>Summer 2025
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="spring-tab" data-bs-toggle="tab" data-bs-target="#spring" type="button" role="tab">
+                                <i class="bi bi-flower1 me-2"></i>Spring 2025
+                            </button>
+                        </li>
+                    </ul>
+                    <div class="tab-content academic-content" id="academicTabContent">
+                        <div class="tab-pane fade show active" id="semester" role="tabpanel">
+                            <h6>Fall 2025 Semester</h6>
+                            <p class="text-muted mb-4">Current semester with 5 enrolled courses</p>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Course Load</h6>
+                                            <div class="progress-custom mb-2">
+                                                <div class="progress-bar bg-primary" role="progressbar" style="width: 80%">16 Credits</div>
+                                            </div>
+                                            <small class="text-muted">16/20 Maximum credits</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card mb-3">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Current GPA</h6>
+                                            <div class="progress-custom mb-2">
+                                                <div class="progress-bar bg-success" role="progressbar" style="width: 96%">3.85</div>
+                                            </div>
+                                            <small class="text-muted">3.85/4.00</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="summer" role="tabpanel">
+                            <h6>Summer 2025 Session</h6>
+                            <p class="text-muted mb-4">Intensive summer courses completed</p>
+                            <div class="alert alert-success">
+                                <i class="bi bi-check-circle me-2"></i>
+                                Successfully completed 2 summer courses with a 3.92 GPA
+                            </div>
+                            <ul class="list-group">
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Statistics for Computer Science
+                                    <span class="badge bg-success rounded-pill">A</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    Web Development Fundamentals
+                                    <span class="badge bg-success rounded-pill">A-</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="tab-pane fade" id="spring" role="tabpanel">
+                            <h6>Spring 2025 Semester</h6>
+                            <p class="text-muted mb-4">Previous semester performance and achievements</p>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="alert alert-info">
+                                        <i class="bi bi-award me-2"></i>
+                                        Made Dean's List for Spring 2025 with a 3.91 semester GPA
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive Tab Builder -->
+            <div class="dashboard-card">
+                <div class="dashboard-card-header py-4 px-4">
+                    <h5 class="mb-0">Interactive Tab Builder</h5>
+                </div>
+                <div class="dashboard-card-body px-4 py-4">
+                    <div class="tab-builder">
+                        <h6>Create Custom Tab Navigation</h6>
+                        <p class="text-muted mb-4">Build your own tabs with custom titles and content</p>
+                        <div class="dashboard-grid grid-cols-4 mb-3">
+                            <div>
+                                <input type="text" class="form-control" id="tabTitle" placeholder="Tab Title">
+                            </div>
+                            <div>
+                                <select class="form-select" id="tabIcon">
+                                    <option value="bi bi-info-circle">Info</option>
+                                    <option value="bi bi-person">User</option>
+                                    <option value="bi bi-book">Book</option>
+                                    <option value="bi bi-bar-chart">Chart</option>
+                                    <option value="bi bi-gear">Settings</option>
+                                </select>
+                            </div>
+                            <div>
+                                <select class="form-select" id="tabStyle">
+                                    <option value="tabs">Tabs</option>
+                                    <option value="pills">Pills</option>
+                                </select>
+                            </div>
+                            <div>
+                                <button type="button" class="btn btn-primary w-100" onclick="addTab()">
+                                    <i class="bi bi-plus me-2"></i>Add Tab
+                                </button>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <textarea class="form-control" id="tabContent" rows="3" placeholder="Enter tab content..."></textarea>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-success" onclick="generateTabs()">
+                                <i class="bi bi-magic me-2"></i>Generate Tabs
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="clearTabs()">
+                                <i class="bi bi-eraser me-2"></i>Clear All
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Tab Container -->
+                    <div id="dynamicTabContainer" class="mt-4" style="display: none;">
+                        <h6>Generated Tabs:</h6>
+                        <div id="generatedTabs"></div>
+                        <div id="generatedTabContent" class="tab-content mt-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    {{> footer}}
+</div>
+
+<script>
+// Tab Builder Functionality
+let tabCounter = 0;
+let tabsData = [];
+
+function addTab() {
+    const title = document.getElementById('tabTitle').value;
+    const icon = document.getElementById('tabIcon').value;
+    const content = document.getElementById('tabContent').value;
+
+    if (!title.trim()) {
+        alert('Please enter a tab title');
+        return;
+    }
+
+    tabsData.push({
+        id: `tab-${++tabCounter}`,
+        title: title,
+        icon: icon,
+        content: content || 'This is the content for ' + title
+    });
+
+    // Clear inputs
+    document.getElementById('tabTitle').value = '';
+    document.getElementById('tabContent').value = '';
+
+    updateTabPreview();
+}
+
+function updateTabPreview() {
+    const container = document.getElementById('dynamicTabContainer');
+    if (tabsData.length > 0) {
+        container.style.display = 'block';
+        container.innerHTML = `
+            <h6>Tabs to Generate (${tabsData.length}):</h6>
+            <div class="d-flex flex-wrap gap-2 mb-3">
+                ${tabsData.map(tab => `
+                    <span class="badge bg-primary">
+                        <i class="${tab.icon} me-1"></i>${tab.title}
+                        <button type="button" class="btn-close btn-close-white ms-2" style="font-size: 0.7em;" onclick="removeTab('${tab.id}')"></button>
+                    </span>
+                `).join('')}
+            </div>
+            <div id="generatedTabs"></div>
+            <div id="generatedTabContent" class="tab-content mt-3"></div>
+        `;
+    } else {
+        container.style.display = 'none';
+    }
+}
+
+function removeTab(tabId) {
+    tabsData = tabsData.filter(tab => tab.id !== tabId);
+    updateTabPreview();
+}
+
+function generateTabs() {
+    if (tabsData.length === 0) {
+        alert('Please add at least one tab');
+        return;
+    }
+
+    const style = document.getElementById('tabStyle').value;
+    const navClass = style === 'pills' ? 'nav-pills' : 'nav-tabs';
+    const tabsId = 'customTabs-' + Date.now();
+
+    // Generate navigation
+    const tabNav = `
+        <ul class="nav ${navClass}" id="${tabsId}" role="tablist">
+            ${tabsData.map((tab, index) => `
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link ${index === 0 ? 'active' : ''}"
+                            id="${tab.id}-nav"
+                            data-bs-toggle="${style === 'pills' ? 'pill' : 'tab'}"
+                            data-bs-target="#${tab.id}-pane"
+                            type="button"
+                            role="tab">
+                        <i class="${tab.icon} me-2"></i>${tab.title}
+                    </button>
+                </li>
+            `).join('')}
+        </ul>
+    `;
+
+    // Generate content
+    const tabContent = `
+        <div class="tab-content" id="${tabsId}Content">
+            ${tabsData.map((tab, index) => `
+                <div class="tab-pane fade ${index === 0 ? 'show active' : ''}"
+                     id="${tab.id}-pane"
+                     role="tabpanel">
+                    <div class="mt-3">
+                        <h6><i class="${tab.icon} me-2"></i>${tab.title}</h6>
+                        <p>${tab.content}</p>
+                        <div class="alert alert-info">
+                            <i class="bi bi-lightbulb me-2"></i>
+                            This tab was created using the interactive tab builder.
+                        </div>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+
+    document.getElementById('generatedTabs').innerHTML = tabNav;
+    document.getElementById('generatedTabContent').innerHTML = tabContent;
+}
+
+function clearTabs() {
+    tabsData = [];
+    tabCounter = 0;
+    updateTabPreview();
+    document.getElementById('tabTitle').value = '';
+    document.getElementById('tabContent').value = '';
+}
+
+// Add smooth transitions to tab changes
+document.addEventListener('shown.bs.tab', function (event) {
+    event.target.classList.add('fade-in');
+    setTimeout(() => {
+        event.target.classList.remove('fade-in');
+    }, 300);
+});
+</script>
+
+{{> scripts}}

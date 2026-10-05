@@ -1,0 +1,435 @@
+{{> head}}
+
+<!-- Quill CSS -->
+<link href="node_modules/quill/dist/quill.snow.css" rel="stylesheet">
+<link href="node_modules/quill/dist/quill.bubble.css" rel="stylesheet">
+
+<style>
+.ql-editor {
+    min-height: 200px;
+}
+.editor-container {
+    background: white;
+    border-radius: 4px;
+}
+</style>
+
+{{> sidebar}}
+
+<!-- Main Content Wrapper -->
+<div class="main-wrapper" id="mainWrapper">
+    {{> header}}
+
+    <!-- Main Content -->
+    <main class="dashboard-content" id="main-content">
+        <div class="container-fluid">
+            <!-- Page Header -->
+            <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                <div>
+                    <h1 class="h3 mb-0 text-gray-800">Text Editor</h1>
+                    <p class="mb-0 text-muted">Rich text editing with Quill WYSIWYG editor</p>
+                </div>
+            </div>
+
+            <!-- Editor Grid -->
+            <div class="dashboard-grid grid-cols-2 gap-4">
+                <!-- Basic Editor -->
+                <div class="dashboard-card">
+                    <div class="dashboard-card-header">
+                        <h5 class="dashboard-card-title mb-0">Basic Editor</h5>
+                        <div class="dropdown">
+                            <button type="button" class="btn btn-sm btn-light" data-bs-toggle="dropdown" aria-label="More options">
+                                <i aria-hidden="true" class="bi bi-three-dots-vertical"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="#" onclick="clearEditor('editor1')">Clear</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="getContent('editor1')">Get HTML</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="exportContent('editor1')">Export</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="dashboard-card-body">
+                        <p class="text-muted mb-3">Simple text editor with essential formatting tools.</p>
+                        <div id="editor1" class="editor-container"></div>
+                    </div>
+                </div>
+
+                <!-- Advanced Editor -->
+                <div class="dashboard-card">
+                    <div class="dashboard-card-header">
+                        <h5 class="dashboard-card-title mb-0">Advanced Editor</h5>
+                        <div class="dropdown">
+                            <button type="button" class="btn btn-sm btn-light" data-bs-toggle="dropdown" aria-label="More options">
+                                <i aria-hidden="true" class="bi bi-three-dots-vertical"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="#" onclick="clearEditor('editor2')">Clear</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="getContent('editor2')">Get HTML</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="exportContent('editor2')">Export</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="dashboard-card-body">
+                        <p class="text-muted mb-3">Full-featured editor with advanced formatting options.</p>
+                        <div id="editor2" class="editor-container"></div>
+                    </div>
+                </div>
+
+                <!-- Bubble Theme Editor -->
+                <div class="dashboard-card">
+                    <div class="dashboard-card-header">
+                        <h5 class="dashboard-card-title mb-0">Bubble Theme Editor</h5>
+                        <div class="dropdown">
+                            <button type="button" class="btn btn-sm btn-light" data-bs-toggle="dropdown" aria-label="More options">
+                                <i aria-hidden="true" class="bi bi-three-dots-vertical"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="#" onclick="clearEditor('editor3')">Clear</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="insertTable('editor3')">Insert Table</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="exportContent('editor3')">Export</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="dashboard-card-body">
+                        <p class="text-muted mb-3">Medium-style inline editor. Select text to see formatting options.</p>
+                        <div id="editor3" class="editor-container" style="min-height: 200px; padding: 15px;"></div>
+                    </div>
+                </div>
+
+                <!-- Custom Toolbar Editor -->
+                <div class="dashboard-card">
+                    <div class="dashboard-card-header">
+                        <h5 class="dashboard-card-title mb-0">Custom Toolbar Editor</h5>
+                        <div class="dropdown">
+                            <button type="button" class="btn btn-sm btn-light" data-bs-toggle="dropdown" aria-label="More options">
+                                <i aria-hidden="true" class="bi bi-three-dots-vertical"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="#" onclick="clearEditor('editor4')">Clear</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="toggleReadOnly('editor4')">Toggle Read-only</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="exportContent('editor4')">Export</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="dashboard-card-body">
+                        <p class="text-muted mb-3">Editor with customized toolbar and formatting options.</p>
+                        <div id="toolbar4" style="border: 1px solid #ccc; border-bottom: none;">
+                            <span class="ql-formats">
+                                <select class="ql-font"></select>
+                                <select class="ql-size"></select>
+                            </span>
+                            <span class="ql-formats">
+                                <button type="button" class="ql-bold" aria-label="Bold"></button>
+                                <button type="button" class="ql-italic" aria-label="Italic"></button>
+                                <button type="button" class="ql-underline" aria-label="Underline"></button>
+                                <button type="button" class="ql-strike" aria-label="Strike"></button>
+                            </span>
+                            <span class="ql-formats">
+                                <select class="ql-color"></select>
+                                <select class="ql-background"></select>
+                            </span>
+                            <span class="ql-formats">
+                                <button type="button" class="ql-script" value="sub" aria-label="Script"></button>
+                                <button type="button" class="ql-script" value="super" aria-label="Script"></button>
+                            </span>
+                            <span class="ql-formats">
+                                <button type="button" class="ql-header" value="1" aria-label="Header"></button>
+                                <button type="button" class="ql-header" value="2" aria-label="Header"></button>
+                                <button type="button" class="ql-blockquote" aria-label="Blockquote"></button>
+                                <button type="button" class="ql-code-block" aria-label="Code block"></button>
+                            </span>
+                        </div>
+                        <div id="editor4" class="editor-container" style="border: 1px solid #ccc;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Email Template Editor -->
+            <div class="dashboard-card mt-4">
+                <div class="dashboard-card-header">
+                    <h5 class="dashboard-card-title mb-0">Email Template Editor</h5>
+                    <div class="d-flex gap-2">
+                        <select class="form-select form-select-sm" style="width: auto;" id="templateSelector">
+                            <option>Choose Template</option>
+                            <option value="welcome">Welcome Email</option>
+                            <option value="newsletter">Newsletter</option>
+                            <option value="notification">Notification</option>
+                            <option value="invoice">Invoice</option>
+                        </select>
+                        <button type="button" class="btn btn-sm btn-primary" onclick="saveTemplate()">
+                            <i class="bi bi-save"></i> Save
+                        </button>
+                        <button type="button" class="btn btn-sm btn-success" onclick="sendEmail()">
+                            <i class="bi bi-send"></i> Send
+                        </button>
+                    </div>
+                </div>
+                <div class="dashboard-card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">To:</label>
+                            <input type="email" class="form-control" id="emailTo" placeholder="recipient@example.com">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Subject:</label>
+                            <input type="text" class="form-control" id="emailSubject" placeholder="Email subject">
+                        </div>
+                    </div>
+                    <div id="emailEditor" class="editor-container"></div>
+                </div>
+            </div>
+
+            <!-- Editor Features -->
+            <div class="dashboard-grid grid-cols-4 gap-4 mt-4">
+                <div class="dashboard-card text-center">
+                    <div class="dashboard-card-body">
+                        <i class="bi bi-type text-primary" style="font-size: 32px;"></i>
+                        <h6 class="mt-3">Rich Text Editing</h6>
+                        <p class="text-muted small">Full typography control</p>
+                    </div>
+                </div>
+                <div class="dashboard-card text-center">
+                    <div class="dashboard-card-body">
+                        <i class="bi bi-image text-success" style="font-size: 32px;"></i>
+                        <h6 class="mt-3">Image Support</h6>
+                        <p class="text-muted small">Drag &amp; drop images</p>
+                    </div>
+                </div>
+                <div class="dashboard-card text-center">
+                    <div class="dashboard-card-body">
+                        <i class="bi bi-table text-info" style="font-size: 32px;"></i>
+                        <h6 class="mt-3">Lists &amp; Quotes</h6>
+                        <p class="text-muted small">Organize content</p>
+                    </div>
+                </div>
+                <div class="dashboard-card text-center">
+                    <div class="dashboard-card-body">
+                        <i class="bi bi-code-slash text-warning" style="font-size: 32px;"></i>
+                        <h6 class="mt-3">Code Blocks</h6>
+                        <p class="text-muted small">Syntax highlighting</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    {{> footer}}
+</div>
+
+<!-- Quill (no jQuery required) -->
+<script type="module">
+// Imported as a module so Vite bundles it; a plain <script src="node_modules/...">
+// tag cannot be bundled and would 404 in a dist/ build.
+import Quill from 'quill';
+
+// Store editor instances
+const editors = {};
+
+// Inline onclick="" attributes resolve against the global scope, which module
+// scope is not part of — these are re-exposed on window at the end of the file.
+
+// Initialize Basic Editor
+editors.editor1 = new Quill('#editor1', {
+    theme: 'snow',
+    placeholder: 'Start writing your content here...',
+    modules: {
+        toolbar: [
+            ['bold', 'italic', 'underline', 'strike'],
+            ['link', 'blockquote', 'code-block'],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            ['clean']
+        ]
+    }
+});
+
+// Initialize Advanced Editor with content
+editors.editor2 = new Quill('#editor2', {
+    theme: 'snow',
+    placeholder: 'Full featured editor with all options...',
+    modules: {
+        toolbar: [
+            [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ 'color': [] }, { 'background': [] }],
+            [{ 'font': [] }],
+            [{ 'align': [] }],
+            ['link', 'image', 'video'],
+            ['blockquote', 'code-block'],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            [{ 'script': 'sub'}, { 'script': 'super' }],
+            [{ 'indent': '-1'}, { 'indent': '+1' }],
+            ['clean']
+        ]
+    }
+});
+
+// Set initial content for Advanced Editor
+editors.editor2.root.innerHTML = `
+    <h2><strong>Quill WYSIWYG Editor</strong></h2>
+    <p>The modern, powerful, and lightweight rich text editor. No jQuery required!</p>
+    <p style="color: #ce0000;">Rich text editing with advanced formatting options and complete control over your content.</p>
+`;
+
+// Initialize Bubble Theme Editor
+editors.editor3 = new Quill('#editor3', {
+    theme: 'bubble',
+    placeholder: 'Select text to see formatting options...',
+    modules: {
+        toolbar: [
+            ['bold', 'italic', 'underline', 'strike'],
+            ['link'],
+            [{ 'header': 1 }, { 'header': 2 }],
+            ['blockquote', 'code-block']
+        ]
+    }
+});
+
+// Set initial content for Bubble Editor
+editors.editor3.root.innerHTML = `
+    <h2>Medium-Style Editing</h2>
+    <p>This editor uses the bubble theme. Select any text to see the formatting toolbar appear above it.</p>
+    <blockquote>Perfect for distraction-free writing where formatting options appear only when needed.</blockquote>
+    <p>Try selecting this text to see the toolbar!</p>
+`;
+
+// Initialize Custom Toolbar Editor
+editors.editor4 = new Quill('#editor4', {
+    modules: {
+        toolbar: '#toolbar4'
+    },
+    theme: 'snow'
+});
+
+// Set initial content for Custom Toolbar Editor
+editors.editor4.root.innerHTML = `
+    <h3>Custom Toolbar Example</h3>
+    <p>This editor demonstrates a custom toolbar configuration with specific formatting options.</p>
+    <ul>
+        <li>Font family and size selection</li>
+        <li>Text formatting (bold, italic, underline, strike)</li>
+        <li>Color and background options</li>
+        <li>Headers and code blocks</li>
+    </ul>
+`;
+
+// Initialize Email Editor
+editors.emailEditor = new Quill('#emailEditor', {
+    theme: 'snow',
+    placeholder: 'Compose your email...',
+    modules: {
+        toolbar: [
+            [{ 'header': [1, 2, 3, false] }],
+            ['bold', 'italic', 'underline'],
+            [{ 'color': [] }, { 'background': [] }],
+            ['link', 'image'],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            [{ 'align': [] }],
+            ['clean']
+        ]
+    }
+});
+
+// Template selector
+document.getElementById('templateSelector').addEventListener('change', function(e) {
+    const templates = {
+        welcome: '<h2>Welcome to Our Platform!</h2><p>We\'re excited to have you on board. This email contains important information about getting started.</p><p>Best regards,<br>The Team</p>',
+        newsletter: '<h2>Monthly Newsletter</h2><p>Here\'s what\'s new this month:</p><ul><li>Feature updates</li><li>Upcoming events</li><li>Tips and tricks</li></ul>',
+        notification: '<h2>Important Notification</h2><p>We wanted to inform you about recent changes to our platform.</p><p>Please review the following information carefully.</p>',
+        invoice: '<h2>Invoice #12345</h2><p>Thank you for your business. Please find your invoice details below:</p><p><strong>Amount Due:</strong> $0.00<br><strong>Due Date:</strong> 30 days</p>'
+    };
+
+    if (templates[e.target.value]) {
+        editors.emailEditor.root.innerHTML = templates[e.target.value];
+    }
+});
+
+// Helper Functions
+function clearEditor(editorId) {
+    if (editors[editorId]) {
+        editors[editorId].setText('');
+    }
+}
+
+function getContent(editorId) {
+    if (editors[editorId]) {
+        const html = editors[editorId].root.innerHTML;
+        const text = editors[editorId].getText();
+        console.log('HTML Content:', html);
+        console.log('Text Content:', text);
+        alert('Content logged to console');
+    }
+}
+
+function exportContent(editorId) {
+    if (editors[editorId]) {
+        const content = editors[editorId].root.innerHTML;
+        const blob = new Blob([content], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'content.html';
+        a.click();
+    }
+}
+
+function insertTable(editorId) {
+    if (editors[editorId]) {
+        const tableHtml = '<table style="width: 100%; border: 1px solid #ccc;"><tr><td style="border: 1px solid #ccc; padding: 8px;">Cell 1</td><td style="border: 1px solid #ccc; padding: 8px;">Cell 2</td></tr></table>';
+        const range = editors[editorId].getSelection();
+        if (range) {
+            editors[editorId].clipboard.dangerouslyPasteHTML(range.index, tableHtml);
+        }
+    }
+}
+
+function toggleReadOnly(editorId) {
+    if (editors[editorId]) {
+        editors[editorId].enable(!editors[editorId].isEnabled());
+        alert(editors[editorId].isEnabled() ? 'Editor is now editable' : 'Editor is now read-only');
+    }
+}
+
+function saveTemplate() {
+    const content = editors.emailEditor.root.innerHTML;
+    const subject = document.getElementById('emailSubject').value;
+    console.log('Saving template:', { subject, content });
+    alert('Template saved successfully!');
+}
+
+function sendEmail() {
+    const content = editors.emailEditor.root.innerHTML;
+    const to = document.getElementById('emailTo').value;
+    const subject = document.getElementById('emailSubject').value;
+
+    if (!to || !subject) {
+        alert('Please fill in recipient and subject');
+        return;
+    }
+
+    console.log('Sending email:', { to, subject, content });
+    alert('Email sent successfully!');
+}
+
+// Add word count feature
+Object.keys(editors).forEach(key => {
+    if (editors[key]) {
+        editors[key].on('text-change', function() {
+            const text = editors[key].getText();
+            const words = text.trim().split(/\s+/).length;
+            console.log(`${key}: ${words} words`);
+        });
+    }
+});
+
+Object.assign(window, {
+    getContent,
+    clearEditor,
+    insertTable,
+    toggleReadOnly,
+    exportContent,
+    saveTemplate,
+    sendEmail
+});
+</script>
+
+{{> scripts}}

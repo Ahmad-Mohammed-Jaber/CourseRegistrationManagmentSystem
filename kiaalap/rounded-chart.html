@@ -1,0 +1,383 @@
+{{> head}}
+
+<style>
+/* Chart Card Styles */
+.chart-demo-card {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.chart-container {
+    position: relative;
+    height: 350px;
+    margin-top: 20px;
+}
+
+.chart-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 20px;
+    justify-content: center;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+}
+
+.legend-text {
+    font-size: 14px;
+    color: #6b7280;
+}
+</style>
+
+{{> sidebar}}
+
+<!-- Main Content Wrapper -->
+<div class="main-wrapper" id="mainWrapper">
+    {{> header}}
+
+    <!-- Main Content -->
+    <main class="dashboard-content" id="main-content">
+        <div class="container-fluid">
+            <!-- Page Header -->
+            <div class="mb-4">
+                <h1 class="h3 mb-0 text-gray-800">Rounded Charts</h1>
+                <p class="text-muted">Donut and Pie charts using Chart.js (100% jQuery-free)</p>
+            </div>
+
+            <div class="row">
+                <!-- Donut Chart -->
+                <div class="col-lg-6">
+                    <div class="chart-demo-card">
+                        <h5 class="mb-0">Student Enrollment by Department</h5>
+                        <p class="text-muted small">Donut Chart</p>
+                        <div class="chart-container">
+                            <canvas id="donutChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pie Chart -->
+                <div class="col-lg-6">
+                    <div class="chart-demo-card">
+                        <h5 class="mb-0">Course Distribution</h5>
+                        <p class="text-muted small">Pie Chart</p>
+                        <div class="chart-container">
+                            <canvas id="pieChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Donut Chart with Legend -->
+                <div class="col-lg-6">
+                    <div class="chart-demo-card">
+                        <h5 class="mb-0">Attendance Status</h5>
+                        <p class="text-muted small">Donut Chart with Custom Legend</p>
+                        <div class="chart-container">
+                            <canvas id="attendanceChart"></canvas>
+                        </div>
+                        <div class="chart-legend" id="attendanceLegend"></div>
+                    </div>
+                </div>
+
+                <!-- Multi-level Donut -->
+                <div class="col-lg-6">
+                    <div class="chart-demo-card">
+                        <h5 class="mb-0">Grade Distribution</h5>
+                        <p class="text-muted small">Donut Chart</p>
+                        <div class="chart-container">
+                            <canvas id="gradeChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Doughnut with Center Text -->
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="chart-demo-card">
+                        <h5 class="mb-0">Total Revenue by Source</h5>
+                        <p class="text-muted small">Donut Chart with Percentage</p>
+                        <div class="chart-container">
+                            <canvas id="revenueChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="chart-demo-card">
+                        <h5 class="mb-0">Library Resources</h5>
+                        <p class="text-muted small">Pie Chart</p>
+                        <div class="chart-container">
+                            <canvas id="libraryChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    {{> footer}}
+</div>
+
+<script>
+// Chart.js Rounded Charts (Vanilla JavaScript)
+document.addEventListener('DOMContentLoaded', function() {
+
+    // Donut Chart - Student Enrollment
+    const donutCtx = document.getElementById('donutChart').getContext('2d');
+    new Chart(donutCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Computer Science', 'Engineering', 'Business', 'Arts', 'Science'],
+            datasets: [{
+                data: [350, 280, 190, 120, 160],
+                backgroundColor: [
+                    '#4361ee',
+                    '#10b981',
+                    '#f59e0b',
+                    '#8b5cf6',
+                    '#ef4444'
+                ],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 15,
+                        font: {
+                            size: 12
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Pie Chart - Course Distribution
+    const pieCtx = document.getElementById('pieChart').getContext('2d');
+    new Chart(pieCtx, {
+        type: 'pie',
+        data: {
+            labels: ['Undergraduate', 'Graduate', 'Doctoral', 'Certificate'],
+            datasets: [{
+                data: [450, 250, 80, 120],
+                backgroundColor: [
+                    '#4361ee',
+                    '#10b981',
+                    '#f59e0b',
+                    '#8b5cf6'
+                ],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 15,
+                        font: {
+                            size: 12
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Attendance Chart with Custom Legend
+    const attendanceCtx = document.getElementById('attendanceChart').getContext('2d');
+    const attendanceData = {
+        labels: ['Present', 'Absent', 'Late', 'Excused'],
+        datasets: [{
+            data: [850, 45, 32, 18],
+            backgroundColor: [
+                '#10b981',
+                '#ef4444',
+                '#f59e0b',
+                '#6b7280'
+            ],
+            borderWidth: 2,
+            borderColor: '#fff'
+        }]
+    };
+
+    new Chart(attendanceCtx, {
+        type: 'doughnut',
+        data: attendanceData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '70%',
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+
+    // Create custom legend
+    const legendContainer = document.getElementById('attendanceLegend');
+    attendanceData.labels.forEach((label, index) => {
+        const item = document.createElement('div');
+        item.className = 'legend-item';
+
+        const color = document.createElement('div');
+        color.className = 'legend-color';
+        color.style.backgroundColor = attendanceData.datasets[0].backgroundColor[index];
+
+        const text = document.createElement('span');
+        text.className = 'legend-text';
+        text.textContent = `${label}: ${attendanceData.datasets[0].data[index]}`;
+
+        item.appendChild(color);
+        item.appendChild(text);
+        legendContainer.appendChild(item);
+    });
+
+    // Grade Distribution Chart
+    const gradeCtx = document.getElementById('gradeChart').getContext('2d');
+    new Chart(gradeCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['A', 'B', 'C', 'D', 'F'],
+            datasets: [{
+                data: [180, 220, 150, 80, 25],
+                backgroundColor: [
+                    '#10b981',
+                    '#4361ee',
+                    '#f59e0b',
+                    '#ef4444',
+                    '#6b7280'
+                ],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '60%',
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 15,
+                        font: {
+                            size: 12
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Revenue Chart
+    const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+    new Chart(revenueCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Tuition Fees', 'Grants', 'Donations', 'Research', 'Other'],
+            datasets: [{
+                data: [65, 15, 10, 7, 3],
+                backgroundColor: [
+                    '#4361ee',
+                    '#10b981',
+                    '#8b5cf6',
+                    '#f59e0b',
+                    '#6b7280'
+                ],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '75%',
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 15,
+                        font: {
+                            size: 12
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.label + ': ' + context.parsed + '%';
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Library Resources Chart
+    const libraryCtx = document.getElementById('libraryChart').getContext('2d');
+    new Chart(libraryCtx, {
+        type: 'pie',
+        data: {
+            labels: ['Books', 'E-Books', 'Journals', 'Magazines', 'Digital Media', 'Other'],
+            datasets: [{
+                data: [4500, 2800, 1200, 450, 680, 370],
+                backgroundColor: [
+                    '#4361ee',
+                    '#10b981',
+                    '#f59e0b',
+                    '#8b5cf6',
+                    '#ef4444',
+                    '#6b7280'
+                ],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: {
+                        padding: 10,
+                        font: {
+                            size: 12
+                        }
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+
+{{> scripts}}

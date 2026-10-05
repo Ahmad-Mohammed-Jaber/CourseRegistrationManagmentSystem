@@ -1,0 +1,861 @@
+{{> head}}
+
+<!-- Prism.js for Syntax Highlighting -->
+
+<style>
+/* Code Editor Styles */
+.editor-demo-card {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.code-editor-container {
+    background: #1e1e1e;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.editor-toolbar {
+    background: #2d2d2d;
+    padding: 10px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #3e3e3e;
+}
+
+.editor-tabs {
+    display: flex;
+    gap: 5px;
+}
+
+.editor-tab {
+    padding: 6px 15px;
+    background: #1e1e1e;
+    border: none;
+    border-radius: 6px 6px 0 0;
+    color: #ccc;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+
+.editor-tab.active {
+    background: #1e1e1e;
+    color: #4361ee;
+}
+
+.editor-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.editor-btn {
+    padding: 5px 12px;
+    background: #3e3e3e;
+    border: none;
+    border-radius: 4px;
+    color: #ccc;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+}
+
+.editor-btn:hover {
+    background: #4e4e4e;
+    color: white;
+}
+
+/* Editor wrapper for overlay highlighting */
+.editor-wrapper {
+    position: relative;
+    overflow: hidden;
+}
+
+.code-editor {
+    background: #1e1e1e;
+    color: #d4d4d4;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 20px;
+    min-height: 400px;
+    overflow: auto;
+    border: none;
+    outline: none;
+    resize: vertical;
+    tab-size: 4;
+    width: 100%;
+    position: relative;
+    z-index: 1;
+    background: transparent;
+}
+
+/* Highlighted code display behind textarea */
+.code-highlight {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #1e1e1e;
+    color: #d4d4d4;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 20px;
+    overflow: hidden;
+    pointer-events: none;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.code-highlight code {
+    display: block;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* Make textarea transparent to show highlighting */
+.code-editor-container .editor-wrapper .code-editor {
+    color: transparent;
+    caret-color: #d4d4d4;
+}
+
+/* Line numbers */
+.code-highlight pre {
+    margin: 0;
+    padding: 0;
+    background: transparent !important;
+}
+
+.code-output {
+    background: #252525;
+    color: #d4d4d4;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 13px;
+    padding: 15px;
+    min-height: 150px;
+    max-height: 300px;
+    overflow: auto;
+    border-top: 1px solid #3e3e3e;
+}
+
+.output-header {
+    background: #2d2d2d;
+    padding: 8px 15px;
+    font-size: 12px;
+    color: #999;
+    border-bottom: 1px solid #3e3e3e;
+}
+
+.line-numbers {
+    background: #252525;
+    color: #858585;
+    padding: 20px 10px;
+    text-align: right;
+    user-select: none;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    border-right: 1px solid #3e3e3e;
+    float: left;
+}
+
+.editor-with-numbers {
+    display: flex;
+}
+
+.language-selector {
+    background: #3e3e3e;
+    color: #ccc;
+    border: none;
+    border-radius: 4px;
+    padding: 5px 10px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.feature-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.feature-item {
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #4361ee;
+}
+
+.feature-item h6 {
+    margin-bottom: 8px;
+    color: #4361ee;
+}
+
+.feature-item p {
+    margin: 0;
+    font-size: 14px;
+    color: #6b7280;
+}
+</style>
+
+{{> sidebar}}
+
+<!-- Main Content Wrapper -->
+<div class="main-wrapper" id="mainWrapper">
+    {{> header}}
+
+    <!-- Main Content -->
+    <main class="dashboard-content" id="main-content">
+        <div class="container-fluid">
+            <!-- Page Header -->
+            <div class="mb-4">
+                <h1 class="h3 mb-0 text-gray-800">Code Editor</h1>
+                <p class="text-muted">Interactive code editor with syntax highlighting (100% jQuery-free)</p>
+            </div>
+
+            <!-- Main Code Editor -->
+            <div class="editor-demo-card">
+                <h5 class="mb-3">JavaScript Editor</h5>
+                <div class="code-editor-container">
+                    <div class="editor-toolbar">
+                        <div class="editor-tabs">
+                            <button type="button" class="editor-tab active" data-lang="javascript">script.js</button>
+                            <button type="button" class="editor-tab" data-lang="html">index.html</button>
+                            <button type="button" class="editor-tab" data-lang="css">styles.css</button>
+                        </div>
+                        <div class="editor-actions">
+                            <select class="language-selector" id="languageSelect">
+                                <option value="javascript">JavaScript</option>
+                                <option value="html">HTML</option>
+                                <option value="css">CSS</option>
+                                <option value="python">Python</option>
+                            </select>
+                            <button type="button" class="editor-btn" id="formatBtn">
+                                <i class="bi bi-code-square"></i> Format
+                            </button>
+                            <button type="button" class="editor-btn" id="copyBtn">
+                                <i class="bi bi-clipboard"></i> Copy
+                            </button>
+                            <button type="button" class="editor-btn" id="runBtn">
+                                <i class="bi bi-play-fill"></i> Run
+                            </button>
+                        </div>
+                    </div>
+                    <div class="editor-wrapper">
+                        <div class="code-highlight" id="codeHighlight">
+                            <pre><code class="language-javascript" id="highlightedCode">// Welcome to the Code Editor!</code></pre>
+                        </div>
+                        <textarea class="code-editor" id="codeEditor" spellcheck="false">// Welcome to the Code Editor!
+// Type your JavaScript code here
+
+function greet(name) {
+    return `Hello, ${name}! Welcome to Kiaalap Education Platform.`;
+}
+
+// Example usage
+const message = greet('Student');
+console.log(message);
+
+// Array operations
+const courses = ['Computer Science', 'Mathematics', 'Physics'];
+courses.forEach(course =&gt; {
+    console.log(`📚 Course: ${course}`);
+});
+
+// Object example
+const student = {
+    name: 'John Doe',
+    id: 12345,
+    grade: 'A',
+    displayInfo() {
+        console.log(`Student: ${this.name}, ID: ${this.id}, Grade: ${this.grade}`);
+    }
+};
+
+student.displayInfo();</textarea>
+                    </div>
+                    <div class="output-header">
+                        <i class="bi bi-terminal"></i> Console Output
+                    </div>
+                    <div class="code-output" id="codeOutput">
+                        <div style="color: #999;">// Click "Run" to execute the code...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HTML Editor -->
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="editor-demo-card">
+                        <h5 class="mb-3">HTML Editor</h5>
+                        <div class="code-editor-container">
+                            <div class="editor-toolbar">
+                                <div class="editor-tabs">
+                                    <button type="button" class="editor-tab active">index.html</button>
+                                </div>
+                                <div class="editor-actions">
+                                    <button type="button" class="editor-btn" id="copyHtml">
+                                        <i class="bi bi-clipboard"></i> Copy
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="editor-wrapper">
+                                <div class="code-highlight" id="htmlHighlight">
+                                    <pre><code class="language-markup" id="htmlHighlightedCode">&lt;!DOCTYPE html&gt;</code></pre>
+                                </div>
+                                <textarea class="code-editor" id="htmlEditor" style="min-height: 250px;" spellcheck="false">&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;title&gt;My Webpage&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;Welcome to My Website&lt;/h1&gt;
+    &lt;p&gt;This is a sample HTML document.&lt;/p&gt;
+    &lt;button type="button" onclick="alert('Hello!')"&gt;Click Me&lt;/button&gt;
+&lt;/body&gt;
+&lt;/html&gt;</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="editor-demo-card">
+                        <h5 class="mb-3">CSS Editor</h5>
+                        <div class="code-editor-container">
+                            <div class="editor-toolbar">
+                                <div class="editor-tabs">
+                                    <button type="button" class="editor-tab active">styles.css</button>
+                                </div>
+                                <div class="editor-actions">
+                                    <button type="button" class="editor-btn" id="copyCss">
+                                        <i class="bi bi-clipboard"></i> Copy
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="editor-wrapper">
+                                <div class="code-highlight" id="cssHighlight">
+                                    <pre><code class="language-css" id="cssHighlightedCode">/* Modern CSS Styles */</code></pre>
+                                </div>
+                                <textarea class="code-editor" id="cssEditor" style="min-height: 250px;" spellcheck="false">/* Modern CSS Styles */
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    margin: 0;
+    padding: 20px;
+}
+
+h1 {
+    color: #ffffff;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+button {
+    background: #4361ee;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #3451d1;
+}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Editor Features -->
+            <div class="editor-demo-card">
+                <h5 class="mb-3">Editor Features</h5>
+                <div class="feature-list">
+                    <div class="feature-item">
+                        <h6><i class="bi bi-code-slash me-2"></i>Syntax Support</h6>
+                        <p>Support for JavaScript, HTML, CSS, and more</p>
+                    </div>
+                    <div class="feature-item">
+                        <h6><i class="bi bi-play-circle me-2"></i>Code Execution</h6>
+                        <p>Run JavaScript code directly in the browser</p>
+                    </div>
+                    <div class="feature-item">
+                        <h6><i class="bi bi-clipboard-check me-2"></i>Copy to Clipboard</h6>
+                        <p>Easily copy code with one click</p>
+                    </div>
+                    <div class="feature-item">
+                        <h6><i class="bi bi-terminal me-2"></i>Console Output</h6>
+                        <p>View console logs and errors in real-time</p>
+                    </div>
+                    <div class="feature-item">
+                        <h6><i class="bi bi-file-code me-2"></i>Multiple Files</h6>
+                        <p>Work with multiple files using tabs</p>
+                    </div>
+                    <div class="feature-item">
+                        <h6><i class="bi bi-keyboard me-2"></i>Keyboard Shortcuts</h6>
+                        <p>Efficient editing with keyboard support</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    {{> footer}}
+</div>
+
+<!-- Prism.js for Syntax Highlighting -->
+<!-- Prism from the local npm package; module import so Vite bundles it. -->
+<script type="module">
+import 'prismjs/themes/prism-tomorrow.min.css';
+import Prism from 'prismjs';
+import 'prismjs/components/prism-markup.js';
+import 'prismjs/components/prism-css.js';
+import 'prismjs/components/prism-javascript.js';
+window.Prism = Prism;
+</script>
+
+<script>
+// Code Editor functionality with Syntax Highlighting (Vanilla JavaScript)
+document.addEventListener('DOMContentLoaded', function() {
+    const codeEditor = document.getElementById('codeEditor');
+    const codeOutput = document.getElementById('codeOutput');
+    const highlightedCode = document.getElementById('highlightedCode');
+    const codeHighlight = document.getElementById('codeHighlight');
+    const runBtn = document.getElementById('runBtn');
+    const copyBtn = document.getElementById('copyBtn');
+    const formatBtn = document.getElementById('formatBtn');
+    const copyHtml = document.getElementById('copyHtml');
+    const copyCss = document.getElementById('copyCss');
+    const languageSelect = document.getElementById('languageSelect');
+
+    let currentLanguage = 'javascript';
+
+    // Update syntax highlighting
+    function updateHighlighting() {
+        const code = codeEditor.value;
+        highlightedCode.textContent = code;
+        highlightedCode.className = `language-${currentLanguage}`;
+        Prism.highlightElement(highlightedCode);
+    }
+
+    // Sync scroll between textarea and highlight
+    codeEditor.addEventListener('scroll', function() {
+        codeHighlight.scrollTop = this.scrollTop;
+        codeHighlight.scrollLeft = this.scrollLeft;
+    });
+
+    // Update highlighting on input
+    codeEditor.addEventListener('input', updateHighlighting);
+    codeEditor.addEventListener('keyup', updateHighlighting);
+
+    // Initial highlighting
+    updateHighlighting();
+
+    // Run code button
+    runBtn.addEventListener('click', function() {
+        const code = codeEditor.value;
+        codeOutput.innerHTML = '';
+
+        // Override console.log to capture output
+        const logs = [];
+        const originalLog = console.log;
+        console.log = function(...args) {
+            logs.push(args.map(arg => {
+                if (typeof arg === 'object') {
+                    return JSON.stringify(arg, null, 2);
+                }
+                return String(arg);
+            }).join(' '));
+            originalLog.apply(console, args);
+        };
+
+        try {
+            // Execute the code
+            eval(code);
+
+            // Display output
+            if (logs.length > 0) {
+                codeOutput.innerHTML = logs.map(log =>
+                    `<div style="color: #98c379; margin-bottom: 5px;">${escapeHtml(log)}</div>`
+                ).join('');
+            } else {
+                codeOutput.innerHTML = '<div style="color: #999;">// No output</div>';
+            }
+        } catch (error) {
+            codeOutput.innerHTML = `<div style="color: #e06c75;">❌ Error: ${escapeHtml(error.message)}</div>`;
+        }
+
+        // Restore console.log
+        console.log = originalLog;
+    });
+
+    // Copy button
+    copyBtn.addEventListener('click', function() {
+        copyToClipboard(codeEditor.value);
+        showNotification('Code copied to clipboard!');
+    });
+
+    // HTML Editor highlighting
+    const htmlEditor = document.getElementById('htmlEditor');
+    const htmlHighlightedCode = document.getElementById('htmlHighlightedCode');
+    const htmlHighlight = document.getElementById('htmlHighlight');
+
+    function updateHtmlHighlighting() {
+        const code = htmlEditor.value;
+        htmlHighlightedCode.textContent = code;
+        Prism.highlightElement(htmlHighlightedCode);
+    }
+
+    htmlEditor.addEventListener('scroll', function() {
+        htmlHighlight.scrollTop = this.scrollTop;
+        htmlHighlight.scrollLeft = this.scrollLeft;
+    });
+
+    htmlEditor.addEventListener('input', updateHtmlHighlighting);
+    htmlEditor.addEventListener('keyup', updateHtmlHighlighting);
+    updateHtmlHighlighting();
+
+    // CSS Editor highlighting
+    const cssEditor = document.getElementById('cssEditor');
+    const cssHighlightedCode = document.getElementById('cssHighlightedCode');
+    const cssHighlight = document.getElementById('cssHighlight');
+
+    function updateCssHighlighting() {
+        const code = cssEditor.value;
+        cssHighlightedCode.textContent = code;
+        Prism.highlightElement(cssHighlightedCode);
+    }
+
+    cssEditor.addEventListener('scroll', function() {
+        cssHighlight.scrollTop = this.scrollTop;
+        cssHighlight.scrollLeft = this.scrollLeft;
+    });
+
+    cssEditor.addEventListener('input', updateCssHighlighting);
+    cssEditor.addEventListener('keyup', updateCssHighlighting);
+    updateCssHighlighting();
+
+    // Copy HTML button
+    copyHtml.addEventListener('click', function() {
+        copyToClipboard(htmlEditor.value);
+        showNotification('HTML copied to clipboard!');
+    });
+
+    // Copy CSS button
+    copyCss.addEventListener('click', function() {
+        copyToClipboard(cssEditor.value);
+        showNotification('CSS copied to clipboard!');
+    });
+
+    // Format button (basic indentation)
+    formatBtn.addEventListener('click', function() {
+        try {
+            const code = codeEditor.value;
+            // Basic formatting - just add indentation after braces
+            let formatted = code
+                .split('\n')
+                .map(line => line.trim())
+                .join('\n');
+            codeEditor.value = formatted;
+            showNotification('Code formatted!');
+        } catch (error) {
+            showNotification('Could not format code', 'error');
+        }
+    });
+
+    // Tab key support
+    codeEditor.addEventListener('keydown', function(e) {
+        if (e.key === 'Tab') {
+            e.preventDefault();
+            const start = this.selectionStart;
+            const end = this.selectionEnd;
+            const value = this.value;
+
+            // Insert tab character
+            this.value = value.substring(0, start) + '    ' + value.substring(end);
+            this.selectionStart = this.selectionEnd = start + 4;
+        }
+    });
+
+    // Helper functions
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).catch(err => {
+            console.error('Failed to copy:', err);
+        });
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function showNotification(message, type = 'success') {
+        const notification = document.createElement('div');
+        notification.className = 'alert alert-' + type;
+        notification.style.position = 'fixed';
+        notification.style.top = '20px';
+        notification.style.right = '20px';
+        notification.style.zIndex = '9999';
+        notification.style.minWidth = '250px';
+        notification.innerHTML = `
+            <i class="bi bi-${type === 'success' ? 'check-circle' : 'x-circle'} me-2"></i>
+            ${message}
+        `;
+
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            notification.style.transition = 'opacity 0.3s';
+            setTimeout(() => notification.remove(), 300);
+        }, 2000);
+    }
+
+    // Store code for each file
+    const codeFiles = {
+        javascript: `// Welcome to the Code Editor!
+// Type your JavaScript code here
+
+function greet(name) {
+    return \`Hello, \${name}! Welcome to Kiaalap Education Platform.\`;
+}
+
+// Example usage
+const message = greet('Student');
+console.log(message);
+
+// Array operations
+const courses = ['Computer Science', 'Mathematics', 'Physics'];
+courses.forEach(course => {
+    console.log(\`📚 Course: \${course}\`);
+});
+
+// Object example
+const student = {
+    name: 'John Doe',
+    id: 12345,
+    grade: 'A',
+    displayInfo() {
+        console.log(\`Student: \${this.name}, ID: \${this.id}, Grade: \${this.grade}\`);
+    }
+};
+
+student.displayInfo();`,
+        html: `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Portal - Kiaalap</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>🎓 Kiaalap Education Platform</h1>
+        <nav>
+            <a href="#courses">Courses</a>
+            <a href="#grades">Grades</a>
+            <a href="#schedule">Schedule</a>
+        </nav>
+    </header>
+
+    <main>
+        <section id="welcome">
+            <h2>Welcome Back, Student!</h2>
+            <p>You have 3 assignments due this week.</p>
+            <button type="button" onclick="alert('Feature coming soon!')">View Assignments</button>
+        </section>
+
+        <section id="courses">
+            <h2>Your Courses</h2>
+            <div class="course-grid">
+                <div class="course-card">
+                    <h3>Computer Science 101</h3>
+                    <p>Prof. Johnson</p>
+                </div>
+                <div class="course-card">
+                    <h3>Mathematics 201</h3>
+                    <p>Prof. Smith</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Kiaalap Education Platform</p>
+    </footer>
+</body>
+</html>`,
+        css: `/* Modern Education Platform Styles */
+
+:root {
+    --primary-color: #4361ee;
+    --secondary-color: #3a0ca3;
+    --success-color: #06d6a0;
+    --background: #f8f9fa;
+    --text-color: #1f2937;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--background);
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+header {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    padding: 2rem;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    margin: 0 1rem;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    transition: background 0.3s;
+}
+
+nav a:hover {
+    background: rgba(255,255,255,0.2);
+}
+
+main {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 2rem;
+}
+
+section {
+    background: white;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.course-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.course-card {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    transition: transform 0.3s;
+}
+
+.course-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+}
+
+button {
+    background: var(--success-color);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+button:hover {
+    background: #05b589;
+    transform: scale(1.05);
+}
+
+footer {
+    text-align: center;
+    padding: 2rem;
+    background: #1f2937;
+    color: white;
+    margin-top: 3rem;
+}`
+    };
+
+    let currentFile = 'javascript';
+
+    // Tab switching with content update
+    document.querySelectorAll('.editor-tab[data-lang]').forEach(tab => {
+        tab.addEventListener('click', function() {
+            // Save current content before switching
+            codeFiles[currentFile] = codeEditor.value;
+
+            // Get the language from data-lang attribute
+            const lang = this.getAttribute('data-lang');
+
+            // Update active state
+            document.querySelectorAll('.editor-tab[data-lang]').forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+
+            // Update editor content
+            currentFile = lang;
+            currentLanguage = lang === 'html' ? 'markup' : lang;
+            codeEditor.value = codeFiles[lang];
+
+            // Update language selector
+            languageSelect.value = lang;
+
+            // Update syntax highlighting
+            updateHighlighting();
+
+            // Clear output when switching files
+            codeOutput.innerHTML = '<div style="color: #999;">// Click "Run" to execute the code...</div>';
+
+            // Show notification
+            const fileNames = {
+                javascript: 'script.js',
+                html: 'index.html',
+                css: 'styles.css'
+            };
+            showNotification(`Switched to ${fileNames[lang]}`, 'success');
+        });
+    });
+
+    // Sync language selector with tabs
+    languageSelect.addEventListener('change', function() {
+        const lang = this.value;
+        const tab = document.querySelector(`.editor-tab[data-lang="${lang}"]`);
+        if (tab) {
+            tab.click();
+        }
+    });
+});
+</script>
+
+{{> scripts}}

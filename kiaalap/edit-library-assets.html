@@ -1,0 +1,644 @@
+{{> head}}
+
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f7fa; }
+        .sidebar { position: fixed; left: 0; top: 0; width: 260px; height: 100vh; background: #1f2937; z-index: 1040; }
+        .main-wrapper { margin-left: 260px; min-height: 100vh; transition: margin-left 0.3s ease; }
+        .top-navbar { background: white; height: 60px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 0 1rem; }
+        .dashboard-content { padding: 24px; }
+
+        /* Loading animation */
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .loading { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; background: #e5e7eb; }
+
+        /* Form styling */
+        .form-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border: none;
+        }
+        .preview-area {
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            background: #f9fafb;
+            transition: border-color 0.3s ease;
+        }
+        .preview-area.drag-over {
+            border-color: #6366f1;
+            background: #f0f0ff;
+        }
+        .preview-image {
+            max-width: 200px;
+            max-height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .required-field::after {
+            content: " *";
+            color: #ef4444;
+        }
+</style>
+
+{{> sidebar}}
+
+<!-- Main Content Wrapper -->
+<div class="main-wrapper" id="mainWrapper">
+    {{> header}}
+
+    <!-- Main Content -->
+    <main class="dashboard-content" id="main-content">
+        <div class="container-fluid">
+                    <!-- Page Header -->
+                    <div class="dashboard-row">
+                        <div class="dashboard-card">
+                            <div class="dashboard-card-header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h1 class="h3 mb-1">Edit Library Asset</h1>
+                                        <nav aria-label="breadcrumb">
+                                            <ol class="breadcrumb">
+                                                <li class="breadcrumb-item"><a href="index.html">Dashboard</a></li>
+                                                <li class="breadcrumb-item"><a href="#">Library</a></li>
+                                                <li class="breadcrumb-item"><a href="library-assets.html">Assets</a></li>
+                                                <li class="breadcrumb-item active" aria-current="page">Edit Asset</li>
+                                            </ol>
+                                        </nav>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <a href="library-assets.html" class="btn btn-outline-secondary">
+                                            <i class="bi bi-arrow-left me-1"></i>
+                                            Back to Assets
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Alert for Form Instructions -->
+                    <div class="alert alert-warning mb-4" role="alert">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        You are editing: <strong>Introduction to Computer Science (4th Edition)</strong>. Make your changes and click "Update Asset" to save.
+                    </div>
+
+                    <!-- Edit Asset Form -->
+                    <form id="editAssetForm" novalidate>
+                        <!-- First Row: Basic Info and Cover/Actions -->
+                        <div class="dashboard-row">
+                            <div class="dashboard-grid grid-cols-3 gap-3">
+                                <!-- Basic Information -->
+                                <div style="grid-column: span 2;">
+                                        <div class="dashboard-card">
+                                            <div class="dashboard-card-header">
+                                                <h5 class="dashboard-card-title">
+                                                    <i class="bi bi-info-circle me-2"></i>
+                                                    Basic Information
+                                                </h5>
+                                            </div>
+                                            <div class="dashboard-card-body">
+                                                <!-- First row: Title (2/3) and Category (1/3) -->
+                                                <div class="dashboard-grid grid-cols-3 gap-3 mb-3">
+                                                    <div style="grid-column: span 2;">
+                                                        <label for="assetTitle" class="form-label required-field">Title</label>
+                                                        <input type="text"
+                                                               class="form-control"
+                                                               id="assetTitle"
+                                                               name="title"
+                                                               value="Introduction to Computer Science"
+                                                               placeholder="Enter asset title"
+                                                               required
+                                                               aria-describedby="titleHelp">
+                                                        <div class="invalid-feedback">
+                                                            Please provide a valid title.
+                                                        </div>
+                                                        <small id="titleHelp" class="form-text text-muted">
+                                                            The main title of the book, journal, or media.
+                                                        </small>
+                                                    </div>
+
+                                                    <div>
+                                                        <label for="assetCategory" class="form-label required-field">Category</label>
+                                                        <select class="form-select" id="assetCategory" name="category" required>
+                                                            <option value="">Select category</option>
+                                                            <option value="books" selected>Books</option>
+                                                            <option value="journals">Journals</option>
+                                                            <option value="digital">Digital Media</option>
+                                                            <option value="reference">Reference Materials</option>
+                                                            <option value="periodicals">Periodicals</option>
+                                                            <option value="audio">Audio Materials</option>
+                                                            <option value="video">Video Materials</option>
+                                                        </select>
+                                                        <div class="invalid-feedback">
+                                                            Please select a category.
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Second row: Author and Publisher (2 columns) -->
+                                                <div class="dashboard-grid grid-cols-2 gap-3 mb-3">
+                                                    <div>
+                                                        <label for="assetAuthor" class="form-label">Author(s)</label>
+                                                        <input type="text"
+                                                               class="form-control"
+                                                               id="assetAuthor"
+                                                               name="author"
+                                                               value="Thomas H. Cormen, Charles E. Leiserson"
+                                                               placeholder="Enter author name(s)"
+                                                               aria-describedby="authorHelp">
+                                                        <small id="authorHelp" class="form-text text-muted">
+                                                            Separate multiple authors with commas.
+                                                        </small>
+                                                    </div>
+
+                                                    <div>
+                                                        <label for="assetPublisher" class="form-label">Publisher</label>
+                                                        <input type="text"
+                                                               class="form-control"
+                                                               id="assetPublisher"
+                                                               name="publisher"
+                                                               value="MIT Press"
+                                                               placeholder="Enter publisher name">
+                                                    </div>
+                                                </div>
+
+                                                <!-- Third row: ISBN, Call Number, Edition (3 columns) -->
+                                                <div class="dashboard-grid grid-cols-3 gap-3">
+                                                    <div>
+                                                        <label for="assetISBN" class="form-label">ISBN/ISSN</label>
+                                                        <input type="text"
+                                                               class="form-control"
+                                                               id="assetISBN"
+                                                               name="isbn"
+                                                               value="978-0-262-03384-8"
+                                                               placeholder="978-0-123456-78-9"
+                                                               aria-describedby="isbnHelp">
+                                                        <small id="isbnHelp" class="form-text text-muted">
+                                                            International Standard Book/Serial Number.
+                                                        </small>
+                                                    </div>
+
+                                                    <div>
+                                                        <label for="assetEdition" class="form-label">Edition</label>
+                                                        <input type="text"
+                                                               class="form-control"
+                                                               id="assetEdition"
+                                                               name="edition"
+                                                               value="4th"
+                                                               placeholder="1st, 2nd, etc.">
+                                                    </div>
+
+                                                    <div>
+                                                        <label for="assetYear" class="form-label">Publication Year</label>
+                                                        <input type="number"
+                                                               class="form-control"
+                                                               id="assetYear"
+                                                               name="year"
+                                                               value="2022"
+                                                               placeholder="2025"
+                                                               min="1900"
+                                                               max="2030">
+                                                    </div>
+
+                                                    <div class="col-12">
+                                                        <label for="assetDescription" class="form-label">Description</label>
+                                                        <textarea class="form-control"
+                                                                  id="assetDescription"
+                                                                  name="description"
+                                                                  rows="4"
+                                                                  placeholder="Enter a brief description of the asset..."
+                                                                  aria-describedby="descHelp">A comprehensive introduction to computer algorithms and data structures, covering essential topics for computer science students.</textarea>
+                                                        <small id="descHelp" class="form-text text-muted">
+                                                            Provide a summary, table of contents, or key topics covered.
+                                                        </small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                </div>
+
+                                <!-- Cover Image and Actions -->
+                                <div>
+                                        <div class="dashboard-card">
+                                            <div class="dashboard-card-header">
+                                                <h5 class="dashboard-card-title">
+                                                    <i class="bi bi-image me-2"></i>
+                                                    Cover Image
+                                                </h5>
+                                            </div>
+                                            <div class="dashboard-card-body">
+                                                <div class="preview-area" id="imagePreview">
+                                                    <i class="bi bi-cloud-upload fs-1 text-muted mb-3"></i>
+                                                    <p class="mb-2">Drop image here or <button type="button" class="btn btn-link p-0" id="selectImageBtn">browse files</button></p>
+                                                    <small class="text-muted">Recommended: 300x400px, JPG or PNG, max 5MB</small>
+                                                    <input type="file" id="coverImage" name="coverImage" accept="image/*" class="d-none">
+                                                </div>
+                                                <div id="imagePreviewContainer" class="d-none mt-3 text-center">
+                                                    <img id="previewImg" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Cover preview" class="preview-image mb-2" loading="lazy" decoding="async">
+                                                    <div>
+                                                        <button type="button" class="btn btn-outline-danger btn-sm" id="removeImageBtn">
+                                                            <i class="bi bi-trash me-1"></i>
+                                                            Remove
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Actions -->
+                                        <div class="dashboard-card mt-4">
+                                            <div class="dashboard-card-header">
+                                                <h5 class="dashboard-card-title">
+                                                    <i class="bi bi-gear me-2"></i>
+                                                    Actions
+                                                </h5>
+                                            </div>
+                                            <div class="dashboard-card-body">
+                                                <div class="d-grid gap-2">
+                                                    <button type="submit" class="btn btn-primary">
+                                                        <i class="bi bi-check-lg me-2"></i>
+                                                        Update Asset
+                                                    </button>
+                                                    <button type="button" class="btn btn-outline-warning" id="resetChanges">
+                                                        <i class="bi bi-arrow-clockwise me-2"></i>
+                                                        Reset Changes
+                                                    </button>
+                                                    <button type="button" class="btn btn-outline-secondary" id="previewAsset">
+                                                        <i class="bi bi-eye me-2"></i>
+                                                        Preview
+                                                    </button>
+                                                    <hr>
+                                                    <a href="library-assets.html" class="btn btn-outline-danger">
+                                                        <i class="bi bi-x-lg me-2"></i>
+                                                        Cancel
+                                                    </a>
+                                                </div>
+
+                                                <div class="mt-4">
+                                                    <h6 class="text-muted small mb-2">QUICK ACTIONS</h6>
+                                                    <div class="d-grid gap-1">
+                                                        <button type="button" class="btn btn-outline-secondary btn-sm" id="fillSampleData">
+                                                            <i class="bi bi-magic me-1"></i>
+                                                            Restore Original
+                                                        </button>
+                                                        <button type="button" class="btn btn-outline-secondary btn-sm" id="clearForm">
+                                                            <i class="bi bi-arrow-clockwise me-1"></i>
+                                                            Clear Form
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        <!-- Second Row: Library Details -->
+                        <div class="dashboard-row">
+                            <div class="dashboard-card">
+                                <div class="dashboard-card-header">
+                                    <h5 class="dashboard-card-title">
+                                        <i class="bi bi-building me-2"></i>
+                                        Library Details
+                                    </h5>
+                                </div>
+                                <div class="dashboard-card-body">
+                                    <div class="dashboard-grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label for="assetLocation" class="form-label required-field">Location</label>
+                                            <select class="form-select" id="assetLocation" name="location" required>
+                                                <option value="">Select location</option>
+                                                <option value="main-library" selected>Main Library</option>
+                                                <option value="science-library">Science Library</option>
+                                                <option value="medical-library">Medical Library</option>
+                                                <option value="digital-archive">Digital Archive</option>
+                                                <option value="reference-section">Reference Section</option>
+                                                <option value="periodicals-section">Periodicals Section</option>
+                                            </select>
+                                            <div class="invalid-feedback">
+                                                Please select a location.
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label for="assetStatus" class="form-label required-field">Status</label>
+                                            <select class="form-select" id="assetStatus" name="status" required>
+                                                <option value="">Select status</option>
+                                                <option value="available" selected>Available</option>
+                                                <option value="checked-out">Checked Out</option>
+                                                <option value="reserved">Reserved</option>
+                                                <option value="maintenance">Under Maintenance</option>
+                                                <option value="missing">Missing</option>
+                                                <option value="damaged">Damaged</option>
+                                            </select>
+                                            <div class="invalid-feedback">
+                                                Please select a status.
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label for="assetCopies" class="form-label">Number of Copies</label>
+                                            <input type="number"
+                                                   class="form-control"
+                                                   id="assetCopies"
+                                                   name="copies"
+                                                   placeholder="1"
+                                                   min="1"
+                                                   value="3">
+                                        </div>
+
+                                        <div>
+                                            <label for="assetPrice" class="form-label">Purchase Price</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text">$</span>
+                                                <input type="number"
+                                                       class="form-control"
+                                                       id="assetPrice"
+                                                       name="price"
+                                                       value="89.99"
+                                                       placeholder="0.00"
+                                                       step="0.01"
+                                                       min="0">
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label for="assetAcquisition" class="form-label">Acquisition Date</label>
+                                            <input type="date"
+                                                   class="form-control"
+                                                   id="assetAcquisition"
+                                                   value="2022-03-15"
+                                                   name="acquisitionDate">
+                                        </div>
+
+                                        <div>
+                                            <label for="assetCallNumber" class="form-label">Call Number</label>
+                                            <input type="text"
+                                                   class="form-control"
+                                                   id="assetCallNumber"
+                                                   name="callNumber"
+                                                   value="QA76.6.C662"
+                                                   placeholder="e.g., QA76.73.P98"
+                                                   aria-describedby="callHelp">
+                                            <small id="callHelp" class="form-text text-muted">
+                                                Library classification number for shelving.
+                                            </small>
+                                        </div>
+
+                                        <div>
+                                            <label for="assetBarcode" class="form-label">Barcode</label>
+                                            <input type="text"
+                                                   class="form-control"
+                                                   id="assetBarcode"
+                                                   name="barcode"
+                                                   value="LIB-INT-2022-384"
+                                                   placeholder="Auto-generated if empty">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Third Row: Additional Information -->
+                        <div class="dashboard-row">
+                            <div class="dashboard-card">
+                                <div class="dashboard-card-header">
+                                    <h5 class="dashboard-card-title">
+                                        <i class="bi bi-plus-circle me-2"></i>
+                                        Additional Information
+                                    </h5>
+                                </div>
+                                <div class="dashboard-card-body">
+                                    <div class="dashboard-grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label for="assetLanguage" class="form-label">Language</label>
+                                            <select class="form-select" id="assetLanguage" name="language">
+                                                <option value="">Select language</option>
+                                                <option value="english" selected>English</option>
+                                                <option value="spanish">Spanish</option>
+                                                <option value="french">French</option>
+                                                <option value="german">German</option>
+                                                <option value="chinese">Chinese</option>
+                                                <option value="japanese">Japanese</option>
+                                                <option value="arabic">Arabic</option>
+                                                <option value="other">Other</option>
+                                            </select>
+                                        </div>
+
+                                        <div>
+                                            <label for="assetPages" class="form-label">Number of Pages</label>
+                                            <input type="number"
+                                                   class="form-control"
+                                                   id="assetPages"
+                                                   name="pages"
+                                                   value="1312"
+                                                   placeholder="e.g., 350"
+                                                   min="1">
+                                        </div>
+
+                                        <div class="col-12">
+                                            <label for="assetSubjects" class="form-label">Subject Keywords</label>
+                                            <input type="text"
+                                                   class="form-control"
+                                                   id="assetSubjects"
+                                                   name="subjects"
+                                                   value="Computer Science, Algorithms, Data Structures, Programming"
+                                                   placeholder="Enter keywords separated by commas"
+                                                   aria-describedby="subjectsHelp">
+                                            <small id="subjectsHelp" class="form-text text-muted">
+                                                e.g., Computer Science, Programming, Algorithms, Data Structures
+                                            </small>
+                                        </div>
+
+                                        <div class="col-12">
+                                            <label for="assetNotes" class="form-label">Internal Notes</label>
+                                            <textarea class="form-control"
+                                                      id="assetNotes"
+                                                      name="notes"
+                                                      rows="3"
+                                                      placeholder="Any special notes for library staff..."
+                                                      aria-describedby="notesHelp"></textarea>
+                                            <small id="notesHelp" class="form-text text-muted">
+                                                Private notes visible only to library staff.
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+    </main>
+
+    {{> footer}}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('editAssetForm');
+            const imageInput = document.getElementById('coverImage');
+            const selectImageBtn = document.getElementById('selectImageBtn');
+            const previewArea = document.getElementById('imagePreview');
+            const previewContainer = document.getElementById('imagePreviewContainer');
+            const previewImg = document.getElementById('previewImg');
+            const removeImageBtn = document.getElementById('removeImageBtn');
+
+            // Image upload functionality
+            selectImageBtn.addEventListener('click', () => imageInput.click());
+
+            imageInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    handleImageUpload(file);
+                }
+            });
+
+            // Drag and drop functionality
+            previewArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                previewArea.classList.add('drag-over');
+            });
+
+            previewArea.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                previewArea.classList.remove('drag-over');
+            });
+
+            previewArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                previewArea.classList.remove('drag-over');
+                const file = e.dataTransfer.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    handleImageUpload(file);
+                }
+            });
+
+            function handleImageUpload(file) {
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('File size must be less than 5MB');
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    previewArea.classList.add('d-none');
+                    previewContainer.classList.remove('d-none');
+                };
+                reader.readAsDataURL(file);
+            }
+
+            removeImageBtn.addEventListener('click', function() {
+                imageInput.value = '';
+                previewArea.classList.remove('d-none');
+                previewContainer.classList.add('d-none');
+                previewImg.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+            });
+
+            // Form validation
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                if (form.checkValidity()) {
+                    // Simulate form submission
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    const originalText = submitBtn.innerHTML;
+                    submitBtn.innerHTML = '<i class="spinner-border spinner-border-sm me-2"></i>Saving...';
+                    submitBtn.disabled = true;
+
+                    setTimeout(() => {
+                        alert('Asset updated successfully!');
+                        // In real app, would redirect to library-assets.html
+                        console.log('Form data:', new FormData(form));
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
+                    }, 2000);
+                }
+
+                form.classList.add('was-validated');
+            });
+
+            // Reset changes functionality
+            document.getElementById('resetChanges').addEventListener('click', function() {
+                if (confirm('Are you sure you want to reset all changes?')) {
+                    // Reset to original values
+                    location.reload();
+                }
+            });
+
+            // Load original data
+            const originalData = {
+                title: 'Introduction to Computer Science',
+                category: 'books',
+                author: 'Thomas H. Cormen, Charles E. Leiserson',
+                publisher: 'MIT Press',
+                isbn: '978-0-262-03384-8',
+                edition: '4th',
+                year: '2022',
+                description: 'A comprehensive introduction to computer algorithms and data structures, covering essential topics for computer science students.',
+                location: 'main-library',
+                status: 'available',
+                copies: '3',
+                price: '89.99',
+                callNumber: 'QA76.6.C662',
+                barcode: 'LIB-INT-2022-384',
+                language: 'english',
+                pages: '1312',
+                subjects: 'Computer Science, Algorithms, Data Structures, Programming'
+            };
+
+            // Fill sample data restores original values
+            document.getElementById('fillSampleData').addEventListener('click', function() {
+                document.getElementById('assetTitle').value = originalData.title;
+                document.getElementById('assetCategory').value = originalData.category;
+                document.getElementById('assetAuthor').value = originalData.author;
+                document.getElementById('assetPublisher').value = originalData.publisher;
+                document.getElementById('assetISBN').value = originalData.isbn;
+                document.getElementById('assetEdition').value = originalData.edition;
+                document.getElementById('assetYear').value = originalData.year;
+                document.getElementById('assetDescription').value = originalData.description;
+                document.getElementById('assetLocation').value = originalData.location;
+                document.getElementById('assetStatus').value = originalData.status;
+                document.getElementById('assetCopies').value = originalData.copies;
+                document.getElementById('assetPrice').value = originalData.price;
+                document.getElementById('assetCallNumber').value = originalData.callNumber;
+                document.getElementById('assetBarcode').value = originalData.barcode;
+                document.getElementById('assetLanguage').value = originalData.language;
+                document.getElementById('assetPages').value = originalData.pages;
+                document.getElementById('assetSubjects').value = originalData.subjects;
+            });
+
+            // Clear form
+            document.getElementById('clearForm').addEventListener('click', function() {
+                if (confirm('Are you sure you want to clear all form data?')) {
+                    form.reset();
+                    form.classList.remove('was-validated');
+                    removeImageBtn.click();
+                }
+            });
+
+            // Preview functionality
+            document.getElementById('previewAsset').addEventListener('click', function() {
+                // Would show a modal with asset preview
+                console.log('Showing asset preview...');
+            });
+
+            // Auto-generate barcode if not provided
+            document.getElementById('assetTitle').addEventListener('blur', function() {
+                const barcodeField = document.getElementById('assetBarcode');
+                if (!barcodeField.value && this.value) {
+                    // Generate a simple barcode based on timestamp and title
+                    const timestamp = Date.now();
+                    const titleCode = this.value.substring(0, 3).toUpperCase();
+                    barcodeField.value = `LIB${titleCode}${timestamp}`.slice(-12);
+                }
+            });
+        });
+</script>
+
+{{> scripts}}
