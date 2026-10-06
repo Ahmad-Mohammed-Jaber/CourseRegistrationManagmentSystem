@@ -6,7 +6,7 @@
 
 @* Structure mirrors kiaalap/login.html 1:1; only the <form> posts to MVC and
    carries antiforgery + server-validation spans. Input ids match the template
-   (username/password/rememberMe) so its script works verbatim. *@
+   (username/password) so its script works verbatim. *@
 <div class="auth-container">
     <div class="auth-card">
         <div class="auth-header">
@@ -20,7 +20,13 @@
         <form asp-action="Login" method="post" id="loginForm" novalidate>
             @Html.AntiForgeryToken()
             <input type="hidden" asp-for="ReturnUrl" />
-            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+            @* Model-level errors only (e.g. "Invalid username or password").
+               Hidden by default; JS reveals it only when it has content. *@
+            <div asp-validation-summary="ModelOnly"
+                 class="alert alert-danger auth-error-summary"
+                 role="alert"
+                 id="modelErrorSummary"></div>
 
             <div class="mb-3">
                 <label class="form-label" for="username">Username</label>
@@ -35,13 +41,9 @@
                            value="@Model.UserName"
                            placeholder="Enter your username"
                            autocomplete="username"
-                           required
-                           aria-describedby="emailHelp" />
+                           required />
                 </div>
-                <span asp-validation-for="UserName" class="text-danger"></span>
-                <small id="emailHelp" class="form-text text-muted">
-                    Your course-registration username
-                </small>
+                <span asp-validation-for="UserName" class="text-danger d-block small"></span>
             </div>
 
             <div class="mb-3">
@@ -56,8 +58,7 @@
                            id="password"
                            name="Password"
                            placeholder="Enter your password"
-                           required
-                           aria-describedby="passwordHelp" />
+                           required />
                     <button class="btn btn-outline-secondary"
                             type="button"
                             id="togglePassword"
@@ -65,63 +66,20 @@
                         <i class="bi bi-eye"></i>
                     </button>
                 </div>
-                <span asp-validation-for="Password" class="text-danger"></span>
-                <small id="passwordHelp" class="form-text text-muted">
-                    Your secure password
-                </small>
+                <span asp-validation-for="Password" class="text-danger d-block small"></span>
             </div>
 
-            <div class="mb-4">
-                <div class="form-check">
-                    <input class="form-check-input"
-                           type="checkbox"
-                           value="true"
-                           id="rememberMe"
-                           name="RememberMe" />
-                    <label class="form-check-label" for="rememberMe">
-                        Remember me
-                    </label>
-                </div>
-                <small class="text-muted">
-                    (only on private devices)
-                </small>
-            </div>
-
-            <div class="d-grid gap-2">
+            <div class="d-grid gap-2 mt-4">
                 <button class="btn btn-primary btn-lg" type="submit">
                     <i class="bi bi-box-arrow-in-right me-2"></i>
                     Sign In
                 </button>
-
-                <div class="text-center my-3">
-                    <span class="text-muted">or sign in with</span>
-                </div>
-
-                <div class="row g-2">
-                    <div class="col">
-                        <button class="btn btn-outline-secondary w-100" type="button">
-                            <i class="bi bi-google"></i>
-                            Google
-                        </button>
-                    </div>
-                    <div class="col">
-                        <button class="btn btn-outline-secondary w-100" type="button">
-                            <i class="bi bi-microsoft"></i>
-                            Microsoft
-                        </button>
-                    </div>
-                </div>
             </div>
 
             <hr class="my-4" />
 
             <div class="text-center">
-                <p class="mb-2">
-                    <a href="#" class="text-decoration-none">
-                        Forgot your password?
-                    </a>
-                </p>
-                <p>
+                <p class="mb-0">
                     Don't have an account?
                     <a href="#" class="text-decoration-none fw-bold">
                         Sign up
@@ -157,37 +115,43 @@
             });
         }
 
-        // Remember me functionality
-        const rememberMe = document.getElementById('rememberMe');
-        const username = document.getElementById('username');
-
-        // Load saved username if remember me was checked
-        if (localStorage.getItem('rememberMe') === 'true') {
-            username.value = username.value || localStorage.getItem('username') || '';
-            rememberMe.checked = true;
-        }
-
-        // Save/clear username based on remember me
-        if (rememberMe) {
-            rememberMe.addEventListener('change', function() {
-                if (this.checked) {
-                    localStorage.setItem('rememberMe', 'true');
-                    localStorage.setItem('username', username.value);
-                } else {
-                    localStorage.removeItem('rememberMe');
-                    localStorage.removeItem('username');
-                }
-            });
-        }
-
-        // Update stored username when it changes
-        if (username) {
-            username.addEventListener('input', function() {
-                if (rememberMe.checked) {
-                    localStorage.setItem('username', this.value);
-                }
-            });
+        // Hide the model-level error summary when it has no content,
+        // and reveal it cleanly when it does.
+        const summary = document.getElementById('modelErrorSummary');
+        if (summary) {
+            const hasErrors = summary.querySelector('ul li, :scope > *:not(ul)') !== null
+                              || summary.textContent.trim().length > 0;
+            summary.style.display = hasErrors ? 'block' : 'none';
         }
     });
     </script>
+
+    <style>
+        /* Single alert block, only visible when it actually has errors. */
+        .auth-error-summary {
+            display: none;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+        }
+        .auth-error-summary ul {
+            margin: 0;
+            padding-left: 1.25rem;
+        }
+        .auth-error-summary ul li {
+            margin-bottom: 0.25rem;
+        }
+        .auth-error-summary ul li:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Per-field error spans: don't reserve space when empty. */
+        span[asp-validation-for],
+        .field-validation-error {
+            margin-top: 0.25rem;
+        }
+        .field-validation-valid {
+            display: none;
+        }
+    </style>
 }

@@ -4,20 +4,22 @@
         <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>Mozaic.CourseRegistrationManagementSystem.WebApp</RootNamespace>
+        <AllowMissingPrunePackageData>true</AllowMissingPrunePackageData>
     </PropertyGroup>
 
     <ItemGroup>
-      <_ContentIncludedByDefault Remove="Views\Home\Index.cshtml" />
-      <_ContentIncludedByDefault Remove="Views\Home\Privacy.cshtml" />
+        <_ContentIncludedByDefault Remove="Views\Home\Index.cshtml" />
+        <_ContentIncludedByDefault Remove="Views\Home\Privacy.cshtml" />
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Views\Auth\" />
+        <Folder Include="Views\Auth\" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Mozaic.CourseRegistrationManagementSystem.BL\Mozaic.CourseRegistrationManagementSystem.BL.csproj" />
-      <ProjectReference Include="..\Mozaic.CourseRegistrationManagementSystem.Shared\Mozaic.CourseRegistrationManagementSystem.Shared.csproj" />
+        <ProjectReference Include="..\Mozaic.CourseRegistrationManagementSystem.BL\Mozaic.CourseRegistrationManagementSystem.BL.csproj" />
+        <ProjectReference Include="..\Mozaic.CourseRegistrationManagementSystem.Shared\Mozaic.CourseRegistrationManagementSystem.Shared.csproj" />
     </ItemGroup>
 
 </Project>
