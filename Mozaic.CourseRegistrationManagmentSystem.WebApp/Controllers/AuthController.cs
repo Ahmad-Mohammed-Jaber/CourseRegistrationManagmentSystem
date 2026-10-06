@@ -10,7 +10,7 @@ namespace Mozaic.CourseRegistrationManagmentSystem.WebApp.Controllers;
 
 public class AuthController : Controller
 {
-    private readonly AuthService _authService;
+    private AuthService _authService;
 
     public AuthController(AuthService authService)
     {

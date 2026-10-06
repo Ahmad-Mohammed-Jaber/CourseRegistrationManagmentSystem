@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Mozaic.CourseRegistrationManagementSystem.BL.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,7 +20,10 @@ builder.Services
 
 builder.Services.AddAuthorization();
 
+builder.Services.AddScoped<AuthService>();
+
 var app = builder.Build();
+
 
 if (!app.Environment.IsDevelopment())
 {
