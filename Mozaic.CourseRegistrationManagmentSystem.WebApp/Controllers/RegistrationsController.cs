@@ -1,22 +1,17 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Mozaic.CourseRegistrationManagementSystem.BL.Services;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
 using Mozaic.CourseRegistrationManagementSystem.WebApp;
 using Mozaic.CourseRegistrationManagmentSystem.WebApp.Models;
 
 namespace Mozaic.CourseRegistrationManagmentSystem.WebApp.Controllers;
-
-/// <summary>
-/// Student self-service registrations.
-/// MVC-standard routes: GET /Registrations/Mine, POST /Registrations/Drop.
-/// All links use tag helpers (asp-controller/asp-action) and all redirects
-/// use RedirectToAction — no hard-coded paths.
-/// </summary>
-[Authorize(Roles = "Student")]
 public class RegistrationsController : Controller
 {
     [HttpGet]
+    [Authorize(Roles = "Student")]
     public async Task<IActionResult> Mine()
     {
         var userId = User.GetUserId();
@@ -75,6 +70,7 @@ public class RegistrationsController : Controller
     }
 
     [HttpPost]
+    [Authorize(Roles = "Student")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Drop(int id)
     {
@@ -101,5 +97,213 @@ public class RegistrationsController : Controller
         }
 
         return RedirectToAction(nameof(Mine));
+    }
+
+    [HttpGet]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Index(string? q = null)
+    {
+        ViewData["Query"] = q ?? string.Empty;
+
+        try
+        {
+            var rows = string.IsNullOrWhiteSpace(q)
+                ? await RegistrationService.GetAllDetailedAsync()
+                : await RegistrationService.SearchDetailedAsync(q);
+
+            return View(rows
+                .OrderByDescending(r => r.Registration.RegistrationDate)
+                .Select(r => new RegistrationListItemViewModel
+                {
+                    Id = r.Registration.Id,
+                    StudentName = $"{r.Student.FullName} ({r.Student.UserName})",
+                    CourseName = r.Course.CourseName,
+                    ClassName = r.Class.ClassName,
+                    RegistrationDate = r.Registration.RegistrationDate,
+                    Status = r.Registration.Status,
+                })
+                .ToList());
+        }
+        catch (BusinessException ex)
+        {
+            ViewData["ErrorMessage"] = ex.Message;
+            return View(new List<RegistrationListItemViewModel>());
+        }
+    }
+
+    [HttpGet]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Create()
+    {
+        var model = new RegistrationFormViewModel();
+        await PopulateOptionsAsync(model);
+        return View(model);
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Admin")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Create(RegistrationFormViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            await PopulateOptionsAsync(model);
+            return View(model);
+        }
+
+        try
+        {
+            await RegistrationService.AddAsync(new Registration
+            {
+                StudentId = model.StudentId,
+                ClassId = model.ClassId,
+                Status = model.Status,
+                RegistrationDate = model.RegistrationDate,
+            });
+
+            TempData["SuccessMessage"] = "Registration created successfully.";
+            return RedirectToAction(nameof(Index));
+        }
+        catch (BusinessException ex)
+        {
+            ModelState.AddModelError(string.Empty, ex.Message);
+            await PopulateOptionsAsync(model);
+            return View(model);
+        }
+    }
+
+    [HttpGet]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> Edit(int id)
+    {
+        if (id <= 0)
+        {
+            TempData["ErrorMessage"] = "Please select a registration to edit.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        try
+        {
+            var registration = await RegistrationService.GetByIdAsync(id);
+            if (registration is null)
+            {
+                TempData["ErrorMessage"] = $"Registration with id {id} was not found.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var model = new RegistrationFormViewModel
+            {
+                Id = registration.Id,
+                StudentId = registration.StudentId,
+                ClassId = registration.ClassId,
+                Status = string.IsNullOrWhiteSpace(registration.Status) ? "Registered" : registration.Status,
+                RegistrationDate = registration.RegistrationDate,
+            };
+            await PopulateOptionsAsync(model);
+            return View(model);
+        }
+        catch (BusinessException ex)
+        {
+            TempData["ErrorMessage"] = ex.Message;
+            return RedirectToAction(nameof(Index));
+        }
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Admin")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(int id, RegistrationFormViewModel model)
+    {
+        if (id != model.Id)
+        {
+            return RedirectToAction(nameof(Index));
+        }
+
+        if (!ModelState.IsValid)
+        {
+            await PopulateOptionsAsync(model);
+            return View(model);
+        }
+
+        try
+        {
+            var existing = await RegistrationService.GetByIdAsync(id);
+            if (existing is null)
+            {
+                TempData["ErrorMessage"] = $"Registration with id {id} was not found.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            await RegistrationService.UpdateAsync(new Registration
+            {
+                Id = id,
+                StudentId = model.StudentId,
+                ClassId = model.ClassId,
+                Status = model.Status,
+                RegistrationDate = model.RegistrationDate,
+            });
+
+            TempData["SuccessMessage"] = "Registration updated successfully.";
+            return RedirectToAction(nameof(Index));
+        }
+        catch (BusinessException ex)
+        {
+            ModelState.AddModelError(string.Empty, ex.Message);
+            await PopulateOptionsAsync(model);
+            return View(model);
+        }
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Admin")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Delete(int id)
+    {
+        if (id <= 0)
+        {
+            TempData["ErrorMessage"] = "Please select a registration to delete.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        try
+        {
+            await RegistrationService.DeleteAsync(id);
+            TempData["SuccessMessage"] = "Registration deleted successfully.";
+        }
+        catch (BusinessException ex)
+        {
+            TempData["ErrorMessage"] = ex.Message;
+        }
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    private static async Task PopulateOptionsAsync(RegistrationFormViewModel model)
+    {
+        try
+        {
+            var students = await StudentService.GetAllAsync();
+            model.Students = students
+                .OrderBy(s => s.FullName)
+                .Select(s => new SelectListItem($"{s.FullName} ({s.UserName})", s.Id.ToString()))
+                .ToList();
+        }
+        catch (BusinessException)
+        {
+            model.Students = new List<SelectListItem>();
+        }
+
+        try
+        {
+            var classes = await ClassService.GetAllAsync();
+            model.Classes = classes
+                .OrderBy(c => c.ClassName)
+                .Select(c => new SelectListItem(c.ClassName, c.Id.ToString()))
+                .ToList();
+        }
+        catch (BusinessException)
+        {
+            model.Classes = new List<SelectListItem>();
+        }
     }
 }

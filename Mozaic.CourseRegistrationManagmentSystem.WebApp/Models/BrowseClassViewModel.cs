@@ -2,11 +2,6 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Mozaic.CourseRegistrationManagmentSystem.WebApp.Models;
 
-/// <summary>
-/// Row model for the student "Browse Classes" page (Classes/Browse).
-/// Seat state mirrors <c>ClassValidator.ValidateCapacityAvailable</c>:
-/// a class is full when <c>CurrentCapacity &gt;= MaxCapacity</c>.
-/// </summary>
 public class BrowseClassViewModel
 {
     public int ClassId { get; set; }

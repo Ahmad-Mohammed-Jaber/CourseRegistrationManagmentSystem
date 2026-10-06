@@ -1,0 +1,87 @@
+@model Mozaic.CourseRegistrationManagmentSystem.WebApp.Models.CreateStudentViewModel
+@{
+    ViewData["Title"] = "Add Student";
+}
+
+<!-- Page Header -->
+<div class="mb-3">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="h3 font-bold mb-1">Add Student</h1>
+            <p class="text-muted">Enroll a new student (creates the login account too)</p>
+        </div>
+        <div>
+            <a class="btn btn-outline-secondary" asp-controller="Students" asp-action="Index">
+                <i class="bi bi-arrow-left me-1"></i>Back to List
+            </a>
+        </div>
+    </div>
+</div>
+
+<partial name="_Alerts" />
+
+<div class="dashboard-row">
+    <div class="dashboard-card">
+        <div class="dashboard-card-header">
+            <h5 class="dashboard-card-title mb-0">Student Details</h5>
+        </div>
+        <div class="dashboard-card-body">
+            <form asp-controller="Students" asp-action="Create" method="post" novalidate>
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                <div class="mb-3">
+                    <label asp-for="StudentNumber" class="form-label"></label>
+                    <input asp-for="StudentNumber" class="form-control" placeholder="Enter student number" />
+                    <span asp-validation-for="StudentNumber" class="text-danger d-block small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="UserName" class="form-label"></label>
+                    <input asp-for="UserName" class="form-control" autocomplete="username" placeholder="Enter username" />
+                    <span asp-validation-for="UserName" class="text-danger d-block small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="FullName" class="form-label"></label>
+                    <input asp-for="FullName" class="form-control" placeholder="Enter full name" />
+                    <span asp-validation-for="FullName" class="text-danger d-block small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label"></label>
+                    <input asp-for="Email" class="form-control" placeholder="Enter email" />
+                    <span asp-validation-for="Email" class="text-danger d-block small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Phone" class="form-label"></label>
+                    <input asp-for="Phone" class="form-control" placeholder="Enter phone" />
+                    <span asp-validation-for="Phone" class="text-danger d-block small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Password" class="form-label"></label>
+                    <input asp-for="Password" class="form-control" autocomplete="new-password" placeholder="Enter password" />
+                    <span asp-validation-for="Password" class="text-danger d-block small"></span>
+                </div>
+
+                <div class="mb-3 form-check">
+                    <input asp-for="IsActive" class="form-check-input" />
+                    <label asp-for="IsActive" class="form-check-label"></label>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle me-1"></i>Save
+                    </button>
+                    <a class="btn btn-outline-secondary" asp-controller="Students" asp-action="Index">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

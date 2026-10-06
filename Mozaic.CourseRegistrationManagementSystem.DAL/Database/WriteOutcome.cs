@@ -4,14 +4,6 @@ using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
 
 namespace Mozaic.CourseRegistrationManagementSystem.DAL.Database;
 
-/// <summary>
-/// Maps stored-procedure write outcomes to <see cref="Result{T}"/>.
-/// Normal user-facing outcomes (duplicate/unique conflicts, 0 rows =
-/// not-found) become <see cref="Result{T}"/> failures.
-/// Fundamentally unexpected failures (missing SP, connection loss,
-/// FK integrity violations, FK-guard THROWs, ...) become
-/// <see cref="DatabaseException"/>.
-/// </summary>
 internal static class WriteOutcome
 {
     // Business-rule THROWs raised by our SPs (unique/duplicate).
@@ -40,11 +32,6 @@ internal static class WriteOutcome
                 ValidationStatus.NotFound, entityName,
                 $"{entityName} with id {id} not found.");
 
-    /// <summary>
-    /// Returns null when the SqlException is NOT a normal business conflict
-    /// (caller must throw <see cref="DatabaseException"/>); otherwise the
-    /// user-facing failure result.
-    /// </summary>
     public static Result<int>? TryBusinessConflict(SqlException ex, string entityName)
     {
         if (ConflictNumbers.Contains(ex.Number))

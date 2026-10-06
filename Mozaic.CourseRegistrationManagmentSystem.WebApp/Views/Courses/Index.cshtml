@@ -1,0 +1,103 @@
+@model List<Mozaic.CourseRegistrationManagmentSystem.WebApp.Models.CourseListItemViewModel>
+@{
+    ViewData["Title"] = "Courses";
+}
+
+<!-- Page Header -->
+<div class="mb-3">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="h3 font-bold mb-1">Courses</h1>
+            <p class="text-muted">Manage the course catalog</p>
+        </div>
+        <div>
+            <a class="btn btn-primary" asp-controller="Courses" asp-action="Create">
+                <i class="bi bi-plus-circle me-2"></i>Add Course
+            </a>
+        </div>
+    </div>
+</div>
+
+<partial name="_Alerts" />
+
+<!-- Filters Row -->
+<div class="dashboard-card mb-3">
+    <form asp-controller="Courses" asp-action="Index" method="get" class="dashboard-card-body">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-10">
+                <label for="searchFilter" class="form-label small">Search</label>
+                <input type="text" class="form-control" id="searchFilter" name="q" value="@ViewData["Query"]" placeholder="Search by code or name..." />
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search me-1"></i>Search
+                </button>
+                <a class="btn btn-outline-secondary" asp-controller="Courses" asp-action="Index">Clear</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Courses Table -->
+<div class="dashboard-card">
+    <div class="dashboard-card-header d-flex justify-content-between align-items-center">
+        <h5 class="dashboard-card-title mb-0">All Courses</h5>
+        <span class="badge bg-primary">@Model.Count courses</span>
+    </div>
+    <div class="table-responsive">
+        @if (Model.Count == 0)
+        {
+            <p class="text-muted px-3 py-3 mb-0">No courses found.</p>
+        }
+        else
+        {
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th scope="col">@Html.DisplayNameFor(m => m[0].CourseCode)</th>
+                        <th scope="col">@Html.DisplayNameFor(m => m[0].CourseName)</th>
+                        <th scope="col">@Html.DisplayNameFor(m => m[0].CreditHours)</th>
+                        <th scope="col">@Html.DisplayNameFor(m => m[0].IsActive)</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@Html.DisplayFor(_ => item.CourseCode)</td>
+                            <td>@Html.DisplayFor(_ => item.CourseName)</td>
+                            <td>@Html.DisplayFor(_ => item.CreditHours)</td>
+                            <td>
+                                @if (item.IsActive)
+                                {
+                                    <span class="badge bg-success">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Inactive</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <a class="btn btn-sm btn-outline-primary" asp-controller="Courses" asp-action="Edit" asp-route-id="@item.Id">
+                                        <i class="bi bi-pencil me-1"></i>Edit
+                                    </a>
+                                    <form asp-controller="Courses" asp-action="Delete" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <button type="submit"
+                                                class="btn btn-sm btn-outline-danger"
+                                                onclick="return confirm('Are you sure you want to delete course @item.CourseCode?');">
+                                            <i class="bi bi-trash me-1"></i>Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>

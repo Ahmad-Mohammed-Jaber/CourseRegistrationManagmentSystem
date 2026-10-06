@@ -2,10 +2,6 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Mozaic.CourseRegistrationManagmentSystem.WebApp.Models;
 
-/// <summary>
-/// Row model for the student "My Registrations" page (Registrations/Mine).
-/// Mirrors MyRegistrationsForm grid columns.
-/// </summary>
 public class MyRegistrationViewModel
 {
     [Display(Name = "Registration ID")]

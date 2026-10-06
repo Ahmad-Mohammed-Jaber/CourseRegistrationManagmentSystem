@@ -1,0 +1,74 @@
+@model Mozaic.CourseRegistrationManagmentSystem.WebApp.Models.RegistrationFormViewModel
+@{
+    ViewData["Title"] = "Add Registration";
+}
+
+<!-- Page Header -->
+<div class="mb-3">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="h3 font-bold mb-1">Add Registration</h1>
+            <p class="text-muted">Register a student for a class</p>
+        </div>
+        <div>
+            <a class="btn btn-outline-secondary" asp-controller="Registrations" asp-action="Index">
+                <i class="bi bi-arrow-left me-1"></i>Back to List
+            </a>
+        </div>
+    </div>
+</div>
+
+<partial name="_Alerts" />
+
+<div class="dashboard-row">
+    <div class="dashboard-card">
+        <div class="dashboard-card-header">
+            <h5 class="dashboard-card-title mb-0">Registration Details</h5>
+        </div>
+        <div class="dashboard-card-body">
+            <form asp-controller="Registrations" asp-action="Create" method="post" novalidate>
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                <div class="mb-3">
+                    <label asp-for="StudentId" class="form-label"></label>
+                    <select asp-for="StudentId" asp-items="Model.Students" class="form-select">
+                        <option value="0">-- Select student --</option>
+                    </select>
+                    <span asp-validation-for="StudentId" class="text-danger d-block small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="ClassId" class="form-label"></label>
+                    <select asp-for="ClassId" asp-items="Model.Classes" class="form-select">
+                        <option value="0">-- Select class --</option>
+                    </select>
+                    <span asp-validation-for="ClassId" class="text-danger d-block small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Status" class="form-label"></label>
+                    <select asp-for="Status" asp-items="Model.Statuses" class="form-select"></select>
+                    <span asp-validation-for="Status" class="text-danger d-block small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="RegistrationDate" class="form-label"></label>
+                    <input asp-for="RegistrationDate" class="form-control" />
+                    <span asp-validation-for="RegistrationDate" class="text-danger d-block small"></span>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle me-1"></i>Save
+                    </button>
+                    <a class="btn btn-outline-secondary" asp-controller="Registrations" asp-action="Index">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

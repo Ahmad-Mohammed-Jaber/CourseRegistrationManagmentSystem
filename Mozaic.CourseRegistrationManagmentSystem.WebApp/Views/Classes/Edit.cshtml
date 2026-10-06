@@ -1,0 +1,125 @@
+@model Mozaic.CourseRegistrationManagmentSystem.WebApp.Models.ClassFormViewModel
+@{
+    ViewData["Title"] = "Edit Class";
+}
+
+<!-- Page Header -->
+<div class="mb-3">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="h3 font-bold mb-1">Edit Class</h1>
+            <p class="text-muted">Update class @Model.ClassName</p>
+        </div>
+        <div>
+            <a class="btn btn-outline-secondary" asp-controller="Classes" asp-action="Index">
+                <i class="bi bi-arrow-left me-1"></i>Back to List
+            </a>
+        </div>
+    </div>
+</div>
+
+<partial name="_Alerts" />
+
+<div class="dashboard-row">
+    <div class="dashboard-card">
+        <div class="dashboard-card-header">
+            <h5 class="dashboard-card-title mb-0">Class Details</h5>
+        </div>
+        <div class="dashboard-card-body">
+            <form asp-controller="Classes" asp-action="Edit" asp-route-id="@Model.Id" method="post" novalidate>
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Id" />
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                <div class="mb-3">
+                    <label asp-for="CourseId" class="form-label"></label>
+                    <select asp-for="CourseId" asp-items="Model.Courses" class="form-select">
+                        <option value="0">-- Select course --</option>
+                    </select>
+                    <span asp-validation-for="CourseId" class="text-danger d-block small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="ClassName" class="form-label"></label>
+                    <input asp-for="ClassName" class="form-control" />
+                    <span asp-validation-for="ClassName" class="text-danger d-block small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Instructor" class="form-label"></label>
+                    <input asp-for="Instructor" class="form-control" />
+                    <span asp-validation-for="Instructor" class="text-danger d-block small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="MaxCapacity" class="form-label"></label>
+                    <input asp-for="MaxCapacity" class="form-control" type="number" min="0" max="1000" />
+                    <span asp-validation-for="MaxCapacity" class="text-danger d-block small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Schedule</label>
+                    <div class="row g-2">
+                        <div class="col-md-6 form-check ms-3">
+                            <input asp-for="Sunday" class="form-check-input" />
+                            <label asp-for="Sunday" class="form-check-label"></label>
+                        </div>
+                        <div class="col-md-5 form-check">
+                            <input asp-for="Monday" class="form-check-input" />
+                            <label asp-for="Monday" class="form-check-label"></label>
+                        </div>
+                        <div class="col-md-6 form-check ms-3">
+                            <input asp-for="Tuesday" class="form-check-input" />
+                            <label asp-for="Tuesday" class="form-check-label"></label>
+                        </div>
+                        <div class="col-md-5 form-check">
+                            <input asp-for="Wednesday" class="form-check-input" />
+                            <label asp-for="Wednesday" class="form-check-label"></label>
+                        </div>
+                        <div class="col-md-6 form-check ms-3">
+                            <input asp-for="Thursday" class="form-check-input" />
+                            <label asp-for="Thursday" class="form-check-label"></label>
+                        </div>
+                        <div class="col-md-5 form-check">
+                            <input asp-for="Friday" class="form-check-input" />
+                            <label asp-for="Friday" class="form-check-label"></label>
+                        </div>
+                        <div class="col-md-6 form-check ms-3">
+                            <input asp-for="Saturday" class="form-check-input" />
+                            <label asp-for="Saturday" class="form-check-label"></label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-2 mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="StartDate" class="form-label"></label>
+                        <input asp-for="StartDate" class="form-control" />
+                        <span asp-validation-for="StartDate" class="text-danger d-block small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="EndDate" class="form-label"></label>
+                        <input asp-for="EndDate" class="form-control" />
+                        <span asp-validation-for="EndDate" class="text-danger d-block small"></span>
+                    </div>
+                </div>
+
+                <div class="mb-3 form-check">
+                    <input asp-for="IsActive" class="form-check-input" />
+                    <label asp-for="IsActive" class="form-check-label"></label>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle me-1"></i>Save
+                    </button>
+                    <a class="btn btn-outline-secondary" asp-controller="Classes" asp-action="Index">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
