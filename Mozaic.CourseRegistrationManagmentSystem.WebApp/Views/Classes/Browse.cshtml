@@ -1,0 +1,136 @@
+@model List<Mozaic.CourseRegistrationManagmentSystem.WebApp.Models.BrowseClassViewModel>
+@{
+    ViewData["Title"] = "Browse Classes";
+}
+
+@* Structure mirrors kiaalap/all-courses.html 1:1: page header, stats row
+   (stats-card), then the table card (dashboard-card > table-responsive >
+   table.table.table-hover.align-middle) with badge statuses (bg-success Open /
+   bg-warning Full) and the seats progress bar. Only the <form> posts to MVC
+   and the row actions are Register buttons instead of the template's dropdown. *@
+<!-- Page Header -->
+<div class="mb-3">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="h3 font-bold mb-1">Browse Classes</h1>
+            <p class="text-muted">Find classes to register for</p>
+        </div>
+        <div>
+            <a class="btn btn-outline-primary" asp-controller="Registrations" asp-action="Mine">
+                <i class="bi bi-journal-check me-2"></i>My Registrations
+            </a>
+        </div>
+    </div>
+</div>
+
+<partial name="_Alerts" />
+
+<!-- Stats Row -->
+<div class="dashboard-grid grid-cols-4 mb-3">
+    <div class="stats-card">
+        <div class="stats-card-label">Available Classes</div>
+        <div class="stats-card-value">@ViewData["AvailableCount"]</div>
+    </div>
+    <div class="stats-card">
+        <div class="stats-card-label">Open Seats</div>
+        <div class="stats-card-value">@ViewData["OpenSeatsCount"]</div>
+    </div>
+    <div class="stats-card">
+        <div class="stats-card-label">My Registrations</div>
+        <div class="stats-card-value">@ViewData["MyRegistrationsCount"]</div>
+    </div>
+</div>
+
+<!-- Classes Table -->
+<div class="dashboard-card">
+    <div class="dashboard-card-header d-flex justify-content-between align-items-center">
+        <h5 class="dashboard-card-title mb-0">Available Classes</h5>
+        <span class="badge bg-primary">@Model.Count classes</span>
+    </div>
+    <div class="table-responsive">
+        @if (Model.Count == 0)
+        {
+            <p class="text-muted px-3 py-3 mb-0">No active classes available right now.</p>
+        }
+        else
+        {
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th scope="col">@Html.DisplayNameFor(m => m[0].CourseName)</th>
+                        <th scope="col">@Html.DisplayNameFor(m => m[0].ClassName)</th>
+                        <th scope="col">@Html.DisplayNameFor(m => m[0].Instructor)</th>
+                        <th scope="col">@Html.DisplayNameFor(m => m[0].CurrentCapacity)</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@Html.DisplayFor(_ => item.CourseName)</td>
+                            <td>
+                                <div class="fw-semibold">@Html.DisplayFor(_ => item.ClassName)</div>
+                                <small class="text-muted">@Html.DisplayFor(_ => item.Schedule) · @item.StartDate.ToString("d") – @item.EndDate.ToString("d")</small>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <img src="https://ui-avatars.com/api/?name=@Uri.EscapeDataString(item.Instructor)&background=6366f1&color=fff"
+                                         alt="@item.Instructor"
+                                         class="rounded-circle me-2"
+                                         width="30"
+                                         height="30"
+                                         loading="lazy" />
+                                    <span>@Html.DisplayFor(_ => item.Instructor)</span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <span>@item.CurrentCapacity/@item.MaxCapacity</span>
+                                    <div class="progress ms-2" style="width: 60px; height: 6px;">
+                                        <div class="progress-bar @(item.IsFull ? "bg-warning" : "bg-success")" role="progressbar" style="width: @(item.SeatPercent)%" aria-valuenow="@item.SeatPercent" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                @if (item.IsFull)
+                                {
+                                    <span class="badge bg-warning">Full</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success">Open</span>
+                                }
+                            </td>
+                            <td>
+                                @if (item.IsRegistered)
+                                {
+                                    <button type="button" class="btn btn-sm btn-outline-success" disabled>
+                                        <i class="bi bi-check-circle me-1"></i>Registered
+                                    </button>
+                                }
+                                else if (item.IsFull)
+                                {
+                                    <button type="button" class="btn btn-sm btn-secondary" disabled title="Class is full">
+                                        <i class="bi bi-x-circle me-1"></i>Full
+                                    </button>
+                                }
+                                else
+                                {
+                                    <form asp-controller="Classes" asp-action="Register" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@item.ClassId" />
+                                        <button type="submit" class="btn btn-sm btn-primary">
+                                            <i class="bi bi-plus-circle me-1"></i>Register
+                                        </button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>

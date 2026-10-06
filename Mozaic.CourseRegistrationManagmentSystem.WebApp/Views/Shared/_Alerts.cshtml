@@ -1,0 +1,42 @@
+@* Shared feedback alerts. Structure mirrors kiaalap/alerts.html:
+   icon alerts (d-flex align-items-center + bi fill icons) combined with
+   dismissible alerts (alert-dismissible fade show + btn-close).
+   Reads TempData (post-redirect messages) and ViewData (same-request messages). *@
+@{
+    var success = TempData["SuccessMessage"] as string;
+    var error = (TempData["ErrorMessage"] as string) ?? (ViewData["ErrorMessage"] as string);
+    var info = ViewData["InfoMessage"] as string;
+}
+
+@if (!string.IsNullOrWhiteSpace(error))
+{
+    <div class="alert alert-danger d-flex align-items-center alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill flex-shrink-0 me-2"></i>
+        <div>
+            <strong>Error!</strong> @error
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (!string.IsNullOrWhiteSpace(success))
+{
+    <div class="alert alert-success d-flex align-items-center alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill flex-shrink-0 me-2"></i>
+        <div>
+            <strong>Success!</strong> @success
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (!string.IsNullOrWhiteSpace(info))
+{
+    <div class="alert alert-info d-flex align-items-center alert-dismissible fade show" role="alert">
+        <i class="bi bi-info-circle-fill flex-shrink-0 me-2"></i>
+        <div>
+            <strong>Info!</strong> @info
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}

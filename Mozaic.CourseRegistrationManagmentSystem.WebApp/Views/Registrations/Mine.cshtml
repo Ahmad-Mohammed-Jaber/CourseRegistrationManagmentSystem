@@ -14,25 +14,7 @@
     </a>
 </div>
 
-@if (TempData["SuccessMessage"] is string success && !string.IsNullOrWhiteSpace(success))
-{
-    <div class="alert alert-success" role="alert">@success</div>
-}
-
-@if (TempData["ErrorMessage"] is string tempError && !string.IsNullOrWhiteSpace(tempError))
-{
-    <div class="alert alert-danger" role="alert">@tempError</div>
-}
-
-@if (ViewData["ErrorMessage"] is string viewError && !string.IsNullOrWhiteSpace(viewError))
-{
-    <div class="alert alert-danger" role="alert">@viewError</div>
-}
-
-@if (ViewData["InfoMessage"] is string info && !string.IsNullOrWhiteSpace(info))
-{
-    <div class="alert alert-info" role="alert">@info</div>
-}
+<partial name="_Alerts" />
 
 <div class="dashboard-row">
     <div class="dashboard-card">
