@@ -1,15 +1,11 @@
 using System.Security.Claims;
+using Mozaic.CourseRegistrationManagementSystem.BL.Services;
 
-namespace Mozaic.CourseRegistrationManagmentSystem.WebApp;
+namespace Mozaic.CourseRegistrationManagementSystem.WebApp;
 
-/// <summary>
-/// Reads the current web user from the cookie claims.
-/// Web equivalent of Shared SessionManager (which stays WinForms-only:
-/// a static would leak across concurrent web requests).
-/// </summary>
 public static class ClaimsPrincipalExtensions
 {
-    public const string FullNameClaimType = "FullName";
+    public const string FullNameClaimType = JwtTokenService.FullNameClaimType;
 
     public static int GetUserId(this ClaimsPrincipal user)
     {

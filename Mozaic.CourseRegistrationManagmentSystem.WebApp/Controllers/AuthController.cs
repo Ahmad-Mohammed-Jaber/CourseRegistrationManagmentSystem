@@ -1,20 +1,22 @@
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Mozaic.CourseRegistrationManagementSystem.BL.Services;
+using Mozaic.CourseRegistrationManagementSystem.WebApp;
 using Mozaic.CourseRegistrationManagmentSystem.WebApp.Models;
 
 namespace Mozaic.CourseRegistrationManagmentSystem.WebApp.Controllers;
 
 public class AuthController : Controller
 {
-    private AuthService _authService;
+    private readonly AuthService _authService;
+    private readonly JwtTokenService _jwtTokenService;
+    private readonly JwtOptions _jwtOptions;
 
-    public AuthController(AuthService authService)
+    public AuthController(AuthService authService, JwtTokenService jwtTokenService, JwtOptions jwtOptions)
     {
         _authService = authService;
+        _jwtTokenService = jwtTokenService;
+        _jwtOptions = jwtOptions;
     }
 
     [HttpGet]
@@ -68,19 +70,10 @@ public class AuthController : Controller
             return View(model);
         }
 
-        var claims = new List<Claim>
-        {
-            new(ClaimTypes.NameIdentifier, session.UserId.ToString()),
-            new(ClaimTypes.Name, session.UserName),
-            new(ClaimsPrincipalExtensions.FullNameClaimType, session.FullName),
-            new(ClaimTypes.Role, session.Role.ToString()),
-        };
-
-        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-        await HttpContext.SignInAsync(
-            CookieAuthenticationDefaults.AuthenticationScheme,
-            new ClaimsPrincipal(identity),
-            new AuthenticationProperties { IsPersistent = model.RememberMe });
+        // JWT is the auth credential; the HttpOnly cookie is only its browser transport.
+        var token = _jwtTokenService.GenerateToken(session);
+        var expires = DateTimeOffset.UtcNow.AddMinutes(_jwtOptions.ExpiryMinutes);
+        AuthCookie.Issue(Request, Response, token, model.RememberMe, expires);
 
         return RedirectToLocal(model.ReturnUrl);
     }
@@ -88,9 +81,10 @@ public class AuthController : Controller
     [HttpPost]
     [Authorize]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Logout()
+    public IActionResult Logout()
     {
-        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        // JWTs are stateless: forgetting the token logs the browser out.
+        AuthCookie.Clear(Response);
         return RedirectToAction(nameof(Login));
     }
 
