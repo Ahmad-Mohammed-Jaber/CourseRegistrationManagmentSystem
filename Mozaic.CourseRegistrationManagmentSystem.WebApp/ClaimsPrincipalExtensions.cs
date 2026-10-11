@@ -1,3 +1,4 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Mozaic.CourseRegistrationManagementSystem.BL.Services;
 
@@ -9,12 +10,18 @@ public static class ClaimsPrincipalExtensions
 
     public static int GetUserId(this ClaimsPrincipal user)
     {
-        var value = user.FindFirstValue(ClaimTypes.NameIdentifier);
+        var value = user.FindFirstValue(ClaimTypes.NameIdentifier)
+            ?? user.FindFirstValue("nameid")
+            ?? user.FindFirstValue(JwtRegisteredClaimNames.Sub)
+            ?? user.FindFirstValue("sub");
         return int.TryParse(value, out var id) ? id : 0;
     }
 
-    public static string GetFullName(this ClaimsPrincipal user) =>
-        user.FindFirstValue(FullNameClaimType)
-        ?? user.FindFirstValue(ClaimTypes.Name)
-        ?? string.Empty;
+    public static string GetFullName(this ClaimsPrincipal user)
+    {
+        return user.FindFirstValue(FullNameClaimType)
+            ?? user.FindFirstValue(ClaimTypes.Name)
+            ?? string.Empty;  
+    }
+       
 }

@@ -1,10 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Mozaic.CourseRegistrationManagementSystem.BL.Services;
-using Mozaic.CourseRegistrationManagementSystem.WebApp;
 using Mozaic.CourseRegistrationManagmentSystem.WebApp.Models;
 
-namespace Mozaic.CourseRegistrationManagmentSystem.WebApp.Controllers;
+namespace Mozaic.CourseRegistrationManagementSystem.WebApp.Controllers;
 
 public class AuthController : Controller
 {

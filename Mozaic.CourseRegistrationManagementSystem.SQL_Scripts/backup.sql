@@ -1265,8 +1265,43 @@ END
 GO
 
 -- ============================================================================
--- SECTION 5: SEED DATA
+-- SECTION 5: SEED DATA (BL-compliant, easily testable)
 -- ============================================================================
+-- BL rules covered (see BL/Validation + BL/Services):
+--  User: UserName required + UNIQUE (case-insensitive), FullName required,
+--        Password >= 6 chars, Role 0=Admin / 1=Student, IsActive flag.
+--  Student: StudentNumber = exactly 9 digits "YYYY S NNNN", YYYY in 2000..YEAR(GETDATE()),
+--        S in (1,2,3); Email regex ^[^@\s]+@[^@\s]+\.[^@\s]+$; Phone regex ^\+?[\d\s\-()]{7,20}$
+--        (NVARCHAR(20)); UserId must exist + UNIQUE; StudentNumber UNIQUE;
+--        create auto-creates a Role=Student User; delete cascades to User.
+--  Course: CourseCode required + UNIQUE (trimmed, case-insensitive), CourseName required,
+--        CreditHours >= 0.
+--  Class: ClassName required; CourseId must exist; MaxCapacity > 0; CurrentCapacity >= 0;
+--        CurrentCapacity <= MaxCapacity; EndDate >= StartDate;
+--        Update: MaxCapacity cannot go below current enrollment;
+--        Register path: IsActive must be 1 AND CurrentCapacity < MaxCapacity AND no duplicate.
+--  Registration: StudentId/ClassId > 0 and must exist; Status required (default 'Registered');
+--        UNIQUE(StudentId, ClassId); drop requires ownership + student profile;
+--        capacity counts every status EXCEPT 'Dropped'.
+--  Schedule (Class.DaysOfWeek flags): None=0, Sun=2, Mon=4, Tue=8, Wed=16, Thu=32, Fri=64, Sat=128.
+--  Search: pattern must be non-empty, valid .NET regex.
+--  Cascades: User->Student->Registrations; Course->Class->Registrations (all ON DELETE CASCADE).
+--
+-- Test map (predictable Ids, searchable names):
+--  Users:  1=admin (Role 0, no student row) | 2-5=active students | 6=INACTIVE student user |
+--         7=orphan.user (active, NO student row -> "profile not found" test).
+--  Students: 1-4=active (semesters 1,2,3,1 covered) | 5=inactive user's student, ZERO registrations
+--        (empty-list test). Every number is 9-digit YYYY S NNNN.
+--  Courses: 1-3=active core | 4=TEST404 INACTIVE course | 5=TMP999 active, NO classes (safe delete +
+--        unique-code conflict test; deleting 5 touches nothing).
+--  Classes: 1=OPEN (2/30) | 2=OPEN (1/25, Dropped excluded) | 3=OPEN (2/35) | 4=OPEN (1/30 Pending) |
+--        5=CS101-FULL 2/2 (register -> "Class is full") | 6=CS101-ONELEFT 2/3 (last seat succeeds) |
+--        7=MATH201-ARCHIVE INACTIVE (register -> "no longer active") |
+--        8=ENG101-EMPTY 0/20 (empty class + safe delete).
+--  Registrations: Registered x8 | Pending x1 (Id 4) | Dropped x1 (Id 11, excluded from capacity).
+--        Duplicates: re-adding (Student 1, Class 1) -> conflict. Ownership: Reg 1 belongs to
+--        Student 1 (Student 2 dropping it -> Forbidden).
+--  All seed users share one bcrypt hash so every login is testable with the same known password.
 
 BEGIN TRY
     BEGIN TRANSACTION SeedDemoData;
@@ -1276,23 +1311,28 @@ BEGIN TRY
     INSERT INTO [dbo].[User]
         ([Id],[UserName],[PasswordHash],[FullName],[Role],[IsActive],[CreatedBy],[ModifiedBy])
     VALUES
-        (1, N'admin',         N'$2a$11$u0tQ2TtBT2Z7AZybsVXR0eA7yJKOCPsMj6.aZcqxd1Mre.y.RZzD6', N'System Administrator', 0, 1, 0, 0),
-        (2, N'sara.ahmed',    N'$2a$11$u0tQ2TtBT2Z7AZybsVXR0eA7yJKOCPsMj6.aZcqxd1Mre.y.RZzD6', N'Sara Ahmed',           1, 1, 0, 0),
-        (3, N'omar.khaled',   N'$2a$11$u0tQ2TtBT2Z7AZybsVXR0eA7yJKOCPsMj6.aZcqxd1Mre.y.RZzD6', N'Omar Khaled',          1, 1, 0, 0),
-        (4, N'lina.hassan',   N'$2a$11$u0tQ2TtBT2Z7AZybsVXR0eA7yJKOCPsMj6.aZcqxd1Mre.y.RZzD6', N'Lina Hassan',          1, 1, 0, 0),
-        (5, N'yousef.nasser', N'$2a$11$u0tQ2TtBT2Z7AZybsVXR0eA7yJKOCPsMj6.aZcqxd1Mre.y.RZzD6', N'Yousef Nasser',        1, 1, 0, 0);
+        (1, N'admin',             N'$2a$11$u0tQ2TtBT2Z7AZybsVXR0eA7yJKOCPsMj6.aZcqxd1Mre.y.RZzD6', N'System Administrator', 0, 1, 0, 0),
+        (2, N'sara.ahmed',        N'$2a$11$u0tQ2TtBT2Z7AZybsVXR0eA7yJKOCPsMj6.aZcqxd1Mre.y.RZzD6', N'Sara Ahmed',           1, 1, 0, 0),
+        (3, N'omar.khaled',       N'$2a$11$u0tQ2TtBT2Z7AZybsVXR0eA7yJKOCPsMj6.aZcqxd1Mre.y.RZzD6', N'Omar Khaled',          1, 1, 0, 0),
+        (4, N'lina.hassan',       N'$2a$11$u0tQ2TtBT2Z7AZybsVXR0eA7yJKOCPsMj6.aZcqxd1Mre.y.RZzD6', N'Lina Hassan',          1, 1, 0, 0),
+        (5, N'yousef.nasser',     N'$2a$11$u0tQ2TtBT2Z7AZybsVXR0eA7yJKOCPsMj6.aZcqxd1Mre.y.RZzD6', N'Yousef Nasser',        1, 1, 0, 0),
+        (6, N'inactive.student',  N'$2a$11$u0tQ2TtBT2Z7AZybsVXR0eA7yJKOCPsMj6.aZcqxd1Mre.y.RZzD6', N'Inactive Student',     1, 0, 0, 0),
+        (7, N'orphan.user',       N'$2a$11$u0tQ2TtBT2Z7AZybsVXR0eA7yJKOCPsMj6.aZcqxd1Mre.y.RZzD6', N'Orphan User',          1, 1, 0, 0);
     SET IDENTITY_INSERT [dbo].[User] OFF;
 
     -- ---- 5b. Students ----------------------------------------------------
+    -- 9-digit YYYY S NNNN: semesters 1,2,3 all represented; years 2000..YEAR(GETDATE()).
     SET IDENTITY_INSERT [dbo].[Student] ON;
     INSERT INTO [dbo].[Student]
         ([Id],[UserId],[StudentNumber],[Email],[Phone],[CreatedBy],[ModifiedBy])
     VALUES
-        (1, 2, 1001, N'sara.ahmed@university.edu',    N'+962-79-100-1001', 1, 1),
-        (2, 3, 1002, N'omar.khaled@university.edu',   N'+962-79-100-1002', 1, 1),
-        (3, 4, 1003, N'lina.hassan@university.edu',   N'+962-79-100-1003', 1, 1),
-        (4, 5, 1004, N'yousef.nasser@university.edu', N'+962-79-100-1004', 1, 1);
+        (1, 2, 202110001, N'sara.ahmed@university.edu',      N'+96281394557', 1, 1),
+        (2, 3, 202220002, N'omar.khaled@university.edu',     N'+962791001002', 1, 1),
+        (3, 4, 202330003, N'lina.hassan@university.edu',     N'+962791001003', 1, 1),
+        (4, 5, 202210004, N'yousef.nasser@university.edu',   N'+962791001004', 1, 1),
+        (5, 6, 202320005, N'inactive.student@university.edu', N'+962791001005', 1, 1);
     SET IDENTITY_INSERT [dbo].[Student] OFF;
+    -- NOTE: User 1 (admin) and User 7 (orphan.user) intentionally have NO Student row.
 
     -- ---- 5c. Courses -----------------------------------------------------
     SET IDENTITY_INSERT [dbo].[Course] ON;
@@ -1301,36 +1341,52 @@ BEGIN TRY
     VALUES
         (1, N'CS101',   N'Introduction to Programming', CAST(3.00 AS DECIMAL(4,2)), N'Fundamentals of programming using C#: variables, control flow, methods and OOP basics.', 1, 1, 1),
         (2, N'MATH201', N'Calculus II',                 CAST(4.00 AS DECIMAL(4,2)), N'Integration techniques, sequences, series and applications.',                              1, 1, 1),
-        (3, N'ENG101',  N'English Composition',         CAST(2.00 AS DECIMAL(4,2)), N'Academic writing, essay structure and research skills.',                                   1, 1, 1);
+        (3, N'ENG101',  N'English Composition',         CAST(2.00 AS DECIMAL(4,2)), N'Academic writing, essay structure and research skills.',                                   1, 1, 1),
+        (4, N'TEST404', N'Inactive Test Course',        CAST(1.00 AS DECIMAL(4,2)), N'IsActive=0 course for testing inactive-course paths. Safe to activate in tests.',          0, 1, 1),
+        (5, N'TMP999',  N'Temp Deletable Course',       CAST(1.00 AS DECIMAL(4,2)), N'Active course with NO classes. Safe target for DeleteCourse / duplicate-code tests.',      1, 1, 1);
     SET IDENTITY_INSERT [dbo].[Course] OFF;
 
     -- ---- 5d. Classes -----------------------------------------------------
-    -- Schedule = DaysOfWeek flags: Mon+Wed=20, Tue+Thu=40, Sun+Tue+Thu=42, Mon..Fri=124
+    -- Schedule = DaysOfWeek flags: Mon+Wed=20, Tue+Thu=40, Sun+Tue+Thu=42, Mon..Fri=124.
+    -- CurrentCapacity below already equals COUNT(Registrations WHERE Status <> 'Dropped'),
+    -- so the 5f sync is idempotent and the FULL / ONE-LEFT / EMPTY states read correctly.
     SET IDENTITY_INSERT [dbo].[Class] ON;
     INSERT INTO [dbo].[Class]
         ([Id],[CourseId],[ClassName],[Instructor],[MaxCapacity],[CurrentCapacity],
          [StartDate],[EndDate],[Schedule],[IsActive],[CreatedBy],[ModifiedBy])
     VALUES
-        (1, 1, N'CS101-A',   N'Dr. Ahmad Jaber',  30, 30, CAST(N'2026-09-01T00:00:00' AS DATETIME2(7)), CAST(N'2026-12-20T00:00:00' AS DATETIME2(7)), 20,  1, 1, 1),
-        (2, 1, N'CS101-B',   N'Eng. Rania Odeh',  25, 24, CAST(N'2026-09-01T00:00:00' AS DATETIME2(7)), CAST(N'2026-12-20T00:00:00' AS DATETIME2(7)), 40,  1, 1, 1),
-        (3, 2, N'MATH201-A', N'Dr. Khalil Nasser',35,  0, CAST(N'2026-09-01T00:00:00' AS DATETIME2(7)), CAST(N'2026-12-20T00:00:00' AS DATETIME2(7)), 42,  1, 1, 1),
-        (4, 3, N'ENG101-A',  N'Ms. Dana Haddad',  30,  0, CAST(N'2026-09-01T00:00:00' AS DATETIME2(7)), CAST(N'2026-12-20T00:00:00' AS DATETIME2(7)), 124, 1, 1, 1);
+        (1, 1, N'CS101-A',         N'Dr. Ahmad Jaber',   30,  2, CAST(N'2026-09-01T00:00:00' AS DATETIME2(7)), CAST(N'2026-12-20T00:00:00' AS DATETIME2(7)), 20,  1, 1, 1),
+        (2, 1, N'CS101-B',         N'Eng. Rania Odeh',   25,  1, CAST(N'2026-09-01T00:00:00' AS DATETIME2(7)), CAST(N'2026-12-20T00:00:00' AS DATETIME2(7)), 40,  1, 1, 1),
+        (3, 2, N'MATH201-A',       N'Dr. Khalil Nasser', 35,  2, CAST(N'2026-09-01T00:00:00' AS DATETIME2(7)), CAST(N'2026-12-20T00:00:00' AS DATETIME2(7)), 42,  1, 1, 1),
+        (4, 3, N'ENG101-A',        N'Ms. Dana Haddad',   30,  1, CAST(N'2026-09-01T00:00:00' AS DATETIME2(7)), CAST(N'2026-12-20T00:00:00' AS DATETIME2(7)), 124, 1, 1, 1),
+        (5, 1, N'CS101-FULL',      N'Dr. Test Full',      2,  2, CAST(N'2026-09-01T00:00:00' AS DATETIME2(7)), CAST(N'2026-12-20T00:00:00' AS DATETIME2(7)), 20,  1, 1, 1),
+        (6, 1, N'CS101-ONELEFT',   N'Dr. Test OneLeft',   3,  2, CAST(N'2026-09-01T00:00:00' AS DATETIME2(7)), CAST(N'2026-12-20T00:00:00' AS DATETIME2(7)), 40,  1, 1, 1),
+        (7, 2, N'MATH201-ARCHIVE', N'Dr. Inactive',      20,  0, CAST(N'2026-09-01T00:00:00' AS DATETIME2(7)), CAST(N'2026-12-20T00:00:00' AS DATETIME2(7)), 42,  0, 1, 1),
+        (8, 3, N'ENG101-EMPTY',    N'Ms. Empty',         20,  0, CAST(N'2026-09-01T00:00:00' AS DATETIME2(7)), CAST(N'2026-12-20T00:00:00' AS DATETIME2(7)), 124, 1, 1, 1);
     SET IDENTITY_INSERT [dbo].[Class] OFF;
+    -- Class 7 is INACTIVE (register -> "no longer active"). Class 8 is EMPTY (safe delete).
 
     -- ---- 5e. Registrations -----------------------------------------------
+    -- Statuses: Registered (counts), Pending (counts, Id 4), Dropped (excluded, Id 11).
     SET IDENTITY_INSERT [dbo].[Registrations] ON;
     INSERT INTO [dbo].[Registrations]
         ([Id],[StudentId],[ClassId],[RegistrationDate],[Status],[CreatedBy],[ModifiedBy])
     VALUES
-        (1, 1, 1, CAST(N'2026-09-05T00:00:00' AS DATETIME2(7)), N'Registered', 1, 1),
-        (2, 1, 3, CAST(N'2026-09-05T00:00:00' AS DATETIME2(7)), N'Registered', 1, 1),
-        (3, 2, 1, CAST(N'2026-09-06T00:00:00' AS DATETIME2(7)), N'Registered', 1, 1),
-        (4, 2, 4, CAST(N'2026-09-06T00:00:00' AS DATETIME2(7)), N'Pending',    1, 1),
-        (5, 3, 2, CAST(N'2026-09-07T00:00:00' AS DATETIME2(7)), N'Registered', 1, 1),
-        (6, 4, 3, CAST(N'2026-09-07T00:00:00' AS DATETIME2(7)), N'Registered', 1, 1);
+        (1,  1, 1, CAST(N'2026-09-05T00:00:00' AS DATETIME2(7)), N'Registered', 1, 1),
+        (2,  1, 3, CAST(N'2026-09-05T00:00:00' AS DATETIME2(7)), N'Registered', 1, 1),
+        (3,  2, 1, CAST(N'2026-09-06T00:00:00' AS DATETIME2(7)), N'Registered', 1, 1),
+        (4,  2, 4, CAST(N'2026-09-06T00:00:00' AS DATETIME2(7)), N'Pending',    1, 1),
+        (5,  3, 2, CAST(N'2026-09-07T00:00:00' AS DATETIME2(7)), N'Registered', 1, 1),
+        (6,  4, 3, CAST(N'2026-09-07T00:00:00' AS DATETIME2(7)), N'Registered', 1, 1),
+        (7,  3, 5, CAST(N'2026-09-08T00:00:00' AS DATETIME2(7)), N'Registered', 1, 1),
+        (8,  4, 5, CAST(N'2026-09-08T00:00:00' AS DATETIME2(7)), N'Registered', 1, 1),
+        (9,  1, 6, CAST(N'2026-09-09T00:00:00' AS DATETIME2(7)), N'Registered', 1, 1),
+        (10, 2, 6, CAST(N'2026-09-09T00:00:00' AS DATETIME2(7)), N'Registered', 1, 1),
+        (11, 4, 2, CAST(N'2026-09-10T00:00:00' AS DATETIME2(7)), N'Dropped',    1, 1);
     SET IDENTITY_INSERT [dbo].[Registrations] OFF;
+    -- Student 5 has ZERO registrations (empty-list test). (Student 1, Class 1) = Id 1 (duplicate test).
 
-    -- ---- 5f. Sync Class.CurrentCapacity (zero-safe) ----------------------
+    -- ---- 5f. Sync Class.CurrentCapacity (zero-safe, idempotent) ----------
     UPDATE c
     SET [CurrentCapacity] = ISNULL(counts.RegCount, 0),
         [ModifiedOn]      = SYSDATETIMEOFFSET()

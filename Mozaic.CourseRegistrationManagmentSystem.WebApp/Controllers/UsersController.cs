@@ -3,10 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using Mozaic.CourseRegistrationManagementSystem.BL.Services;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
-using Mozaic.CourseRegistrationManagementSystem.WebApp;
 using Mozaic.CourseRegistrationManagmentSystem.WebApp.Models;
 
-namespace Mozaic.CourseRegistrationManagmentSystem.WebApp.Controllers;
+namespace Mozaic.CourseRegistrationManagementSystem.WebApp.Controllers;
 
 [Authorize(Roles = "Admin")]
 public class UsersController : Controller
@@ -61,7 +60,7 @@ public class UsersController : Controller
         }
 
         var result = await _authService.RegisterAdminAsync(
-            model.UserName.Trim(), model.FullName.Trim(), model.IsActive, model.Password);
+            model.UserName.Trim(), model.FullName.Trim(), model.IsActive, model.Password, User.GetUserId());
 
         if (!result.IsSuccess || result.Value is null)
         {
@@ -144,7 +143,7 @@ public class UsersController : Controller
                 Role = existing.Role,
                 IsActive = model.IsActive,
                 PasswordHash = string.Empty, // Preserved by the service when empty.
-            });
+            }, User.GetUserId());
 
             TempData["SuccessMessage"] = $"User '{model.UserName.Trim()}' updated successfully.";
             return RedirectToAction(nameof(Index));

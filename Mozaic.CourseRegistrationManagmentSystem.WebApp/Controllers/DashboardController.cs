@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Mozaic.CourseRegistrationManagmentSystem.WebApp.Controllers;
+namespace Mozaic.CourseRegistrationManagementSystem.WebApp.Controllers;
 
 [Authorize]
 public class DashboardController : Controller

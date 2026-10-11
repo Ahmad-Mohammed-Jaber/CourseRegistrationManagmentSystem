@@ -66,7 +66,7 @@ public static class UserService
         }
     }
 
-    public static void Add(User user)
+    public static void Add(User user, int? actorId = null)
     {
         try
         {
@@ -76,9 +76,11 @@ public static class UserService
                 throw new BusinessException(unique.Message);
             }
 
-            var actorId = SessionManager.Current?.UserId ?? 0;
-            user.CreatedBy = actorId;
-            user.ModifiedBy = actorId;
+            var effectiveActorId = actorId.HasValue && actorId.Value > 0
+                ? actorId.Value
+                : SessionManager.Current?.UserId ?? 0;
+            user.CreatedBy = effectiveActorId;
+            user.ModifiedBy = effectiveActorId;
 
             var userManager = new UserManager();
             userManager.Add(user);
@@ -90,7 +92,7 @@ public static class UserService
         }
     }
 
-    public static async Task AddAsync(User user)
+    public static async Task AddAsync(User user, int? actorId = null)
     {
         try
         {
@@ -106,9 +108,11 @@ public static class UserService
                 throw new BusinessException(unique.Message);
             }
 
-            var actorId = SessionManager.Current?.UserId ?? 0;
-            user.CreatedBy = actorId;
-            user.ModifiedBy = actorId;
+            var effectiveActorId = actorId.HasValue && actorId.Value > 0
+                ? actorId.Value
+                : SessionManager.Current?.UserId ?? 0;
+            user.CreatedBy = effectiveActorId;
+            user.ModifiedBy = effectiveActorId;
 
             var userManager = new UserManager();
             await userManager.AddAsync(user);
@@ -120,7 +124,7 @@ public static class UserService
         }
     }
 
-    public static void Update(User user)
+    public static void Update(User user, int? actorId = null)
     {
         try
         {
@@ -150,7 +154,10 @@ public static class UserService
             }
 
             user.CreatedBy = existingUser!.CreatedBy;
-            user.ModifiedBy = SessionManager.Current?.UserId ?? existingUser.ModifiedBy;
+            var effectiveActorId = actorId.HasValue && actorId.Value > 0
+                ? actorId.Value
+                : SessionManager.Current?.UserId ?? existingUser.ModifiedBy;
+            user.ModifiedBy = effectiveActorId;
 
             userManager.Update(user);
         }
@@ -161,7 +168,7 @@ public static class UserService
         }
     }
 
-    public static async Task UpdateAsync(User user)
+    public static async Task UpdateAsync(User user, int? actorId = null)
     {
         try
         {
@@ -191,7 +198,10 @@ public static class UserService
             }
 
             user.CreatedBy = existingUser!.CreatedBy;
-            user.ModifiedBy = SessionManager.Current?.UserId ?? existingUser.ModifiedBy;
+            var effectiveActorId = actorId.HasValue && actorId.Value > 0
+                ? actorId.Value
+                : SessionManager.Current?.UserId ?? existingUser.ModifiedBy;
+            user.ModifiedBy = effectiveActorId;
 
             await userManager.UpdateAsync(user);
         }

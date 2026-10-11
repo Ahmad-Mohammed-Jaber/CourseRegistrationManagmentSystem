@@ -119,7 +119,7 @@ public static class StudentService
         }
     }
 
-    public static void Add(Student student)
+    public static void Add(Student student, int? actorId = null)
     {
         try
         {
@@ -140,6 +140,9 @@ public static class StudentService
                 throw new BusinessException(unique.Message);
             }
 
+            var effectiveActorId = actorId.HasValue && actorId.Value > 0
+                ? actorId.Value
+                : SessionManager.Current?.UserId ?? 0;
             var userManager = new UserManager();
             var studentManager = new StudentManager();
             var user = new User
@@ -149,6 +152,8 @@ public static class StudentService
                 IsActive = student.IsActive,
                 Role = User.UserRoles.Student,
                 PasswordHash = student.PasswordHash,
+                CreatedBy = effectiveActorId,
+                ModifiedBy = effectiveActorId,
             };
 
             userManager.Add(user); // sets user.Id, throws on failure
@@ -160,6 +165,8 @@ public static class StudentService
             }
 
             student.UserId = created.Id;
+            student.CreatedBy = effectiveActorId;
+            student.ModifiedBy = effectiveActorId;
 
             try
             {
@@ -186,7 +193,7 @@ public static class StudentService
         }
     }
 
-    public static async Task AddAsync(Student student)
+    public static async Task AddAsync(Student student, int? actorId = null)
     {
         try
         {
@@ -207,6 +214,9 @@ public static class StudentService
                 throw new BusinessException(unique.Message);
             }
 
+            var effectiveActorId = actorId.HasValue && actorId.Value > 0
+                ? actorId.Value
+                : SessionManager.Current?.UserId ?? 0;
             var userManager = new UserManager();
             var studentManager = new StudentManager();
             var user = new User
@@ -216,6 +226,8 @@ public static class StudentService
                 IsActive = student.IsActive,
                 Role = User.UserRoles.Student,
                 PasswordHash = student.PasswordHash,
+                CreatedBy = effectiveActorId,
+                ModifiedBy = effectiveActorId,
             };
             await userManager.AddAsync(user);
             var created = await userManager.GetByIdAsync(user.Id) ?? await userManager.GetByUserNameAsync(user.UserName);
@@ -225,6 +237,8 @@ public static class StudentService
             }
 
             student.UserId = created.Id;
+            student.CreatedBy = effectiveActorId;
+            student.ModifiedBy = effectiveActorId;
 
             try
             {
@@ -251,7 +265,7 @@ public static class StudentService
         }
     }
 
-    public static void Update(Student student)
+    public static void Update(Student student, int? actorId = null)
     {
         try
         {
@@ -278,6 +292,11 @@ public static class StudentService
                 throw new BusinessException(unique.Message);
             }
 
+            student.CreatedBy = existingStudent!.CreatedBy;
+            var effectiveActorId = actorId.HasValue && actorId.Value > 0
+                ? actorId.Value
+                : SessionManager.Current?.UserId ?? existingStudent.ModifiedBy;
+            student.ModifiedBy = effectiveActorId;
             studentManager.Update(student);
 
             var existingUser = userManager.GetById(existingStudent!.UserId);
@@ -291,6 +310,7 @@ public static class StudentService
                     existingUser.PasswordHash = student.PasswordHash;
                 }
 
+                existingUser.ModifiedBy = effectiveActorId;
                 userManager.Update(existingUser);
             }
             student.UserId = existingStudent.UserId;
@@ -302,7 +322,7 @@ public static class StudentService
         }
     }
 
-    public static async Task UpdateAsync(Student student)
+    public static async Task UpdateAsync(Student student, int? actorId = null)
     {
         try
         {
@@ -327,6 +347,11 @@ public static class StudentService
                 throw new BusinessException(unique.Message);
             }
 
+            student.CreatedBy = existingStudent!.CreatedBy;
+            var effectiveActorId = actorId.HasValue && actorId.Value > 0
+                ? actorId.Value
+                : SessionManager.Current?.UserId ?? existingStudent.ModifiedBy;
+            student.ModifiedBy = effectiveActorId;
             await studentManager.UpdateAsync(student);
 
             var existingUser = await userManager.GetByIdAsync(existingStudent!.UserId);
@@ -340,6 +365,7 @@ public static class StudentService
                     existingUser.PasswordHash = student.PasswordHash;
                 }
 
+                existingUser.ModifiedBy = effectiveActorId;
                 await userManager.UpdateAsync(existingUser);
             }
             student.UserId = existingStudent.UserId;

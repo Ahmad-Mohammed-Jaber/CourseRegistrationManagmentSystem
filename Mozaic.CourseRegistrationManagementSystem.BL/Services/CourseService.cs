@@ -3,6 +3,7 @@ using Mozaic.CourseRegistrationManagementSystem.BL.Validation;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Logging;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Session;
 
 namespace Mozaic.CourseRegistrationManagementSystem.BL.Services;
 
@@ -64,7 +65,7 @@ public static class CourseService
         }
     }
 
-    public static void Add(Course course)
+    public static void Add(Course course, int? actorId = null)
     {
         try
         {
@@ -80,6 +81,11 @@ public static class CourseService
                 throw new BusinessException(unique.Message);
             }
 
+            var effectiveActorId = actorId.HasValue && actorId.Value > 0
+                ? actorId.Value
+                : SessionManager.Current?.UserId ?? 0;
+            course.CreatedBy = effectiveActorId;
+            course.ModifiedBy = effectiveActorId;
             var courseManager = new CourseManager();
             courseManager.Add(course);
         }
@@ -90,7 +96,7 @@ public static class CourseService
         }
     }
 
-    public static async Task AddAsync(Course course)
+    public static async Task AddAsync(Course course, int? actorId = null)
     {
         try
         {
@@ -106,6 +112,11 @@ public static class CourseService
                 throw new BusinessException(unique.Message);
             }
 
+            var effectiveActorId = actorId.HasValue && actorId.Value > 0
+                ? actorId.Value
+                : SessionManager.Current?.UserId ?? 0;
+            course.CreatedBy = effectiveActorId;
+            course.ModifiedBy = effectiveActorId;
             var courseManager = new CourseManager();
             await courseManager.AddAsync(course);
         }
@@ -116,7 +127,7 @@ public static class CourseService
         }
     }
 
-    public static void Update(Course course)
+    public static void Update(Course course, int? actorId = null)
     {
         try
         {
@@ -140,6 +151,10 @@ public static class CourseService
                 throw new BusinessException(unique.Message);
             }
 
+            course.CreatedBy = existingCourse!.CreatedBy;
+            course.ModifiedBy = actorId.HasValue && actorId.Value > 0
+                ? actorId.Value
+                : SessionManager.Current?.UserId ?? existingCourse.ModifiedBy;
             courseManager.Update(course);
         }
         catch (Exception ex)
@@ -149,7 +164,7 @@ public static class CourseService
         }
     }
 
-    public static async Task UpdateAsync(Course course)
+    public static async Task UpdateAsync(Course course, int? actorId = null)
     {
         try
         {
@@ -173,6 +188,10 @@ public static class CourseService
                 throw new BusinessException(unique.Message);
             }
 
+            course.CreatedBy = existingCourse!.CreatedBy;
+            course.ModifiedBy = actorId.HasValue && actorId.Value > 0
+                ? actorId.Value
+                : SessionManager.Current?.UserId ?? existingCourse.ModifiedBy;
             await courseManager.UpdateAsync(course);
         }
         catch (Exception ex)

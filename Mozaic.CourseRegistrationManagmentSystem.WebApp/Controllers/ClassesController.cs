@@ -4,10 +4,9 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Mozaic.CourseRegistrationManagementSystem.BL.Services;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
-using Mozaic.CourseRegistrationManagementSystem.WebApp;
 using Mozaic.CourseRegistrationManagmentSystem.WebApp.Models;
 
-namespace Mozaic.CourseRegistrationManagmentSystem.WebApp.Controllers;
+namespace Mozaic.CourseRegistrationManagementSystem.WebApp.Controllers;
 
 public class ClassesController : Controller
 {
@@ -200,7 +199,7 @@ public class ClassesController : Controller
                 StartDate = model.StartDate,
                 EndDate = model.EndDate,
                 IsActive = model.IsActive,
-            });
+            }, User.GetUserId());
 
             TempData["SuccessMessage"] = $"Class '{model.ClassName.Trim()}' created successfully.";
             return RedirectToAction(nameof(Index));
@@ -291,7 +290,7 @@ public class ClassesController : Controller
                 StartDate = model.StartDate,
                 EndDate = model.EndDate,
                 IsActive = model.IsActive,
-            });
+            }, User.GetUserId());
 
             TempData["SuccessMessage"] = $"Class '{model.ClassName.Trim()}' updated successfully.";
             return RedirectToAction(nameof(Index));

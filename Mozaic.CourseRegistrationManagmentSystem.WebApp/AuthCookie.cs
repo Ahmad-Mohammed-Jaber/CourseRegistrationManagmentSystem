@@ -7,8 +7,6 @@ public static class AuthCookie
     public static CookieOptions Build(bool secure, bool persistent, DateTimeOffset expires) => new()
     {
         HttpOnly = true,
-        // SameAsRequest semantics: require Secure only when the request itself is HTTPS,
-        // so the http://localhost dev profile keeps working.
         Secure = secure,
         SameSite = SameSiteMode.Strict,
         IsEssential = true,
@@ -18,5 +16,6 @@ public static class AuthCookie
     public static void Issue(HttpRequest request, HttpResponse response, string token, bool persistent, DateTimeOffset expires) =>
         response.Cookies.Append(Name, token, Build(request.IsHttps, persistent, expires));
 
-    public static void Clear(HttpResponse response) => response.Cookies.Delete(Name);
+    public static void Clear(HttpResponse response) => 
+        response.Cookies.Delete(Name);
 }

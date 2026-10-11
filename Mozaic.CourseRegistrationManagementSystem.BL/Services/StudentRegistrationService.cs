@@ -65,7 +65,7 @@ public static class StudentRegistrationService
             throw new BusinessException("Student login required.");
         }
 
-        await DropRegistrationForStudentAsync(studentId.Value, registrationId);
+        await DropRegistrationForStudentAsync(studentId.Value, registrationId, userId);
     }
 
     public static async Task RegisterClassForUserAsync(int userId, int classId)
@@ -76,7 +76,7 @@ public static class StudentRegistrationService
             throw new BusinessException("Student login required.");
         }
 
-        await RegisterClassForStudentAsync(studentId.Value, classId);
+        await RegisterClassForStudentAsync(studentId.Value, classId, userId);
     }
 
     private static async Task<List<(Registration Registration, Class Class)>> GetRegistrationsForStudentAsync(int studentId)
@@ -85,7 +85,7 @@ public static class StudentRegistrationService
         return await registrationManager.GetStudentRegistrationsWithClassesAsync(studentId);
     }
 
-    private static async Task RegisterClassForStudentAsync(int studentId, int classId)
+    private static async Task RegisterClassForStudentAsync(int studentId, int classId, int? actorId = null)
     {
         try
         {
@@ -119,19 +119,23 @@ public static class StudentRegistrationService
                 throw new BusinessException(capacity.Message);
             }
 
+            var effectiveActorId = actorId.HasValue && actorId.Value > 0
+                ? actorId.Value
+                : SessionManager.Current?.UserId ?? 0;
             var registration = new Registration
             {
                 StudentId = studentId,
                 ClassId = classId,
                 RegistrationDate = DateTime.Now,
-                Status = "Registered"
+                Status = "Registered",
+                CreatedBy = effectiveActorId,
+                ModifiedBy = effectiveActorId
             };
             await registrationManager.AddAsync(registration);
 
             @class!.CurrentCapacity++;
+            @class.ModifiedBy = effectiveActorId > 0 ? effectiveActorId : @class.ModifiedBy;
             await classManager.UpdateAsync(@class);
-
-            return;
         }
         catch (BusinessException)
         {
@@ -144,7 +148,7 @@ public static class StudentRegistrationService
         }
     }
 
-    private static async Task DropRegistrationForStudentAsync(int studentId, int registrationId)
+    private static async Task DropRegistrationForStudentAsync(int studentId, int registrationId, int? actorId = null)
     {
         try
         {
@@ -180,6 +184,10 @@ public static class StudentRegistrationService
                 @class.CurrentCapacity = 0;
             }
 
+            var effectiveActorId = actorId.HasValue && actorId.Value > 0
+                ? actorId.Value
+                : SessionManager.Current?.UserId ?? @class.ModifiedBy;
+            @class.ModifiedBy = effectiveActorId;
             await classManager.UpdateAsync(@class);
             return;
         }
@@ -234,16 +242,20 @@ public static class StudentRegistrationService
                 throw new BusinessException(capacity.Message);
             }
 
+            var sessionActorId = SessionManager.Current?.UserId ?? 0;
             var registration = new Registration
             {
                 StudentId = studentId.Value,
                 ClassId = classId,
                 RegistrationDate = DateTime.Now,
-                Status = "Registered"
+                Status = "Registered",
+                CreatedBy = sessionActorId,
+                ModifiedBy = sessionActorId
             };
             await registrationManager.AddAsync(registration);
 
             @class!.CurrentCapacity++;
+            @class.ModifiedBy = sessionActorId > 0 ? sessionActorId : @class.ModifiedBy;
             await classManager.UpdateAsync(@class);
 
             return;
@@ -297,8 +309,9 @@ public static class StudentRegistrationService
                 @class.CurrentCapacity = 0;
             }
 
+            var dropActorId = SessionManager.Current?.UserId ?? @class.ModifiedBy;
+            @class.ModifiedBy = dropActorId;
             await classManager.UpdateAsync(@class);
-            return;
         }
         catch (Exception ex)
         {

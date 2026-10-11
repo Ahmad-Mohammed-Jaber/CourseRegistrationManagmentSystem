@@ -67,7 +67,7 @@ public class AuthService
         }
     }
 
-    public async Task<Result<User>> RegisterAdminAsync(string userName, string fullName, bool isActive, string password)
+    public async Task<Result<User>> RegisterAdminAsync(string userName, string fullName, bool isActive, string password, int? actorId = null)
     {
         var _userManager = new UserManager();
         var fields = UserValidator.ValidateAdminRegistration(userName, fullName, password);
@@ -86,7 +86,9 @@ public class AuthService
 
         string passwordHash = HashPassword(password);
 
-        var actorId = SessionManager.Current?.UserId ?? 0;
+        var effectiveActorId = actorId.HasValue && actorId.Value > 0
+            ? actorId.Value
+            : SessionManager.Current?.UserId ?? 0;
 
         var user = new User
         {
@@ -95,8 +97,8 @@ public class AuthService
             IsActive = isActive,
             PasswordHash = passwordHash,
             Role = User.UserRoles.Admin,
-            CreatedBy = actorId,
-            ModifiedBy = actorId
+            CreatedBy = effectiveActorId,
+            ModifiedBy = effectiveActorId
         };
         await _userManager.AddAsync(user);
         if (user.Id <= 0)
@@ -106,7 +108,7 @@ public class AuthService
         return Result<User>.Ok(user);
     }
 
-    public async Task<Result<Student>> RegisterStudentAsync(string userName, int studentNumber, string fullName, bool isActive, string email, string phone, string password)
+    public async Task<Result<Student>> RegisterStudentAsync(string userName, int studentNumber, string fullName, bool isActive, string email, string phone, string password, int? actorId = null)
     {
         var _userManager = new UserManager();
         var _studentManager = new StudentManager();
@@ -126,7 +128,9 @@ public class AuthService
         }
 
         string passwordHash = HashPassword(password);
-        var actorId = SessionManager.Current?.UserId ?? 0;
+        var effectiveActorId = actorId.HasValue && actorId.Value > 0
+            ? actorId.Value
+            : SessionManager.Current?.UserId ?? 0;
         User user = new User
         {
             UserName = userName,
@@ -134,8 +138,8 @@ public class AuthService
             IsActive = isActive,
             PasswordHash = passwordHash,
             Role = User.UserRoles.Student,
-            CreatedBy = actorId,
-            ModifiedBy = actorId,
+            CreatedBy = effectiveActorId,
+            ModifiedBy = effectiveActorId,
         };
 
         await _userManager.AddAsync(user);
@@ -156,8 +160,8 @@ public class AuthService
             Email = email,
             Phone = phone,
             StudentNumber = studentNumber,
-            CreatedBy = actorId,
-            ModifiedBy = actorId,
+            CreatedBy = effectiveActorId,
+            ModifiedBy = effectiveActorId,
         };
 
         try

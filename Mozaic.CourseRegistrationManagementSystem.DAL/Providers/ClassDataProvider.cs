@@ -243,6 +243,7 @@ public static class ClassDataProvider
             command.Parameters.Add("@EndDate", SqlDbType.DateTime2).Value = entity.EndDate;
             command.Parameters.Add("@Schedule", SqlDbType.Int).Value = (int)entity.Schedule;
             command.Parameters.Add("@IsActive", SqlDbType.Bit).Value = entity.IsActive;
+            command.Parameters.Add("@CreatedBy", SqlDbType.Int).Value = entity.CreatedBy;
 
             var newIdParam = new SqlParameter("@NewId", SqlDbType.Int)
             {
@@ -298,6 +299,7 @@ public static class ClassDataProvider
             command.Parameters.Add("@EndDate", SqlDbType.DateTime2).Value = entity.EndDate;
             command.Parameters.Add("@Schedule", SqlDbType.Int).Value = (int)entity.Schedule;
             command.Parameters.Add("@IsActive", SqlDbType.Bit).Value = entity.IsActive;
+            command.Parameters.Add("@CreatedBy", SqlDbType.Int).Value = entity.CreatedBy;
 
             var newIdParam = new SqlParameter("@NewId", SqlDbType.Int)
             {
@@ -353,6 +355,7 @@ public static class ClassDataProvider
             command.Parameters.Add("@EndDate", SqlDbType.DateTime2).Value = entity.EndDate;
             command.Parameters.Add("@Schedule", SqlDbType.Int).Value = (int)entity.Schedule;
             command.Parameters.Add("@IsActive", SqlDbType.Bit).Value = entity.IsActive;
+            command.Parameters.Add("@ModifiedBy", SqlDbType.Int).Value = entity.ModifiedBy;
 
             int rows = command.ExecuteNonQuery();
             if (rows == 0)
@@ -398,6 +401,7 @@ public static class ClassDataProvider
             command.Parameters.Add("@EndDate", SqlDbType.DateTime2).Value = entity.EndDate;
             command.Parameters.Add("@Schedule", SqlDbType.Int).Value = (int)entity.Schedule;
             command.Parameters.Add("@IsActive", SqlDbType.Bit).Value = entity.IsActive;
+            command.Parameters.Add("@ModifiedBy", SqlDbType.Int).Value = entity.ModifiedBy;
 
             int rowsAsync = await command.ExecuteNonQueryAsync();
             if (rowsAsync == 0)

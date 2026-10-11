@@ -339,6 +339,7 @@ public static class RegistrationDataProvider
             command.Parameters.Add("@ClassId", SqlDbType.Int).Value = entity.ClassId;
             command.Parameters.Add("@RegistrationDate", SqlDbType.DateTime2).Value = entity.RegistrationDate;
             command.Parameters.Add("@Status", SqlDbType.NVarChar, 50).Value = entity.Status ?? string.Empty;
+            command.Parameters.Add("@CreatedBy", SqlDbType.Int).Value = entity.CreatedBy;
 
             var newIdParam = new SqlParameter("@NewId", SqlDbType.Int)
             {
@@ -389,6 +390,7 @@ public static class RegistrationDataProvider
             command.Parameters.Add("@ClassId", SqlDbType.Int).Value = entity.ClassId;
             command.Parameters.Add("@RegistrationDate", SqlDbType.DateTime2).Value = entity.RegistrationDate;
             command.Parameters.Add("@Status", SqlDbType.NVarChar, 50).Value = entity.Status ?? string.Empty;
+            command.Parameters.Add("@CreatedBy", SqlDbType.Int).Value = entity.CreatedBy;
 
             var newIdParam = new SqlParameter("@NewId", SqlDbType.Int)
             {
@@ -439,6 +441,7 @@ public static class RegistrationDataProvider
             command.Parameters.Add("@ClassId", SqlDbType.Int).Value = entity.ClassId;
             command.Parameters.Add("@RegistrationDate", SqlDbType.DateTime2).Value = entity.RegistrationDate;
             command.Parameters.Add("@Status", SqlDbType.NVarChar, 50).Value = entity.Status ?? string.Empty;
+            command.Parameters.Add("@ModifiedBy", SqlDbType.Int).Value = entity.ModifiedBy;
 
             int rows = command.ExecuteNonQuery();
             if (rows == 0)
@@ -479,6 +482,7 @@ public static class RegistrationDataProvider
             command.Parameters.Add("@ClassId", SqlDbType.Int).Value = entity.ClassId;
             command.Parameters.Add("@RegistrationDate", SqlDbType.DateTime2).Value = entity.RegistrationDate;
             command.Parameters.Add("@Status", SqlDbType.NVarChar, 50).Value = entity.Status ?? string.Empty;
+            command.Parameters.Add("@ModifiedBy", SqlDbType.Int).Value = entity.ModifiedBy;
 
             int rowsAsync = await command.ExecuteNonQueryAsync();
             if (rowsAsync == 0)

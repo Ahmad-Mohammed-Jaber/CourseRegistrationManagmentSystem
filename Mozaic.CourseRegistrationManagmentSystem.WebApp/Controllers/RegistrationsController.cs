@@ -4,10 +4,9 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Mozaic.CourseRegistrationManagementSystem.BL.Services;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
-using Mozaic.CourseRegistrationManagementSystem.WebApp;
 using Mozaic.CourseRegistrationManagmentSystem.WebApp.Models;
 
-namespace Mozaic.CourseRegistrationManagmentSystem.WebApp.Controllers;
+namespace Mozaic.CourseRegistrationManagementSystem.WebApp.Controllers;
 public class RegistrationsController : Controller
 {
     [HttpGet]
@@ -159,7 +158,7 @@ public class RegistrationsController : Controller
                 ClassId = model.ClassId,
                 Status = model.Status,
                 RegistrationDate = model.RegistrationDate,
-            });
+            }, User.GetUserId());
 
             TempData["SuccessMessage"] = "Registration created successfully.";
             return RedirectToAction(nameof(Index));
@@ -241,7 +240,7 @@ public class RegistrationsController : Controller
                 ClassId = model.ClassId,
                 Status = model.Status,
                 RegistrationDate = model.RegistrationDate,
-            });
+            }, User.GetUserId());
 
             TempData["SuccessMessage"] = "Registration updated successfully.";
             return RedirectToAction(nameof(Index));

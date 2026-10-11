@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Logging;
 using Mozaic.CourseRegistrationManagementSystem.BL.Validation;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Session;
 
 namespace Mozaic.CourseRegistrationManagementSystem.BL.Services;
 
@@ -65,7 +66,7 @@ public static class ClassService
         }
     }
 
-    public static void Add(Class classEntity)
+    public static void Add(Class classEntity, int? actorId = null)
     {
         try
         {
@@ -81,6 +82,11 @@ public static class ClassService
                 throw new BusinessException(course.Message);
             }
 
+            var effectiveActorId = actorId.HasValue && actorId.Value > 0
+                ? actorId.Value
+                : SessionManager.Current?.UserId ?? 0;
+            classEntity.CreatedBy = effectiveActorId;
+            classEntity.ModifiedBy = effectiveActorId;
             var classManager = new ClassManager();
             classManager.Add(classEntity);
         }
@@ -91,7 +97,7 @@ public static class ClassService
         }
     }
 
-    public static async Task AddAsync(Class classEntity)
+    public static async Task AddAsync(Class classEntity, int? actorId = null)
     {
         try
         {
@@ -107,6 +113,11 @@ public static class ClassService
                 throw new BusinessException(course.Message);
             }
 
+            var effectiveActorId = actorId.HasValue && actorId.Value > 0
+                ? actorId.Value
+                : SessionManager.Current?.UserId ?? 0;
+            classEntity.CreatedBy = effectiveActorId;
+            classEntity.ModifiedBy = effectiveActorId;
             var classManager = new ClassManager();
             await classManager.AddAsync(classEntity);
         }
@@ -117,7 +128,7 @@ public static class ClassService
         }
     }
 
-    public static void Update(Class classEntity)
+    public static void Update(Class classEntity, int? actorId = null)
     {
         try
         {
@@ -148,6 +159,10 @@ public static class ClassService
                 throw new BusinessException(capacity.Message);
             }
 
+            classEntity.CreatedBy = existingClass!.CreatedBy;
+            classEntity.ModifiedBy = actorId.HasValue && actorId.Value > 0
+                ? actorId.Value
+                : SessionManager.Current?.UserId ?? existingClass.ModifiedBy;
             classManager.Update(classEntity);
         }
         catch (Exception ex)
@@ -157,7 +172,7 @@ public static class ClassService
         }
     }
 
-    public static async Task UpdateAsync(Class classEntity)
+    public static async Task UpdateAsync(Class classEntity, int? actorId = null)
     {
         try
         {
@@ -188,6 +203,10 @@ public static class ClassService
                 throw new BusinessException(capacity.Message);
             }
 
+            classEntity.CreatedBy = existingClass!.CreatedBy;
+            classEntity.ModifiedBy = actorId.HasValue && actorId.Value > 0
+                ? actorId.Value
+                : SessionManager.Current?.UserId ?? existingClass.ModifiedBy;
             await classManager.UpdateAsync(classEntity);
         }
         catch (Exception ex)

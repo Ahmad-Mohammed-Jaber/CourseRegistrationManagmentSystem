@@ -6,7 +6,7 @@ using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
 using Mozaic.CourseRegistrationManagmentSystem.WebApp.Models;
 using UserEntity = Mozaic.CourseRegistrationManagementSystem.Shared.Entities.User;
 
-namespace Mozaic.CourseRegistrationManagmentSystem.WebApp.Controllers;
+namespace Mozaic.CourseRegistrationManagementSystem.WebApp.Controllers;
 
 [Authorize(Roles = "Admin")]
 public class StudentsController : Controller
@@ -25,9 +25,7 @@ public class StudentsController : Controller
 
         try
         {
-            var students = string.IsNullOrWhiteSpace(q)
-                ? await StudentService.GetAllAsync()
-                : await StudentService.SearchAsync(q);
+            var students = string.IsNullOrWhiteSpace(q)  ? await StudentService.GetAllAsync()  : await StudentService.SearchAsync(q);
 
             return View(students
                 .OrderBy(s => s.UserName)
@@ -64,7 +62,7 @@ public class StudentsController : Controller
 
         var result = await _authService.RegisterStudentAsync(
             model.UserName.Trim(), model.StudentNumber, model.FullName.Trim(),
-            model.IsActive, model.Email.Trim(), model.Phone.Trim(), model.Password);
+            model.IsActive, model.Email.Trim(), model.Phone.Trim(), model.Password, User.GetUserId());
 
         if (!result.IsSuccess || result.Value is null)
         {
@@ -146,7 +144,7 @@ public class StudentsController : Controller
                 Phone = model.Phone.Trim(),
                 IsActive = model.IsActive,
                 Role = UserEntity.UserRoles.Student,
-            });
+            }, User.GetUserId());
 
             TempData["SuccessMessage"] = $"Student '{model.UserName.Trim()}' updated successfully.";
             return RedirectToAction(nameof(Index));

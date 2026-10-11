@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Logging;
 using Mozaic.CourseRegistrationManagementSystem.BL.Validation;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Session;
 
 namespace Mozaic.CourseRegistrationManagementSystem.BL.Services;
 
@@ -65,7 +66,7 @@ public static class RegistrationService
         }
     }
 
-    public static void Add(Registration registration)
+    public static void Add(Registration registration, int? actorId = null)
     {
         try
         {
@@ -96,6 +97,11 @@ public static class RegistrationService
                 throw new BusinessException(dup.Message);
             }
 
+            var effectiveActorId = actorId.HasValue && actorId.Value > 0
+                ? actorId.Value
+                : SessionManager.Current?.UserId ?? 0;
+            registration.CreatedBy = effectiveActorId;
+            registration.ModifiedBy = effectiveActorId;
             registrationManager.Add(registration);
         }
         catch (Exception ex)
@@ -105,7 +111,7 @@ public static class RegistrationService
         }
     }
 
-    public static async Task AddAsync(Registration registration)
+    public static async Task AddAsync(Registration registration, int? actorId = null)
     {
         try
         {
@@ -135,6 +141,11 @@ public static class RegistrationService
                 throw new BusinessException(dup.Message);
             }
 
+            var effectiveActorId = actorId.HasValue && actorId.Value > 0
+                ? actorId.Value
+                : SessionManager.Current?.UserId ?? 0;
+            registration.CreatedBy = effectiveActorId;
+            registration.ModifiedBy = effectiveActorId;
             await registrationManager.AddAsync(registration);
         }
         catch (Exception ex)
@@ -144,7 +155,7 @@ public static class RegistrationService
         }
     }
 
-    public static void Update(Registration registration)
+    public static void Update(Registration registration, int? actorId = null)
     {
         try
         {
@@ -185,6 +196,10 @@ public static class RegistrationService
                 }
             }
 
+            registration.CreatedBy = existing!.CreatedBy;
+            registration.ModifiedBy = actorId.HasValue && actorId.Value > 0
+                ? actorId.Value
+                : SessionManager.Current?.UserId ?? existing.ModifiedBy;
             registrationManager.Update(registration);
         }
         catch (Exception ex)
@@ -194,7 +209,7 @@ public static class RegistrationService
         }
     }
 
-    public static async Task UpdateAsync(Registration registration)
+    public static async Task UpdateAsync(Registration registration, int? actorId = null)
     {
         try
         {
@@ -234,6 +249,10 @@ public static class RegistrationService
                 }
             }
 
+            registration.CreatedBy = existing!.CreatedBy;
+            registration.ModifiedBy = actorId.HasValue && actorId.Value > 0
+                ? actorId.Value
+                : SessionManager.Current?.UserId ?? existing.ModifiedBy;
             await registrationManager.UpdateAsync(registration);
         }
         catch (Exception ex)

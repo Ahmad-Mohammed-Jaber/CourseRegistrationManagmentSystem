@@ -241,6 +241,7 @@ public static class StudentDataProvider
             command.Parameters.Add("@StudentNumber", SqlDbType.Int).Value = entity.StudentNumber;
             command.Parameters.Add("@Email", SqlDbType.NVarChar, 100).Value = (object?)entity.Email ?? string.Empty;
             command.Parameters.Add("@Phone", SqlDbType.NVarChar, 20).Value = (object?)entity.Phone ?? string.Empty;
+            command.Parameters.Add("@CreatedBy", SqlDbType.Int).Value = entity.CreatedBy;
 
             var newIdParam = new SqlParameter("@Id", SqlDbType.Int)
             {
@@ -290,6 +291,7 @@ public static class StudentDataProvider
             command.Parameters.Add("@StudentNumber", SqlDbType.Int).Value = entity.StudentNumber;
             command.Parameters.Add("@Email", SqlDbType.NVarChar, 100).Value = (object?)entity.Email ?? string.Empty;
             command.Parameters.Add("@Phone", SqlDbType.NVarChar, 20).Value = (object?)entity.Phone ?? string.Empty;
+            command.Parameters.Add("@CreatedBy", SqlDbType.Int).Value = entity.CreatedBy;
 
             var newIdParam = new SqlParameter("@Id", SqlDbType.Int)
             {
@@ -340,6 +342,7 @@ public static class StudentDataProvider
             command.Parameters.Add("@StudentNumber", SqlDbType.Int).Value = entity.StudentNumber;
             command.Parameters.Add("@Email", SqlDbType.NVarChar, 100).Value = (object?)entity.Email ?? string.Empty;
             command.Parameters.Add("@Phone", SqlDbType.NVarChar, 20).Value = (object?)entity.Phone ?? string.Empty;
+            command.Parameters.Add("@ModifiedBy", SqlDbType.Int).Value = entity.ModifiedBy;
 
             int rows = command.ExecuteNonQuery();
             if (rows == 0)
@@ -380,6 +383,7 @@ public static class StudentDataProvider
             command.Parameters.Add("@StudentNumber", SqlDbType.Int).Value = entity.StudentNumber;
             command.Parameters.Add("@Email", SqlDbType.NVarChar, 100).Value = (object?)entity.Email ?? string.Empty;
             command.Parameters.Add("@Phone", SqlDbType.NVarChar, 20).Value = (object?)entity.Phone ?? string.Empty;
+            command.Parameters.Add("@ModifiedBy", SqlDbType.Int).Value = entity.ModifiedBy;
 
             int rowsAsync = await command.ExecuteNonQueryAsync();
             if (rowsAsync == 0)

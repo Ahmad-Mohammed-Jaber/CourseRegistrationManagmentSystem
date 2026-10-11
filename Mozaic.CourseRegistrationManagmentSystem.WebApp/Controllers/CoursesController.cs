@@ -5,7 +5,7 @@ using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
 using Mozaic.CourseRegistrationManagmentSystem.WebApp.Models;
 
-namespace Mozaic.CourseRegistrationManagmentSystem.WebApp.Controllers;
+namespace Mozaic.CourseRegistrationManagementSystem.WebApp.Controllers;
 
 [Authorize(Roles = "Admin")]
 public class CoursesController : Controller
@@ -61,7 +61,7 @@ public class CoursesController : Controller
                 CreditHours = model.CreditHours,
                 Description = model.Description?.Trim() ?? string.Empty,
                 IsActive = model.IsActive,
-            });
+            }, User.GetUserId());
 
             TempData["SuccessMessage"] = $"Course '{model.CourseCode.Trim()}' created successfully.";
             return RedirectToAction(nameof(Index));
@@ -139,7 +139,7 @@ public class CoursesController : Controller
                 CreditHours = model.CreditHours,
                 Description = model.Description?.Trim() ?? string.Empty,
                 IsActive = model.IsActive,
-            });
+            }, User.GetUserId());
 
             TempData["SuccessMessage"] = $"Course '{model.CourseCode.Trim()}' updated successfully.";
             return RedirectToAction(nameof(Index));

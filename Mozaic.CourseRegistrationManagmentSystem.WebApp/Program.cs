@@ -8,7 +8,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
 
-// --- JWT auth (WebApp only; WinForms keeps using AuthService + SessionManager) ---
 var jwtOptions = builder.Configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>() ?? new JwtOptions();
 
 if (string.IsNullOrWhiteSpace(jwtOptions.SecretKey) || Encoding.UTF8.GetByteCount(jwtOptions.SecretKey) < 32)
@@ -35,7 +34,6 @@ builder.Services
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SecretKey)),
             ClockSkew = TimeSpan.FromMinutes(2),
         };
-        // MVC posts no Authorization header: read the JWT from the HttpOnly auth cookie instead.
         options.Events = new JwtBearerEvents
         {
             OnMessageReceived = context =>
