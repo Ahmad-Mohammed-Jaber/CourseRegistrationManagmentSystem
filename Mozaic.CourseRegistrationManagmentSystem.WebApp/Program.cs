@@ -1,8 +1,10 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using Mozaic.CourseRegistrationManagementSystem.BL.Services;
 using Mozaic.CourseRegistrationManagementSystem.WebApp;
+using Mozaic.CourseRegistrationManagementSystem.WebApp.Auth;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +20,9 @@ if (string.IsNullOrWhiteSpace(jwtOptions.SecretKey) || Encoding.UTF8.GetByteCoun
 
 builder.Services.AddSingleton(jwtOptions);
 builder.Services.AddScoped<JwtTokenService>();
+builder.Services.AddScoped<IRefreshTokenStore, SqlRefreshTokenStore>();
+builder.Services.AddScoped<RefreshTokenService>();
+builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, AutoRefreshTokenFilter>();
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

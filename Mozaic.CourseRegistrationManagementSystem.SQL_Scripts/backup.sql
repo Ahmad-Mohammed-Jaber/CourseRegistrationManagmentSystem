@@ -39,6 +39,13 @@ DROP PROCEDURE IF EXISTS [dbo].[usp_UpdateUser];
 DROP PROCEDURE IF EXISTS [dbo].[usp_DeleteUser];
 DROP PROCEDURE IF EXISTS [dbo].[usp_SearchUsers];
 
+DROP PROCEDURE IF EXISTS [dbo].[usp_CreateRefreshToken];
+DROP PROCEDURE IF EXISTS [dbo].[usp_GetRefreshTokenByHash];
+DROP PROCEDURE IF EXISTS [dbo].[usp_MarkRefreshTokenRotated];
+DROP PROCEDURE IF EXISTS [dbo].[usp_RevokeRefreshTokenFamily];
+DROP PROCEDURE IF EXISTS [dbo].[usp_RevokeRefreshTokensForUser];
+DROP PROCEDURE IF EXISTS [dbo].[usp_DeleteExpiredRefreshTokens];
+
 DROP PROCEDURE IF EXISTS [dbo].[usp_CreateStudent];
 DROP PROCEDURE IF EXISTS [dbo].[usp_GetAllStudents];
 DROP PROCEDURE IF EXISTS [dbo].[usp_GetStudentById];
@@ -68,6 +75,7 @@ DROP PROCEDURE IF EXISTS [dbo].[usp_InsertViewError];
 GO
 
 -- 0.2 Drop tables (children first, then parents)
+DROP TABLE IF EXISTS [dbo].[RefreshTokens];
 DROP TABLE IF EXISTS [dbo].[Registrations];
 DROP TABLE IF EXISTS [dbo].[Class];
 DROP TABLE IF EXISTS [dbo].[Student];
@@ -104,6 +112,41 @@ CREATE TABLE [dbo].[User](
 (
 	[UserName] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+-- ----------------------------------------------------------------------------
+-- 1.1b [RefreshTokens] (opaque refresh tokens; only hashes stored)
+-- ----------------------------------------------------------------------------
+CREATE TABLE [dbo].[RefreshTokens](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[UserId] [int] NOT NULL,
+	[TokenHash] [char](64) NOT NULL,
+	[FamilyId] [uniqueidentifier] NOT NULL,
+	[ExpiresAt] [datetimeoffset](7) NOT NULL,
+	[CreatedAt] [datetimeoffset](7) NOT NULL,
+	[RevokedAt] [datetimeoffset](7) NULL,
+	[ReplacedByHash] [char](64) NULL,
+ CONSTRAINT [PK_RefreshTokens] PRIMARY KEY CLUSTERED
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+ CONSTRAINT [UQ_RefreshTokens_TokenHash] UNIQUE NONCLUSTERED
+(
+	[TokenHash] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+
+CREATE NONCLUSTERED INDEX [IX_RefreshTokens_UserId] ON [dbo].[RefreshTokens]
+(
+	[UserId] ASC
+) ON [PRIMARY]
+GO
+
+CREATE NONCLUSTERED INDEX [IX_RefreshTokens_FamilyId] ON [dbo].[RefreshTokens]
+(
+	[FamilyId] ASC
 ) ON [PRIMARY]
 GO
 
@@ -334,6 +377,9 @@ GO
 ALTER TABLE [dbo].[User] ADD  CONSTRAINT [DF_User_ModifiedBy]  DEFAULT ((0)) FOR [ModifiedBy]
 GO
 
+ALTER TABLE [dbo].[RefreshTokens] ADD  CONSTRAINT [DF_RefreshTokens_CreatedAt]  DEFAULT (sysdatetimeoffset()) FOR [CreatedAt]
+GO
+
 -- ============================================================================
 -- SECTION 3: FOREIGN KEY CONSTRAINTS
 -- ============================================================================
@@ -364,6 +410,13 @@ REFERENCES [dbo].[User] ([Id])
 ON DELETE CASCADE
 GO
 ALTER TABLE [dbo].[Student] CHECK CONSTRAINT [FK_Students_User]
+GO
+
+ALTER TABLE [dbo].[RefreshTokens]  WITH CHECK ADD  CONSTRAINT [FK_RefreshTokens_User] FOREIGN KEY([UserId])
+REFERENCES [dbo].[User] ([Id])
+ON DELETE CASCADE
+GO
+ALTER TABLE [dbo].[RefreshTokens] CHECK CONSTRAINT [FK_RefreshTokens_User]
 GO
 
 -- ============================================================================
@@ -755,6 +808,101 @@ BEGIN
     FROM [dbo].[User]
     WHERE [UserName] LIKE '%' + @regex + '%'
        OR [FullName] LIKE '%' + @regex + '%';
+END
+GO
+
+-- ----------------------------------------------------------------------------
+-- 4.3b REFRESH TOKENS
+-- ----------------------------------------------------------------------------
+
+CREATE PROCEDURE [dbo].[usp_CreateRefreshToken]
+    @UserId     INT,
+    @TokenHash  CHAR(64),
+    @FamilyId   UNIQUEIDENTIFIER,
+    @ExpiresAt  DATETIMEOFFSET(7),
+    @Id         INT OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF EXISTS (SELECT 1 FROM [dbo].[RefreshTokens] WHERE [TokenHash] = @TokenHash)
+        THROW 50009, 'Refresh token hash already exists.', 1;
+
+    INSERT INTO [dbo].[RefreshTokens]
+        ([UserId],[TokenHash],[FamilyId],[ExpiresAt])
+    VALUES
+        (@UserId,@TokenHash,@FamilyId,@ExpiresAt);
+
+    SET @Id = SCOPE_IDENTITY();
+END
+GO
+
+CREATE PROCEDURE [dbo].[usp_GetRefreshTokenByHash]
+    @TokenHash CHAR(64)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT
+        [Id],[UserId],[TokenHash],[FamilyId],[ExpiresAt],[CreatedAt],[RevokedAt],[ReplacedByHash]
+    FROM [dbo].[RefreshTokens]
+    WHERE [TokenHash] = @TokenHash;
+END
+GO
+
+CREATE PROCEDURE [dbo].[usp_MarkRefreshTokenRotated]
+    @Id             INT,
+    @ReplacedByHash CHAR(64)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    UPDATE [dbo].[RefreshTokens]
+    SET [RevokedAt]      = SYSDATETIMEOFFSET(),
+        [ReplacedByHash] = @ReplacedByHash
+    WHERE [Id] = @Id AND [RevokedAt] IS NULL;
+
+    SELECT @@ROWCOUNT AS [RowsAffected];
+END
+GO
+
+CREATE PROCEDURE [dbo].[usp_RevokeRefreshTokenFamily]
+    @FamilyId UNIQUEIDENTIFIER
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    UPDATE [dbo].[RefreshTokens]
+    SET [RevokedAt] = SYSDATETIMEOFFSET()
+    WHERE [FamilyId] = @FamilyId AND [RevokedAt] IS NULL;
+
+    SELECT @@ROWCOUNT AS [RowsAffected];
+END
+GO
+
+CREATE PROCEDURE [dbo].[usp_RevokeRefreshTokensForUser]
+    @UserId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    UPDATE [dbo].[RefreshTokens]
+    SET [RevokedAt] = SYSDATETIMEOFFSET()
+    WHERE [UserId] = @UserId AND [RevokedAt] IS NULL;
+
+    SELECT @@ROWCOUNT AS [RowsAffected];
+END
+GO
+
+CREATE PROCEDURE [dbo].[usp_DeleteExpiredRefreshTokens]
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DELETE FROM [dbo].[RefreshTokens]
+    WHERE [ExpiresAt] < SYSDATETIMEOFFSET()
+      AND [RevokedAt] IS NOT NULL;
+
+    SELECT @@ROWCOUNT AS [RowsAffected];
 END
 GO
 
@@ -1422,7 +1570,8 @@ SELECT N'User'          AS [Table], COUNT(*) AS [Rows] FROM [dbo].[User]
 UNION ALL SELECT N'Student',       COUNT(*) FROM [dbo].[Student]
 UNION ALL SELECT N'Course',        COUNT(*) FROM [dbo].[Course]
 UNION ALL SELECT N'Class',         COUNT(*) FROM [dbo].[Class]
-UNION ALL SELECT N'Registrations', COUNT(*) FROM [dbo].[Registrations];
+UNION ALL SELECT N'Registrations', COUNT(*) FROM [dbo].[Registrations]
+UNION ALL SELECT N'RefreshTokens', COUNT(*) FROM [dbo].[RefreshTokens];
 GO
 
 -- Capacity sanity check

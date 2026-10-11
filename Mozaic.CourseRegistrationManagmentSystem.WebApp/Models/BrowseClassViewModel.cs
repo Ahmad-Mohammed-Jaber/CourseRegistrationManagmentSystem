@@ -35,7 +35,6 @@ public class BrowseClassViewModel
 
     public bool IsRegistered { get; set; }
 
-    /// <summary>Seat fill 0-100 for the kiaalap progress bar. Guards MaxCapacity of zero.</summary>
     public int SeatPercent => MaxCapacity <= 0
         ? 100
         : Math.Clamp((int)Math.Round(CurrentCapacity * 100.0 / MaxCapacity), 0, 100);

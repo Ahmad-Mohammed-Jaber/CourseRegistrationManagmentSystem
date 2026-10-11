@@ -10,5 +10,9 @@ public sealed class JwtOptions
 
     public string SecretKey { get; init; } = string.Empty;
 
-    public int ExpiryMinutes { get; init; } = 480;
+    public int ExpiryMinutes { get; init; } = 15;
+
+    public int RefreshTokenExpiryDays { get; init; } = 7;
+
+    public int RefreshReuseGraceSeconds { get; init; } = 60;
 }
