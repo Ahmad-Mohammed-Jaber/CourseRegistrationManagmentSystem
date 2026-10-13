@@ -40,9 +40,12 @@ public class ClassesController : Controller
                 // Fall through with an empty set; the grid still renders.
             }
 
+            // map using automapper and extend model for reg
+
             var model = new List<BrowseClassViewModel>(classes.Count);
             foreach (var @class in classes)
             {
+                // sp should return course name, is registered/ not per user, 
                 var courseName = string.Empty;
                 try
                 {
