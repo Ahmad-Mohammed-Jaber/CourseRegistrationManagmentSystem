@@ -27,6 +27,8 @@ public class StudentsController : Controller
         {
             var students = string.IsNullOrWhiteSpace(q)  ? await StudentService.GetAllAsync()  : await StudentService.SearchAsync(q);
 
+            var userNames = await GetUserNamesAsync();
+
             return View(students
                 .OrderBy(s => s.UserName)
                 .Select(s => new StudentListItemViewModel
@@ -38,6 +40,10 @@ public class StudentsController : Controller
                     Email = s.Email,
                     Phone = s.Phone,
                     IsActive = s.IsActive,
+                    CreatedOn = s.CreatedOn,
+                    CreatedByName = ResolveUserName(userNames, s.CreatedBy),
+                    ModifiedOn = s.ModifiedOn,
+                    ModifiedByName = ResolveUserName(userNames, s.ModifiedBy),
                 })
                 .ToList());
         }
@@ -199,5 +205,28 @@ public class StudentsController : Controller
         {
             ModelState.AddModelError(string.Empty, "Could not enroll the student.");
         }
+    }
+
+    private static async Task<Dictionary<int, string>> GetUserNamesAsync()
+    {
+        try
+        {
+            var users = await UserService.GetAllAsync();
+            return users.ToDictionary(u => u.Id, u => u.UserName);
+        }
+        catch (BusinessException)
+        {
+            return new Dictionary<int, string>();
+        }
+    }
+
+    private static string ResolveUserName(Dictionary<int, string> userNames, int userId)
+    {
+        if (userNames.TryGetValue(userId, out var name) && !string.IsNullOrWhiteSpace(name))
+        {
+            return name;
+        }
+
+        return userId <= 0 ? "—" : $"#{userId}";
     }
 }

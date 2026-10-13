@@ -59,6 +59,13 @@
                         <th scope="col">@Html.DisplayNameFor(m => m[0].ClassName)</th>
                         <th scope="col">@Html.DisplayNameFor(m => m[0].RegistrationDate)</th>
                         <th scope="col">@Html.DisplayNameFor(m => m[0].Status)</th>
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <th scope="col">@Html.DisplayNameFor(m => m[0].CreatedOn)</th>
+                            <th scope="col">@Html.DisplayNameFor(m => m[0].CreatedByName)</th>
+                            <th scope="col">@Html.DisplayNameFor(m => m[0].ModifiedOn)</th>
+                            <th scope="col">@Html.DisplayNameFor(m => m[0].ModifiedByName)</th>
+                        }
                         <th scope="col">Actions</th>
                     </tr>
                 </thead>
@@ -73,6 +80,13 @@
                             <td>
                                 <span class="badge @Mozaic.CourseRegistrationManagementSystem.WebApp.StatusBadgeHelper.GetBadgeClass(item.Status)">@Html.DisplayFor(_ => item.Status)</span>
                             </td>
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <td><small class="text-muted">@item.CreatedOn.ToString("g")</small></td>
+                                <td><small>@item.CreatedByName</small></td>
+                                <td><small class="text-muted">@item.ModifiedOn.ToString("g")</small></td>
+                                <td><small>@item.ModifiedByName</small></td>
+                            }
                             <td>
                                 <div class="d-flex gap-2">
                                     <a class="btn btn-sm btn-outline-primary" asp-controller="Registrations" asp-action="Edit" asp-route-id="@item.Id">

@@ -21,6 +21,8 @@ public class CoursesController : Controller
                 ? await CourseService.GetAllAsync()
                 : await CourseService.SearchAsync(q);
 
+            var userNames = await GetUserNamesAsync();
+
             return View(courses
                 .OrderBy(c => c.CourseCode)
                 .Select(c => new CourseListItemViewModel
@@ -30,6 +32,10 @@ public class CoursesController : Controller
                     CourseName = c.CourseName,
                     CreditHours = c.CreditHours,
                     IsActive = c.IsActive,
+                    CreatedOn = c.CreatedOn,
+                    CreatedByName = ResolveUserName(userNames, c.CreatedBy),
+                    ModifiedOn = c.ModifiedOn,
+                    ModifiedByName = ResolveUserName(userNames, c.ModifiedBy),
                 })
                 .ToList());
         }
@@ -172,5 +178,28 @@ public class CoursesController : Controller
         }
 
         return RedirectToAction(nameof(Index));
+    }
+
+    private static async Task<Dictionary<int, string>> GetUserNamesAsync()
+    {
+        try
+        {
+            var users = await UserService.GetAllAsync();
+            return users.ToDictionary(u => u.Id, u => u.UserName);
+        }
+        catch (BusinessException)
+        {
+            return new Dictionary<int, string>();
+        }
+    }
+
+    private static string ResolveUserName(Dictionary<int, string> userNames, int userId)
+    {
+        if (userNames.TryGetValue(userId, out var name) && !string.IsNullOrWhiteSpace(name))
+        {
+            return name;
+        }
+
+        return userId <= 0 ? "—" : $"#{userId}";
     }
 }

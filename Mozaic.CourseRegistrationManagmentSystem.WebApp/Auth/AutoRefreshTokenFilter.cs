@@ -56,7 +56,6 @@ public sealed class AutoRefreshTokenFilter : IAuthorizationMiddlewareResultHandl
             var now = DateTimeOffset.UtcNow;
             var accessToken = accessService.GenerateToken(session);
             var persistent = AuthCookie.IsPersistent(httpContext.Request);
-            // Silent refresh: renew only the short-lived access JWT, keep the same refresh token.
             AuthCookie.IssueAccess(
                 httpContext.Request,
                 httpContext.Response,

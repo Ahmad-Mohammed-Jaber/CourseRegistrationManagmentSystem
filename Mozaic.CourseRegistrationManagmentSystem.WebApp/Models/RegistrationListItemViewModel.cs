@@ -20,4 +20,16 @@ public class RegistrationListItemViewModel
 
     [Display(Name = "Status")]
     public string Status { get; set; } = string.Empty;
+
+    [Display(Name = "Created At")]
+    public DateTimeOffset CreatedOn { get; set; }
+
+    [Display(Name = "Created By")]
+    public string CreatedByName { get; set; } = string.Empty;
+
+    [Display(Name = "Edited At")]
+    public DateTimeOffset ModifiedOn { get; set; }
+
+    [Display(Name = "Edited By")]
+    public string ModifiedByName { get; set; } = string.Empty;
 }

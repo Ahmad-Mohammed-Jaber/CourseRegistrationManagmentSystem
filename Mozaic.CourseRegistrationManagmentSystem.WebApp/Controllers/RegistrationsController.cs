@@ -110,6 +110,8 @@ public class RegistrationsController : Controller
                 ? await RegistrationService.GetAllDetailedAsync()
                 : await RegistrationService.SearchDetailedAsync(q);
 
+            var userNames = await GetUserNamesAsync();
+
             return View(rows
                 .OrderByDescending(r => r.Registration.RegistrationDate)
                 .Select(r => new RegistrationListItemViewModel
@@ -120,6 +122,10 @@ public class RegistrationsController : Controller
                     ClassName = r.Class.ClassName,
                     RegistrationDate = r.Registration.RegistrationDate,
                     Status = r.Registration.Status,
+                    CreatedOn = r.Registration.CreatedOn,
+                    CreatedByName = ResolveUserName(userNames, r.Registration.CreatedBy),
+                    ModifiedOn = r.Registration.ModifiedOn,
+                    ModifiedByName = ResolveUserName(userNames, r.Registration.ModifiedBy),
                 })
                 .ToList());
         }
@@ -304,5 +310,28 @@ public class RegistrationsController : Controller
         {
             model.Classes = new List<SelectListItem>();
         }
+    }
+
+    private static async Task<Dictionary<int, string>> GetUserNamesAsync()
+    {
+        try
+        {
+            var users = await UserService.GetAllAsync();
+            return users.ToDictionary(u => u.Id, u => u.UserName);
+        }
+        catch (BusinessException)
+        {
+            return new Dictionary<int, string>();
+        }
+    }
+
+    private static string ResolveUserName(Dictionary<int, string> userNames, int userId)
+    {
+        if (userNames.TryGetValue(userId, out var name) && !string.IsNullOrWhiteSpace(name))
+        {
+            return name;
+        }
+
+        return userId <= 0 ? "—" : $"#{userId}";
     }
 }

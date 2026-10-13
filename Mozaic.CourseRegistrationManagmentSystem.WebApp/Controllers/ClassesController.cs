@@ -26,9 +26,6 @@ public class ClassesController : Controller
                 .Where(c => c.IsActive)
                 .OrderBy(c => c.StartDate)
                 .ToList();
-
-            // Best effort: without a student profile the grid still renders;
-            // Register then surfaces the BL "Student login required." error neatly.
             var registeredClassIds = new HashSet<int>();
             try
             {
@@ -128,6 +125,7 @@ public class ClassesController : Controller
                 : await ClassService.SearchAsync(q);
 
             var model = new List<ClassListItemViewModel>(classes.Count);
+            var userNames = await GetUserNamesAsync();
             foreach (var @class in classes.OrderBy(c => c.StartDate))
             {
                 var courseName = string.Empty;
@@ -154,6 +152,10 @@ public class ClassesController : Controller
                     EndDate = @class.EndDate,
                     Seats = $"{@class.CurrentCapacity}/{@class.MaxCapacity}",
                     IsActive = @class.IsActive,
+                    CreatedOn = @class.CreatedOn,
+                    CreatedByName = ResolveUserName(userNames, @class.CreatedBy),
+                    ModifiedOn = @class.ModifiedOn,
+                    ModifiedByName = ResolveUserName(userNames, @class.ModifiedBy),
                 });
             }
 
@@ -341,5 +343,28 @@ public class ClassesController : Controller
         {
             model.Courses = new List<SelectListItem>();
         }
+    }
+
+    private static async Task<Dictionary<int, string>> GetUserNamesAsync()
+    {
+        try
+        {
+            var users = await UserService.GetAllAsync();
+            return users.ToDictionary(u => u.Id, u => u.UserName);
+        }
+        catch (BusinessException)
+        {
+            return new Dictionary<int, string>();
+        }
+    }
+
+    private static string ResolveUserName(Dictionary<int, string> userNames, int userId)
+    {
+        if (userNames.TryGetValue(userId, out var name) && !string.IsNullOrWhiteSpace(name))
+        {
+            return name;
+        }
+
+        return userId <= 0 ? "—" : $"#{userId}";
     }
 }

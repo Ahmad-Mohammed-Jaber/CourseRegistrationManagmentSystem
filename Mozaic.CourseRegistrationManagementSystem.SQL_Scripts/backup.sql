@@ -540,11 +540,16 @@ END
 GO
 
 CREATE PROCEDURE [dbo].[usp_DeleteClass]
-    @Id INT
+    @Id INT,
+    @ModifiedBy INT = 0
 AS
 BEGIN
     SET NOCOUNT ON;
-    DELETE FROM [dbo].[Class] WHERE [Id] = @Id;
+    UPDATE [dbo].[Class]
+    SET [IsActive]   = 0,
+        [ModifiedBy] = @ModifiedBy,
+        [ModifiedOn] = SYSDATETIMEOFFSET()
+    WHERE [Id] = @Id;
     SELECT @@ROWCOUNT AS [RowsAffected];
 END
 GO
@@ -660,11 +665,16 @@ END
 GO
 
 CREATE PROCEDURE [dbo].[usp_DeleteCourse]
-    @Id INT
+    @Id INT,
+    @ModifiedBy INT = 0
 AS
 BEGIN
     SET NOCOUNT ON;
-    DELETE FROM [dbo].[Course] WHERE [Id] = @Id;
+    UPDATE [dbo].[Course]
+    SET [IsActive]   = 0,
+        [ModifiedBy] = @ModifiedBy,
+        [ModifiedOn] = SYSDATETIMEOFFSET()
+    WHERE [Id] = @Id;
     SELECT @@ROWCOUNT AS [RowsAffected];
 END
 GO
@@ -779,11 +789,16 @@ END
 GO
 
 CREATE PROCEDURE [dbo].[usp_DeleteUser]
-    @Id INT
+    @Id INT,
+    @ModifiedBy INT = 0
 AS
 BEGIN
     SET NOCOUNT ON;
-    DELETE FROM [dbo].[User] WHERE [Id] = @Id;
+    UPDATE [dbo].[User]
+    SET [IsActive]   = 0,
+        [ModifiedBy] = @ModifiedBy,
+        [ModifiedOn] = SYSDATETIMEOFFSET()
+    WHERE [Id] = @Id;
     SELECT @@ROWCOUNT AS [RowsAffected];
 END
 GO
@@ -1044,11 +1059,23 @@ END
 GO
 
 CREATE PROCEDURE [dbo].[usp_DeleteStudent]
-    @Id INT
+    @Id INT,
+    @ModifiedBy INT = 0
 AS
 BEGIN
     SET NOCOUNT ON;
-    DELETE FROM [dbo].[Student] WHERE [Id] = @Id;
+    -- Student has no IsActive column; soft delete = deactivate the linked User login.
+    -- The Student row itself is kept for history.
+    UPDATE [dbo].[User]
+    SET [IsActive]   = 0,
+        [ModifiedBy] = @ModifiedBy,
+        [ModifiedOn] = SYSDATETIMEOFFSET()
+    WHERE [Id] = (SELECT [UserId] FROM [dbo].[Student] WHERE [Id] = @Id);
+
+    UPDATE [dbo].[Student]
+    SET [ModifiedBy] = @ModifiedBy,
+        [ModifiedOn] = SYSDATETIMEOFFSET()
+    WHERE [Id] = @Id;
     SELECT @@ROWCOUNT AS [RowsAffected];
 END
 GO
@@ -1259,11 +1286,18 @@ END
 GO
 
 CREATE PROCEDURE [dbo].[usp_DeleteRegistration]
-    @Id INT
+    @Id INT,
+    @ModifiedBy INT = 0
 AS
 BEGIN
     SET NOCOUNT ON;
-    DELETE FROM [dbo].[Registrations] WHERE [Id] = @Id;
+    -- Registrations has no IsActive column; soft delete = mark as Cancelled.
+    -- The row is kept for history instead of being physically deleted.
+    UPDATE [dbo].[Registrations]
+    SET [Status]     = N'Cancelled',
+        [ModifiedBy] = @ModifiedBy,
+        [ModifiedOn] = SYSDATETIMEOFFSET()
+    WHERE [Id] = @Id;
     SELECT @@ROWCOUNT AS [RowsAffected];
 END
 GO

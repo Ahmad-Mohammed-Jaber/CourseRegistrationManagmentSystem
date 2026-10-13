@@ -28,6 +28,8 @@ public class UsersController : Controller
                 ? await UserService.GetAllAsync()
                 : await UserService.SearchAsync(q);
 
+            var userNames = users.ToDictionary(u => u.Id, u => u.UserName);
+
             return View(users
                 .OrderBy(u => u.UserName)
                 .Select(u => new UserListItemViewModel
@@ -37,6 +39,10 @@ public class UsersController : Controller
                     FullName = u.FullName,
                     Role = u.Role.ToString(),
                     IsActive = u.IsActive,
+                    CreatedOn = u.CreatedOn,
+                    CreatedByName = ResolveUserName(userNames, u.CreatedBy),
+                    ModifiedOn = u.ModifiedOn,
+                    ModifiedByName = ResolveUserName(userNames, u.ModifiedBy),
                 })
                 .ToList());
         }
@@ -201,5 +207,15 @@ public class UsersController : Controller
         {
             ModelState.AddModelError(string.Empty, "Could not create the user.");
         }
+    }
+
+    private static string ResolveUserName(Dictionary<int, string> userNames, int userId)
+    {
+        if (userNames.TryGetValue(userId, out var name) && !string.IsNullOrWhiteSpace(name))
+        {
+            return name;
+        }
+
+        return userId <= 0 ? "—" : $"#{userId}";
     }
 }
