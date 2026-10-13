@@ -6,6 +6,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <RootNamespace>Mozaic.CourseRegistrationManagementSystem.WebApp</RootNamespace>
         <AllowMissingPrunePackageData>true</AllowMissingPrunePackageData>
+        <UserSecretsId>mozaic-course-registration-webapp</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>

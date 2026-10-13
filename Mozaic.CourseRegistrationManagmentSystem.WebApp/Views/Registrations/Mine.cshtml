@@ -55,7 +55,7 @@
                                     <td>@Html.DisplayFor(_ => item.StartDate)</td>
                                     <td>@Html.DisplayFor(_ => item.EndDate)</td>
                                     <td>@Html.DisplayFor(_ => item.RegistrationDate)</td>
-                                    <td>@Html.DisplayFor(_ => item.Status)</td>
+                                    <td><span class="badge @Mozaic.CourseRegistrationManagementSystem.WebApp.StatusBadgeHelper.GetBadgeClass(item.Status)">@Html.DisplayFor(_ => item.Status)</span></td>
                                     <td class="text-end">
                                         <form asp-controller="Registrations" asp-action="Drop" method="post" class="d-inline">
                                             @Html.AntiForgeryToken()

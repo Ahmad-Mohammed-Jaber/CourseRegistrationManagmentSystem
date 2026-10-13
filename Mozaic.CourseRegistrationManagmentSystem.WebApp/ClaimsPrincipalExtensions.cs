@@ -6,7 +6,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.WebApp;
 
 public static class ClaimsPrincipalExtensions
 {
-    public const string FullNameClaimType = JwtTokenService.FullNameClaimType;
+    public const string FullNameClaimType = AccessTokenService.FullNameClaimType;
 
     public static int GetUserId(this ClaimsPrincipal user)
     {

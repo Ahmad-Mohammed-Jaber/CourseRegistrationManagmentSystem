@@ -71,7 +71,7 @@
                             <td>@Html.DisplayFor(_ => item.ClassName)</td>
                             <td>@Html.DisplayFor(_ => item.RegistrationDate)</td>
                             <td>
-                                <span class="badge bg-success">@Html.DisplayFor(_ => item.Status)</span>
+                                <span class="badge @Mozaic.CourseRegistrationManagementSystem.WebApp.StatusBadgeHelper.GetBadgeClass(item.Status)">@Html.DisplayFor(_ => item.Status)</span>
                             </td>
                             <td>
                                 <div class="d-flex gap-2">

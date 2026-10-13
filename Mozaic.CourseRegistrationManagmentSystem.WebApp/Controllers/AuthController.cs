@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Mozaic.CourseRegistrationManagementSystem.BL.Services;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Auth;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Logging;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Session;
 using Mozaic.CourseRegistrationManagmentSystem.WebApp.Models;
@@ -11,27 +13,34 @@ namespace Mozaic.CourseRegistrationManagementSystem.WebApp.Controllers;
 public class AuthController : Controller
 {
     private readonly AuthService _authService;
-    private readonly JwtTokenService _jwtTokenService;
+    private readonly AccessTokenService _accessTokenService;
     private readonly RefreshTokenService _refreshTokenService;
     private readonly JwtOptions _jwtOptions;
 
     public AuthController(
         AuthService authService,
-        JwtTokenService jwtTokenService,
+        AccessTokenService accessTokenService,
         RefreshTokenService refreshTokenService,
         JwtOptions jwtOptions)
     {
         _authService = authService;
-        _jwtTokenService = jwtTokenService;
+        _accessTokenService = accessTokenService;
         _refreshTokenService = refreshTokenService;
         _jwtOptions = jwtOptions;
     }
 
     [HttpGet]
     [AllowAnonymous]
-    public IActionResult Login(string? returnUrl = null)
+    [SkipAutoRefresh]
+    public async Task<IActionResult> Login(string? returnUrl = null)
     {
         if (User.Identity?.IsAuthenticated == true)
+        {
+            return RedirectToLocal(returnUrl);
+        }
+
+        var outcome = await ValidateRefreshCookieAsync();
+        if (outcome.Succeeded && outcome.User is not null && outcome.User.IsActive)
         {
             return RedirectToLocal(returnUrl);
         }
@@ -79,8 +88,6 @@ public class AuthController : Controller
             return View(model);
         }
 
-        // Short-lived access JWT + long-lived rotating opaque refresh token.
-        // Both travel in HttpOnly cookies; only hashes touch the database.
         await IssueSessionAsync(session, model.RememberMe);
 
         return RedirectToLocal(model.ReturnUrl);
@@ -92,42 +99,17 @@ public class AuthController : Controller
     [IgnoreAntiforgeryToken]
     public async Task<IActionResult> Refresh(string? returnUrl = null)
     {
-        Request.Cookies.TryGetValue(AuthCookie.RefreshName, out var presented);
-        RefreshRotationResult outcome;
-        try
-        {
-            outcome = await _refreshTokenService.RotateAsync(presented);
-        }
-        catch (Exception ex)
-        {
-            AppLogger.LogCaught(ex);
-            outcome = RefreshRotationResult.Invalid();
-        }
+        var outcome = await ValidateRefreshCookieAsync();
 
-        if (!outcome.Succeeded || outcome.User is null || outcome.NewToken is null)
+        if (!outcome.Succeeded || outcome.User is null || outcome.Record is null)
         {
             AuthCookie.ClearAll(Response);
-            if (WantsJson())
-            {
-                return Unauthorized(new { error = "Session expired. Please log in again." });
-            }
             return RedirectToAction(nameof(Login), new { returnUrl });
         }
 
-        var session = new UserSession(
-            outcome.User.Id,
-            outcome.User.UserName,
-            outcome.User.FullName,
-            outcome.User.IsActive)
-        {
-            Role = outcome.User.Role,
-        };
-        await IssueSessionAsync(session, AuthCookie.IsPersistent(Request), outcome.NewToken);
+        var session = BuildSession(outcome.User);
+        await IssueSessionAsync(session, AuthCookie.IsPersistent(Request), outcome.PresentedToken, outcome.Record.ExpiresAt);
 
-        if (WantsJson())
-        {
-            return Ok(new { renewed = true });
-        }
         return RedirectToLocal(returnUrl);
     }
 
@@ -137,8 +119,6 @@ public class AuthController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Logout()
     {
-        // Revoke this device chain's refresh family; logout stays idempotent
-        // when the access token already expired or cookies are gone.
         try
         {
             Request.Cookies.TryGetValue(AuthCookie.RefreshName, out var presented);
@@ -160,18 +140,19 @@ public class AuthController : Controller
     [HttpGet]
     public IActionResult Index() => RedirectToAction(nameof(Login));
 
-    private async Task IssueSessionAsync(UserSession session, bool rememberMe, string? existingRefreshPlaintext = null)
+    private async Task IssueSessionAsync(UserSession session, bool rememberMe, string? existingRefreshPlaintext = null, DateTimeOffset? existingRefreshExpires = null)
     {
         var now = DateTimeOffset.UtcNow;
-        var accessToken = _jwtTokenService.GenerateToken(session);
+        var accessToken = _accessTokenService.GenerateToken(session);
         var accessExpires = now.AddMinutes(_jwtOptions.ExpiryMinutes);
 
         string refreshPlaintext;
         DateTimeOffset refreshExpires;
         if (existingRefreshPlaintext is not null)
         {
+            // Silent refresh: same refresh token stays valid, only the access JWT is renewed.
             refreshPlaintext = existingRefreshPlaintext;
-            refreshExpires = _refreshTokenService.RefreshExpiry(now);
+            refreshExpires = existingRefreshExpires ?? _refreshTokenService.RefreshExpiry(now);
         }
         else
         {
@@ -184,9 +165,48 @@ public class AuthController : Controller
         AuthCookie.IssueRemember(Request, Response, rememberMe);
     }
 
-    private bool WantsJson() =>
-        Request.Headers.Accept.ToString().Contains("application/json", StringComparison.OrdinalIgnoreCase)
-        || string.Equals(Request.Headers["X-Requested-With"], "XMLHttpRequest", StringComparison.OrdinalIgnoreCase);
+    private sealed record RefreshCookieOutcome(
+        bool Succeeded,
+        bool Presented,
+        string? PresentedToken,
+        User? User,
+        RefreshToken? Record);
+
+    private async Task<RefreshCookieOutcome> ValidateRefreshCookieAsync()
+    {
+        Request.Cookies.TryGetValue(AuthCookie.RefreshName, out var presented);
+        if (string.IsNullOrWhiteSpace(presented))
+        {
+            return new RefreshCookieOutcome(false, false, null, null, null);
+        }
+
+        RefreshValidationResult outcome;
+        try
+        {
+            outcome = await _refreshTokenService.ValidateAsync(presented);
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            outcome = RefreshValidationResult.Invalid();
+        }
+
+        if (!outcome.Succeeded || outcome.User is null || outcome.Record is null)
+        {
+            return new RefreshCookieOutcome(false, true, presented, null, null);
+        }
+
+        return new RefreshCookieOutcome(true, true, presented, outcome.User, outcome.Record);
+    }
+
+    private static UserSession BuildSession(User user) => new(
+        user.Id,
+        user.UserName,
+        user.FullName,
+        user.IsActive)
+    {
+        Role = user.Role,
+    };
 
     private IActionResult RedirectToLocal(string? returnUrl)
     {

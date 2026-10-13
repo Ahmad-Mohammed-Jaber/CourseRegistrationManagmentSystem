@@ -6,7 +6,7 @@
 @* Structure mirrors kiaalap/all-courses.html 1:1: page header, stats row
    (stats-card), then the table card (dashboard-card > table-responsive >
    table.table.table-hover.align-middle) with badge statuses (bg-success Open /
-   bg-warning Full) and the seats progress bar. Only the <form> posts to MVC
+   bg-warning text-dark Full) and the seats progress bar. Only the <form> posts to MVC
    and the row actions are Register buttons instead of the template's dropdown. *@
 <!-- Page Header -->
 <div class="mb-3">
@@ -96,7 +96,7 @@
                             <td>
                                 @if (item.IsFull)
                                 {
-                                    <span class="badge bg-warning">Full</span>
+                                    <span class="badge bg-warning text-dark">Full</span>
                                 }
                                 else
                                 {

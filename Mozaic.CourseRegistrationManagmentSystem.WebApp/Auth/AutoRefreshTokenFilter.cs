@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Policy;
 using Mozaic.CourseRegistrationManagementSystem.BL.Services;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Auth;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Logging;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Session;
 
@@ -32,14 +33,12 @@ public sealed class AutoRefreshTokenFilter : IAuthorizationMiddlewareResultHandl
         {
             var services = httpContext.RequestServices;
             var refreshService = services.GetRequiredService<RefreshTokenService>();
-            var jwtService = services.GetRequiredService<JwtTokenService>();
+            var accessService = services.GetRequiredService<AccessTokenService>();
             var options = services.GetRequiredService<JwtOptions>();
 
-            var outcome = await refreshService.RotateAsync(presented);
-            if (!outcome.Succeeded || outcome.User is null || outcome.NewToken is null)
+            var outcome = await refreshService.ValidateAsync(presented);
+            if (!outcome.Succeeded || outcome.User is null || outcome.Record is null)
             {
-                // Invalid, expired, reused (family revoked inside RotateAsync),
-                // or disabled account: forget both cookies, back to login.
                 AuthCookie.ClearAll(httpContext.Response);
                 await _default.HandleAsync(next, httpContext, policy, authorizeResult);
                 return;
@@ -55,20 +54,17 @@ public sealed class AutoRefreshTokenFilter : IAuthorizationMiddlewareResultHandl
             };
 
             var now = DateTimeOffset.UtcNow;
-            var accessToken = jwtService.GenerateToken(session);
+            var accessToken = accessService.GenerateToken(session);
             var persistent = AuthCookie.IsPersistent(httpContext.Request);
-            AuthCookie.IssuePair(
+            // Silent refresh: renew only the short-lived access JWT, keep the same refresh token.
+            AuthCookie.IssueAccess(
                 httpContext.Request,
                 httpContext.Response,
                 accessToken,
-                now.AddMinutes(options.ExpiryMinutes),
-                outcome.NewToken,
-                refreshService.RefreshExpiry(now),
-                persistent);
+                persistent,
+                now.AddMinutes(options.ExpiryMinutes));
             AuthCookie.IssueRemember(httpContext.Request, httpContext.Response, persistent);
 
-            // Retry the original request with fresh cookies. 307 preserves the
-            // HTTP method + body, so POSTs (with their antiforgery tokens) replay.
             var retryTo = httpContext.Request.Path + httpContext.Request.QueryString;
             httpContext.Response.StatusCode = StatusCodes.Status307TemporaryRedirect;
             httpContext.Response.Headers.Location = retryTo;
@@ -76,10 +72,8 @@ public sealed class AutoRefreshTokenFilter : IAuthorizationMiddlewareResultHandl
         }
         catch (Exception ex)
         {
-            // Fail closed (back to login) when the store is unreachable.
             AppLogger.LogCaught(ex);
             await _default.HandleAsync(next, httpContext, policy, authorizeResult);
-            return;
         }
     }
 }

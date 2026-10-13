@@ -41,8 +41,7 @@ DROP PROCEDURE IF EXISTS [dbo].[usp_SearchUsers];
 
 DROP PROCEDURE IF EXISTS [dbo].[usp_CreateRefreshToken];
 DROP PROCEDURE IF EXISTS [dbo].[usp_GetRefreshTokenByHash];
-DROP PROCEDURE IF EXISTS [dbo].[usp_MarkRefreshTokenRotated];
-DROP PROCEDURE IF EXISTS [dbo].[usp_RevokeRefreshTokenFamily];
+DROP PROCEDURE IF EXISTS [dbo].[usp_RevokeRefreshToken];
 DROP PROCEDURE IF EXISTS [dbo].[usp_RevokeRefreshTokensForUser];
 DROP PROCEDURE IF EXISTS [dbo].[usp_DeleteExpiredRefreshTokens];
 
@@ -122,11 +121,9 @@ CREATE TABLE [dbo].[RefreshTokens](
 	[Id] [int] IDENTITY(1,1) NOT NULL,
 	[UserId] [int] NOT NULL,
 	[TokenHash] [char](64) NOT NULL,
-	[FamilyId] [uniqueidentifier] NOT NULL,
 	[ExpiresAt] [datetimeoffset](7) NOT NULL,
 	[CreatedAt] [datetimeoffset](7) NOT NULL,
 	[RevokedAt] [datetimeoffset](7) NULL,
-	[ReplacedByHash] [char](64) NULL,
  CONSTRAINT [PK_RefreshTokens] PRIMARY KEY CLUSTERED
 (
 	[Id] ASC
@@ -141,12 +138,6 @@ GO
 CREATE NONCLUSTERED INDEX [IX_RefreshTokens_UserId] ON [dbo].[RefreshTokens]
 (
 	[UserId] ASC
-) ON [PRIMARY]
-GO
-
-CREATE NONCLUSTERED INDEX [IX_RefreshTokens_FamilyId] ON [dbo].[RefreshTokens]
-(
-	[FamilyId] ASC
 ) ON [PRIMARY]
 GO
 
@@ -818,7 +809,6 @@ GO
 CREATE PROCEDURE [dbo].[usp_CreateRefreshToken]
     @UserId     INT,
     @TokenHash  CHAR(64),
-    @FamilyId   UNIQUEIDENTIFIER,
     @ExpiresAt  DATETIMEOFFSET(7),
     @Id         INT OUTPUT
 AS
@@ -829,9 +819,9 @@ BEGIN
         THROW 50009, 'Refresh token hash already exists.', 1;
 
     INSERT INTO [dbo].[RefreshTokens]
-        ([UserId],[TokenHash],[FamilyId],[ExpiresAt])
+        ([UserId],[TokenHash],[ExpiresAt])
     VALUES
-        (@UserId,@TokenHash,@FamilyId,@ExpiresAt);
+        (@UserId,@TokenHash,@ExpiresAt);
 
     SET @Id = SCOPE_IDENTITY();
 END
@@ -843,37 +833,21 @@ AS
 BEGIN
     SET NOCOUNT ON;
     SELECT
-        [Id],[UserId],[TokenHash],[FamilyId],[ExpiresAt],[CreatedAt],[RevokedAt],[ReplacedByHash]
+        [Id],[UserId],[TokenHash],[ExpiresAt],[CreatedAt],[RevokedAt]
     FROM [dbo].[RefreshTokens]
     WHERE [TokenHash] = @TokenHash;
 END
 GO
 
-CREATE PROCEDURE [dbo].[usp_MarkRefreshTokenRotated]
-    @Id             INT,
-    @ReplacedByHash CHAR(64)
-AS
-BEGIN
-    SET NOCOUNT ON;
-
-    UPDATE [dbo].[RefreshTokens]
-    SET [RevokedAt]      = SYSDATETIMEOFFSET(),
-        [ReplacedByHash] = @ReplacedByHash
-    WHERE [Id] = @Id AND [RevokedAt] IS NULL;
-
-    SELECT @@ROWCOUNT AS [RowsAffected];
-END
-GO
-
-CREATE PROCEDURE [dbo].[usp_RevokeRefreshTokenFamily]
-    @FamilyId UNIQUEIDENTIFIER
+CREATE PROCEDURE [dbo].[usp_RevokeRefreshToken]
+    @TokenHash CHAR(64)
 AS
 BEGIN
     SET NOCOUNT ON;
 
     UPDATE [dbo].[RefreshTokens]
     SET [RevokedAt] = SYSDATETIMEOFFSET()
-    WHERE [FamilyId] = @FamilyId AND [RevokedAt] IS NULL;
+    WHERE [TokenHash] = @TokenHash AND [RevokedAt] IS NULL;
 
     SELECT @@ROWCOUNT AS [RowsAffected];
 END

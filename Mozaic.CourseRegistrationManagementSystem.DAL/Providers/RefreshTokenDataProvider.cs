@@ -24,7 +24,6 @@ public static class RefreshTokenDataProvider
 
             command.Parameters.Add("@UserId", SqlDbType.Int).Value = entity.UserId;
             command.Parameters.Add("@TokenHash", SqlDbType.Char, 64).Value = entity.TokenHash;
-            command.Parameters.Add("@FamilyId", SqlDbType.UniqueIdentifier).Value = entity.FamilyId;
             command.Parameters.Add("@ExpiresAt", SqlDbType.DateTimeOffset).Value = entity.ExpiresAt;
 
             var newIdParam = new SqlParameter("@Id", SqlDbType.Int)
@@ -93,7 +92,7 @@ public static class RefreshTokenDataProvider
         }
     }
 
-    public static async Task MarkRotatedAsync(int id, string replacedByHash)
+    public static async Task RevokeAsync(string tokenHash)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -102,46 +101,17 @@ public static class RefreshTokenDataProvider
             connection = DBConnectionFactory.CreateConnection();
             await connection.OpenAsync();
 
-            command = new SqlCommand("usp_MarkRefreshTokenRotated", connection)
+            command = new SqlCommand("usp_RevokeRefreshToken", connection)
             {
                 CommandType = CommandType.StoredProcedure
             };
-            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
-            command.Parameters.Add("@ReplacedByHash", SqlDbType.Char, 64).Value = replacedByHash;
+            command.Parameters.Add("@TokenHash", SqlDbType.Char, 64).Value = tokenHash ?? string.Empty;
 
             await command.ExecuteNonQueryAsync();
         }
         catch (Exception ex)
         {
-            throw new DatabaseException("An error occured in RefreshTokenDataProvider.MarkRotatedAsync(int id, string replacedByHash)", ex);
-        }
-        finally
-        {
-            command?.Dispose();
-            connection?.Dispose();
-        }
-    }
-
-    public static async Task RevokeFamilyAsync(Guid familyId)
-    {
-        SqlConnection? connection = null;
-        SqlCommand? command = null;
-        try
-        {
-            connection = DBConnectionFactory.CreateConnection();
-            await connection.OpenAsync();
-
-            command = new SqlCommand("usp_RevokeRefreshTokenFamily", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.Add("@FamilyId", SqlDbType.UniqueIdentifier).Value = familyId;
-
-            await command.ExecuteNonQueryAsync();
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in RefreshTokenDataProvider.RevokeFamilyAsync(Guid familyId)", ex);
+            throw new DatabaseException("An error occured in RefreshTokenDataProvider.RevokeAsync(string tokenHash)", ex);
         }
         finally
         {
@@ -181,17 +151,14 @@ public static class RefreshTokenDataProvider
     private static RefreshToken MapRefreshToken(SqlDataReader reader)
     {
         var revokedOrdinal = reader.GetOrdinal("RevokedAt");
-        var replacedOrdinal = reader.GetOrdinal("ReplacedByHash");
         return new RefreshToken
         {
             Id = reader.GetInt32(reader.GetOrdinal("Id")),
             UserId = reader.GetInt32(reader.GetOrdinal("UserId")),
             TokenHash = reader.GetString(reader.GetOrdinal("TokenHash")),
-            FamilyId = reader.GetGuid(reader.GetOrdinal("FamilyId")),
             ExpiresAt = reader.GetFieldValue<DateTimeOffset>(reader.GetOrdinal("ExpiresAt")),
             CreatedAt = reader.GetFieldValue<DateTimeOffset>(reader.GetOrdinal("CreatedAt")),
             RevokedAt = reader.IsDBNull(revokedOrdinal) ? null : reader.GetFieldValue<DateTimeOffset>(revokedOrdinal),
-            ReplacedByHash = reader.IsDBNull(replacedOrdinal) ? null : reader.GetString(replacedOrdinal),
         };
     }
 }

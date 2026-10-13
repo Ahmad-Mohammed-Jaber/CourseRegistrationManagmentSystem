@@ -8,16 +8,11 @@ public class RefreshToken
 
     public string TokenHash { get; set; } = string.Empty;
 
-    // Rotation family. All replacements share the original id
-    public Guid FamilyId { get; set; }
-
     public DateTimeOffset ExpiresAt { get; set; }
 
     public DateTimeOffset CreatedAt { get; set; }
 
     public DateTimeOffset? RevokedAt { get; set; }
-
-    public string? ReplacedByHash { get; set; }
 
     public bool IsExpired(DateTimeOffset now) => now >= ExpiresAt;
 

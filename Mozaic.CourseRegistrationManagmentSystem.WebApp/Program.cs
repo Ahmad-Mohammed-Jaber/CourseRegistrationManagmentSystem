@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using Mozaic.CourseRegistrationManagementSystem.BL.Services;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Auth;
 using Mozaic.CourseRegistrationManagementSystem.WebApp;
 using Mozaic.CourseRegistrationManagementSystem.WebApp.Auth;
 
@@ -19,8 +20,7 @@ if (string.IsNullOrWhiteSpace(jwtOptions.SecretKey) || Encoding.UTF8.GetByteCoun
 }
 
 builder.Services.AddSingleton(jwtOptions);
-builder.Services.AddScoped<JwtTokenService>();
-builder.Services.AddScoped<IRefreshTokenStore, SqlRefreshTokenStore>();
+builder.Services.AddScoped<AccessTokenService>();
 builder.Services.AddScoped<RefreshTokenService>();
 builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, AutoRefreshTokenFilter>();
 
@@ -51,7 +51,6 @@ builder.Services
 
                 return Task.CompletedTask;
             },
-            // Keep MVC UX: redirect browsers to Login/AccessDenied instead of bare 401/403.
             OnChallenge = context =>
             {
                 context.HandleResponse();
@@ -91,6 +90,8 @@ app.MapControllerRoute(
         name: "default",
         pattern: "{controller=Auth}/{action=Login}/{id?}")
     .WithStaticAssets();
+
+app.MapControllers();
 
 
 app.Run();

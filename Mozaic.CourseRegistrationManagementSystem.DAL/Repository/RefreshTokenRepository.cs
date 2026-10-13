@@ -11,11 +11,8 @@ public class RefreshTokenRepository
     public Task<RefreshToken?> GetByHashAsync(string tokenHash) =>
         RefreshTokenDataProvider.GetByHashAsync(tokenHash);
 
-    public Task MarkRotatedAsync(int id, string replacedByHash) =>
-        RefreshTokenDataProvider.MarkRotatedAsync(id, replacedByHash);
-
-    public Task RevokeFamilyAsync(Guid familyId) =>
-        RefreshTokenDataProvider.RevokeFamilyAsync(familyId);
+    public Task RevokeAsync(string tokenHash) =>
+        RefreshTokenDataProvider.RevokeAsync(tokenHash);
 
     public Task RevokeAllForUserAsync(int userId) =>
         RefreshTokenDataProvider.RevokeAllForUserAsync(userId);

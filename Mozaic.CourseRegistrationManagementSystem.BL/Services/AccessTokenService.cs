@@ -2,13 +2,14 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Auth;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Logging;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Session;
 
 namespace Mozaic.CourseRegistrationManagementSystem.BL.Services;
 
-public class JwtTokenService
+public class AccessTokenService
 {
     public const string FullNameClaimType = "FullName";
 
@@ -18,7 +19,7 @@ public class JwtTokenService
     private readonly JwtOptions _options;
     private readonly byte[] _key;
 
-    public JwtTokenService(JwtOptions options)
+    public AccessTokenService(JwtOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
         if (string.IsNullOrWhiteSpace(options.SecretKey) || Encoding.UTF8.GetByteCount(options.SecretKey) < 32)
