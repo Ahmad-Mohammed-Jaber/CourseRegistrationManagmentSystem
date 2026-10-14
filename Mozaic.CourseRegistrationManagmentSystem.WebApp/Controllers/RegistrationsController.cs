@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Mozaic.CourseRegistrationManagementSystem.BL.Services;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Helpers;
 using Mozaic.CourseRegistrationManagmentSystem.WebApp.Models;
 
 namespace Mozaic.CourseRegistrationManagementSystem.WebApp.Controllers;
@@ -41,7 +42,6 @@ public class RegistrationsController : Controller
                 }
                 catch (BusinessException)
                 {
-                    // Best-effort enrichment only; grid still renders without it.
                 }
 
                 model.Add(new MyRegistrationViewModel
@@ -51,7 +51,7 @@ public class RegistrationsController : Controller
                     CourseName = courseName,
                     ClassName = @class.ClassName,
                     Instructor = @class.Instructor,
-                    Schedule = @class.ScheduleDisplay,
+                    Schedule = ScheduleHelper.GetScheduleString(@class.Schedule),
                     StartDate = @class.StartDate,
                     EndDate = @class.EndDate,
                     RegistrationDate = registration.RegistrationDate,

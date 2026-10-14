@@ -22,11 +22,8 @@ public class Student
 
     public string UserName { get; set; } = string.Empty;
 
-    // Transient (not a DB column): comes from JOIN to [User].FullName.
-    // TablesV2 removed Student.FullName; identity lives in [User].
     public string FullName { get; set; } = string.Empty;
 
-    // Transient (not a DB column): carried only for user creation / enrichment.
     public string PasswordHash { get; set; } = string.Empty;
 
     public bool IsActive { get; set; } = true;

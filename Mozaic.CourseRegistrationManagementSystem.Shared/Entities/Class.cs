@@ -1,22 +1,10 @@
 ﻿using System.ComponentModel;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Enums;
 
 namespace Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
 
 public class Class
 {
-    [Flags]
-    public enum DaysOfWeek
-    {
-        None = 0,
-        Sunday = 2,
-        Monday = 4,
-        Tuesday = 8,
-        Wednesday = 16,
-        Thursday = 32,
-        Friday = 64,
-        Saturday = 128,
-    }
-
     public int Id { get; set; }
 
     public int CourseId { get; set; }
@@ -33,7 +21,7 @@ public class Class
 
     public DateTime EndDate { get; set; }
 
-    public DaysOfWeek Schedule { get; set; }
+    public DaysOfTheWeek Schedule { get; set; }
 
     public bool IsActive { get; set; }
 
@@ -48,7 +36,4 @@ public class Class
     public bool IsRegistered { get; set; }
 
     public Course Course { get; set; }
-
-    // Transient (not a DB column): friendly schedule text for grid display.
-    public string ScheduleDisplay => Helpers.ScheduleHelper.GetScheduleString(Schedule);
 }

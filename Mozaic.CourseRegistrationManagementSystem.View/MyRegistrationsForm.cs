@@ -1,6 +1,7 @@
 using Mozaic.CourseRegistrationManagementSystem.BL.Services;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Helpers;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Logging;
 using System.Drawing;
 using System.Windows.Forms;
@@ -90,7 +91,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                     RegistrationId = x.Registration.Id,
                     ClassName = x.Class.ClassName,
                     Instructor = x.Class.Instructor,
-                    Schedule = x.Class.ScheduleDisplay,
+                    Schedule = ScheduleHelper.GetScheduleString(x.Class.Schedule),
                     StartDate = x.Class.StartDate,
                     EndDate = x.Class.EndDate,
                     RegistrationDate = x.Registration.RegistrationDate,

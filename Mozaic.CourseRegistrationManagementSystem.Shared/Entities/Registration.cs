@@ -20,10 +20,4 @@ public class Registration
 
     public int CreatedBy { get; set; }
 
-    // Transient (not DB columns): display names populated from joins for grid display.
-    public string? StudentUserName { get; set; }
-
-    public string? ClassName { get; set; }
-
-    public string? CourseName { get; set; }
 }
