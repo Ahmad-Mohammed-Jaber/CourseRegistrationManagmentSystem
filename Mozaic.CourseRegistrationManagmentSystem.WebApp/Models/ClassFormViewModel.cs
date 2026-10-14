@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Enums;
 
 namespace Mozaic.CourseRegistrationManagmentSystem.WebApp.Models;
 
@@ -57,27 +58,27 @@ public class ClassFormViewModel
 
     public List<SelectListItem> Courses { get; set; } = new();
 
-    public Class.DaysOfWeek ToSchedule()
+    public DaysOfTheWeek ToSchedule()
     {
-        var days = Class.DaysOfWeek.None;
-        if (Sunday) days |= Class.DaysOfWeek.Sunday;
-        if (Monday) days |= Class.DaysOfWeek.Monday;
-        if (Tuesday) days |= Class.DaysOfWeek.Tuesday;
-        if (Wednesday) days |= Class.DaysOfWeek.Wednesday;
-        if (Thursday) days |= Class.DaysOfWeek.Thursday;
-        if (Friday) days |= Class.DaysOfWeek.Friday;
-        if (Saturday) days |= Class.DaysOfWeek.Saturday;
+        var days = DaysOfTheWeek.None;
+        if (Sunday) days |= DaysOfTheWeek.Sunday;
+        if (Monday) days |= DaysOfTheWeek.Monday;
+        if (Tuesday) days |= DaysOfTheWeek.Tuesday;
+        if (Wednesday) days |= DaysOfTheWeek.Wednesday;
+        if (Thursday) days |= DaysOfTheWeek.Thursday;
+        if (Friday) days |= DaysOfTheWeek.Friday;
+        if (Saturday) days |= DaysOfTheWeek.Saturday;
         return days;
     }
 
-    public void FromSchedule(Class.DaysOfWeek schedule)
+    public void FromSchedule(DaysOfTheWeek schedule)
     {
-        Sunday = schedule.HasFlag(Class.DaysOfWeek.Sunday);
-        Monday = schedule.HasFlag(Class.DaysOfWeek.Monday);
-        Tuesday = schedule.HasFlag(Class.DaysOfWeek.Tuesday);
-        Wednesday = schedule.HasFlag(Class.DaysOfWeek.Wednesday);
-        Thursday = schedule.HasFlag(Class.DaysOfWeek.Thursday);
-        Friday = schedule.HasFlag(Class.DaysOfWeek.Friday);
-        Saturday = schedule.HasFlag(Class.DaysOfWeek.Saturday);
+        Sunday = schedule.HasFlag(DaysOfTheWeek.Sunday);
+        Monday = schedule.HasFlag(DaysOfTheWeek.Monday);
+        Tuesday = schedule.HasFlag(DaysOfTheWeek.Tuesday);
+        Wednesday = schedule.HasFlag(DaysOfTheWeek.Wednesday);
+        Thursday = schedule.HasFlag(DaysOfTheWeek.Thursday);
+        Friday = schedule.HasFlag(DaysOfTheWeek.Friday);
+        Saturday = schedule.HasFlag(DaysOfTheWeek.Saturday);
     }
 }

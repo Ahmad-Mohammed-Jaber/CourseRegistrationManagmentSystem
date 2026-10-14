@@ -1,6 +1,7 @@
 using System.Windows.Forms;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Enums;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Logging;
 using Mozaic.CourseRegistrationManagementSystem.BL.Validation;
 using Mozaic.CourseRegistrationManagementSystem.BL.Services;
@@ -17,7 +18,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
         private TextBox txtInstructor;
         private NumericUpDown numCapacity;
         private TableLayoutPanel pnlSchedule;
-        private Dictionary<Class.DaysOfWeek, CheckBox> chkDays = new();
+        private Dictionary<DaysOfTheWeek, CheckBox> chkDays = new();
         private DateTimePicker dtStart;
         private DateTimePicker dtEnd;
         private CheckBox chkActive;
@@ -66,13 +67,13 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
 
             var orderedDays = new[]
             {
-                Class.DaysOfWeek.Sunday,
-                Class.DaysOfWeek.Monday,
-                Class.DaysOfWeek.Tuesday,
-                Class.DaysOfWeek.Wednesday,
-                Class.DaysOfWeek.Thursday,
-                Class.DaysOfWeek.Friday,
-                Class.DaysOfWeek.Saturday
+                DaysOfTheWeek.Sunday,
+                DaysOfTheWeek.Monday,
+                DaysOfTheWeek.Tuesday,
+                DaysOfTheWeek.Wednesday,
+                DaysOfTheWeek.Thursday,
+                DaysOfTheWeek.Friday,
+                DaysOfTheWeek.Saturday
             };
 
             chkDays.Clear();
@@ -252,7 +253,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                 MaxCapacity = (int)numCapacity.Value,
                 CurrentCapacity = _isEditMode && _class != null ? _class.CurrentCapacity : 0,
                 Schedule = chkDays.Where(kvp => kvp.Value.Checked)
-                                  .Aggregate(Class.DaysOfWeek.None, (acc, kvp) => acc | kvp.Key),
+                                  .Aggregate(DaysOfTheWeek.None, (acc, kvp) => acc | kvp.Key),
                 StartDate = dtStart.Value,
                 EndDate = dtEnd.Value,
                 IsActive = chkActive.Checked

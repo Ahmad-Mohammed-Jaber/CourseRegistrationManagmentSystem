@@ -1,6 +1,7 @@
 using Microsoft.Data.SqlClient;
 using System.Data;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Enums;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
 using Mozaic.CourseRegistrationManagementSystem.DAL.Database;
 
@@ -689,7 +690,7 @@ public static class RegistrationDataProvider
                     CurrentCapacity = reader.GetInt32(reader.GetOrdinal("CurrentCapacity")),
                     StartDate = reader.GetDateTime(reader.GetOrdinal("StartDate")),
                     EndDate = reader.GetDateTime(reader.GetOrdinal("EndDate")),
-                    Schedule = (Class.DaysOfWeek)reader.GetInt32(reader.GetOrdinal("Schedule")),
+                    Schedule = (DaysOfTheWeek)reader.GetInt32(reader.GetOrdinal("Schedule")),
                     IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive"))
                 };
 

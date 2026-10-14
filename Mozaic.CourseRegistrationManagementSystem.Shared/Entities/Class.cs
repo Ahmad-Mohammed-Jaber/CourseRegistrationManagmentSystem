@@ -47,7 +47,7 @@ public class Class
 
     public bool IsRegistered { get; set; }
 
-    public Course { get; set; }
+    public Course Course { get; set; }
 
     // Transient (not a DB column): friendly schedule text for grid display.
     public string ScheduleDisplay => Helpers.ScheduleHelper.GetScheduleString(Schedule);

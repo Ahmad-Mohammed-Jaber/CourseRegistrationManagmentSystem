@@ -1,4 +1,4 @@
-using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,20 +7,20 @@ namespace Mozaic.CourseRegistrationManagementSystem.Shared.Helpers
 {
     public static class ScheduleHelper
     {
-        private static readonly Dictionary<Class.DaysOfWeek, string> DayAbbreviations = new()
+        private static readonly Dictionary<DaysOfTheWeek, string> DayAbbreviations = new()
         {
-            { Class.DaysOfWeek.Sunday, "Sun" },
-            { Class.DaysOfWeek.Monday, "Mon" },
-            { Class.DaysOfWeek.Tuesday, "Tue" },
-            { Class.DaysOfWeek.Wednesday, "Wed" },
-            { Class.DaysOfWeek.Thursday, "Thu" },
-            { Class.DaysOfWeek.Friday, "Fri" },
-            { Class.DaysOfWeek.Saturday, "Sat" }
+            { DaysOfTheWeek.Sunday, "Sun" },
+            { DaysOfTheWeek.Monday, "Mon" },
+            { DaysOfTheWeek.Tuesday, "Tue" },
+            { DaysOfTheWeek.Wednesday, "Wed" },
+            { DaysOfTheWeek.Thursday, "Thu" },
+            { DaysOfTheWeek.Friday, "Fri" },
+            { DaysOfTheWeek.Saturday, "Sat" }
         };
 
-        public static string GetScheduleString(Class.DaysOfWeek schedule)
+        public static string GetScheduleString(DaysOfTheWeek schedule)
         {
-            if (schedule == Class.DaysOfWeek.None)
+            if (schedule == DaysOfTheWeek.None)
             {
                 return "None";
             }
@@ -32,19 +32,19 @@ namespace Mozaic.CourseRegistrationManagementSystem.Shared.Helpers
             return string.Join(", ", days);
         }
 
-        public static Class.DaysOfWeek ParseScheduleString(string scheduleString)
+        public static DaysOfTheWeek ParseScheduleString(string scheduleString)
         {
             if (string.IsNullOrWhiteSpace(scheduleString))
             {
-                return Class.DaysOfWeek.None;
+                return DaysOfTheWeek.None;
             }
 
-            Class.DaysOfWeek result = Class.DaysOfWeek.None;
+            DaysOfTheWeek result = DaysOfTheWeek.None;
 
             foreach (var day in scheduleString.Split(',', StringSplitOptions.RemoveEmptyEntries)
                                               .Select(d => d.Trim()))
             {
-                if (Enum.TryParse(day, true, out Class.DaysOfWeek parsed))
+                if (Enum.TryParse(day, true, out DaysOfTheWeek parsed))
                 {
                     result |= parsed;
                     continue;
@@ -53,7 +53,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.Shared.Helpers
                 var match = DayAbbreviations.FirstOrDefault(x =>
                     x.Value.Equals(day, StringComparison.OrdinalIgnoreCase));
 
-                if (!match.Equals(default(KeyValuePair<Class.DaysOfWeek, string>)))
+                if (!match.Equals(default(KeyValuePair<DaysOfTheWeek, string>)))
                 {
                     result |= match.Key;
                 }
