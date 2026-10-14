@@ -1,6 +1,7 @@
 using Mozaic.CourseRegistrationManagementSystem.DAL.Interfaces;
 using Mozaic.CourseRegistrationManagementSystem.DAL.Providers;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Results;
 
 namespace Mozaic.CourseRegistrationManagementSystem.DAL.Repository;
 
@@ -34,6 +35,15 @@ public class ClassRepository : IGenericRepository<Class>
     public Task<List<Class>> GetAllAsync()
     {
         return ClassDataProvider.GetAllAsync();
+    }
+
+    /// <summary>
+    /// Paged GetAll overload: the page envelope comes straight from
+    /// dbo.usp_GetAllClasses (rows plus counters second result set).
+    /// </summary>
+    public Task<ClassBrowseResult> GetAllAsync(int? studentId, int pageNumber, int pageSize)
+    {
+        return ClassDataProvider.GetAllAsync(studentId, pageNumber, pageSize);
     }
 
     public void Add(Class entity)

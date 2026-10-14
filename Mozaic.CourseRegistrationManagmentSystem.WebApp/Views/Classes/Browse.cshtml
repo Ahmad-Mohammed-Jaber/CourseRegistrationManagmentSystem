@@ -1,4 +1,4 @@
-@model List<Mozaic.CourseRegistrationManagmentSystem.WebApp.Models.BrowseClassViewModel>
+@model Mozaic.CourseRegistrationManagmentSystem.WebApp.Models.BrowseClassesViewModel
 @{
     ViewData["Title"] = "Browse Classes";
 }
@@ -29,15 +29,15 @@
 <div class="dashboard-grid grid-cols-4 mb-3">
     <div class="stats-card">
         <div class="stats-card-label">Available Classes</div>
-        <div class="stats-card-value">@ViewData["AvailableCount"]</div>
+        <div class="stats-card-value">@Model.AvailableCount</div>
     </div>
     <div class="stats-card">
         <div class="stats-card-label">Open Seats</div>
-        <div class="stats-card-value">@ViewData["OpenSeatsCount"]</div>
+        <div class="stats-card-value">@Model.OpenSeatsCount</div>
     </div>
     <div class="stats-card">
         <div class="stats-card-label">My Registrations</div>
-        <div class="stats-card-value">@ViewData["MyRegistrationsCount"]</div>
+        <div class="stats-card-value">@Model.MyRegistrationsCount</div>
     </div>
 </div>
 
@@ -45,10 +45,10 @@
 <div class="dashboard-card">
     <div class="dashboard-card-header d-flex justify-content-between align-items-center">
         <h5 class="dashboard-card-title mb-0">Available Classes</h5>
-        <span class="badge bg-primary">@Model.Count classes</span>
+        <span class="badge bg-primary">@Model.TotalCount classes</span>
     </div>
     <div class="table-responsive">
-        @if (Model.Count == 0)
+        @if (Model.Classes.Count == 0)
         {
             <p class="text-muted px-3 py-3 mb-0">No active classes available right now.</p>
         }
@@ -57,16 +57,16 @@
             <table class="table table-hover align-middle">
                 <thead>
                     <tr>
-                        <th scope="col">@Html.DisplayNameFor(m => m[0].CourseName)</th>
-                        <th scope="col">@Html.DisplayNameFor(m => m[0].ClassName)</th>
-                        <th scope="col">@Html.DisplayNameFor(m => m[0].Instructor)</th>
-                        <th scope="col">@Html.DisplayNameFor(m => m[0].CurrentCapacity)</th>
+                        <th scope="col">@Html.DisplayNameFor(m => m.Classes[0].CourseName)</th>
+                        <th scope="col">@Html.DisplayNameFor(m => m.Classes[0].ClassName)</th>
+                        <th scope="col">@Html.DisplayNameFor(m => m.Classes[0].Instructor)</th>
+                        <th scope="col">@Html.DisplayNameFor(m => m.Classes[0].CurrentCapacity)</th>
                         <th scope="col">Status</th>
                         <th scope="col">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var item in Model)
+                    @foreach (var item in Model.Classes)
                     {
                         <tr>
                             <td class="fw-semibold">@Html.DisplayFor(_ => item.CourseName)</td>
@@ -133,4 +133,20 @@
             </table>
         }
     </div>
+    @if (Model.TotalPages > 1)
+    {
+        <div class="d-flex justify-content-between align-items-center px-3 py-3">
+            <span class="text-muted">Page @(Model.Page) of @(Model.TotalPages) · @(Model.TotalCount) total</span>
+            <nav aria-label="Browse classes pages">
+                <ul class="pagination mb-0">
+                    <li class="page-item @(Model.HasPrevious ? "" : "disabled")">
+                        <a class="page-link" asp-action="Browse" asp-route-page="@(Model.Page - 1)" asp-route-pageSize="@Model.PageSize">Previous</a>
+                    </li>
+                    <li class="page-item @(Model.HasNext ? "" : "disabled")">
+                        <a class="page-link" asp-action="Browse" asp-route-page="@(Model.Page + 1)" asp-route-pageSize="@Model.PageSize">Next</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    }
 </div>

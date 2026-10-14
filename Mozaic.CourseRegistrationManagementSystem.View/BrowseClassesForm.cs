@@ -3,7 +3,9 @@ using System.Windows.Forms;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Logging;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Session;
 using Mozaic.CourseRegistrationManagementSystem.BL.Services;
+using Mozaic.CourseRegistrationManagementSystem.View.Models;
 
 namespace Mozaic.CourseRegistrationManagementSystem.View
 {
@@ -11,8 +13,13 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
     {
         private DataGridView dgvClasses;
         private Button btnRegister;
+        private Button btnPrev;
+        private Button btnNext;
+        private Label lblPage;
         private Panel topPanel;
         private List<Class> _classes = new();
+        private BrowseClassesViewModel _model = new();
+        private const int PageSize = 20;
 
         public BrowseClassesForm()
         {
@@ -24,6 +31,9 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
         {
             dgvClasses = new DataGridView();
             btnRegister = new Button();
+            btnPrev = new Button();
+            btnNext = new Button();
+            lblPage = new Label();
             topPanel = new Panel();
 
             SuspendLayout();
@@ -36,7 +46,24 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             btnRegister.Text = "Register for Class";
             btnRegister.Click += btnRegister_Click;
 
+            btnPrev.Location = new Point(160, 10);
+            btnPrev.Size = new Size(80, 30);
+            btnPrev.Text = "< Prev";
+            btnPrev.Click += btnPrev_Click;
+
+            btnNext.Location = new Point(250, 10);
+            btnNext.Size = new Size(80, 30);
+            btnNext.Text = "Next >";
+            btnNext.Click += btnNext_Click;
+
+            lblPage.Location = new Point(340, 10);
+            lblPage.Size = new Size(200, 30);
+            lblPage.TextAlign = ContentAlignment.MiddleLeft;
+
             topPanel.Controls.Add(btnRegister);
+            topPanel.Controls.Add(btnPrev);
+            topPanel.Controls.Add(btnNext);
+            topPanel.Controls.Add(lblPage);
 
             dgvClasses.Dock = DockStyle.Fill;
             dgvClasses.ReadOnly = true;
@@ -78,9 +105,14 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                 dgvClasses.Columns["CourseName"].HeaderText = "Course";
             }
 
-            if (dgvClasses.Columns["InstructorName"] != null)
+            if (dgvClasses.Columns["Instructor"] != null)
             {
-                dgvClasses.Columns["InstructorName"].HeaderText = "Instructor";
+                dgvClasses.Columns["Instructor"].HeaderText = "Instructor";
+            }
+
+            if (dgvClasses.Columns["IsRegistered"] != null)
+            {
+                dgvClasses.Columns["IsRegistered"].HeaderText = "Registered";
             }
 
             if (dgvClasses.Columns["Schedule"] != null)
@@ -115,9 +147,14 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                 dgvClasses.Columns["CourseName"].DisplayIndex = index++;
             }
 
-            if (dgvClasses.Columns["InstructorName"] != null)
+            if (dgvClasses.Columns["Instructor"] != null)
             {
-                dgvClasses.Columns["InstructorName"].DisplayIndex = index++;
+                dgvClasses.Columns["Instructor"].DisplayIndex = index++;
+            }
+
+            if (dgvClasses.Columns["IsRegistered"] != null)
+            {
+                dgvClasses.Columns["IsRegistered"].DisplayIndex = index++;
             }
 
             if (dgvClasses.Columns["Schedule"] != null)
@@ -145,10 +182,27 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
         {
             try
             {
-                var classes = await ClassService.GetAllAsync();
-                _classes = classes.ToList();
-                dgvClasses.DataSource = null;
-                dgvClasses.DataSource = _classes;
+                // usp_GetAllClasses joins Registrations on StudentId, so pass
+                // the Student.Id (not the User.Id) for the IsRegistered flag.
+                int? studentId = null;
+                try
+                {
+                    var userId = SessionManager.Current?.UserId ?? 0;
+                    if (userId > 0)
+                    {
+                        studentId = await StudentRegistrationService.GetStudentIdForUserAsync(userId);
+                    }
+                }
+                catch (Exception)
+                {
+                    // Best-effort only; the grid still renders with IsRegistered unset.
+                }
+
+                var paged = await ClassService.GetAllAsync(studentId, _model.Page <= 0 ? 1 : _model.Page, PageSize);
+                _model = BrowseClassesViewModel.FromResult(paged);
+                _classes = paged.Items.ToList();
+                RefreshGrid();
+                UpdatePager();
             }
             catch (BusinessException)
             {
@@ -161,9 +215,41 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             }
         }
 
+        private void RefreshGrid()
+        {
+            dgvClasses.DataSource = null;
+            dgvClasses.DataSource = _model.Rows.ToList();
+        }
+
+        private void UpdatePager()
+        {
+            lblPage.Text = $"Page {_model.Page} of {_model.TotalPages}";
+            btnPrev.Enabled = _model.HasPrevious;
+            btnNext.Enabled = _model.HasNext;
+        }
+
+        private void btnPrev_Click(object sender, EventArgs e)
+        {
+            if (_model.HasPrevious)
+            {
+                _model.Page--;
+                LoadAvailableClasses();
+            }
+        }
+
+        private void btnNext_Click(object sender, EventArgs e)
+        {
+            if (_model.HasNext)
+            {
+                _model.Page++;
+                LoadAvailableClasses();
+            }
+        }
+
         private async void btnRegister_Click(object sender, EventArgs e)
         {
-            if (dgvClasses.CurrentRow?.DataBoundItem is Class cls)
+            if (dgvClasses.CurrentRow?.DataBoundItem is ClassBrowseRow gridRow
+                && _classes.FirstOrDefault(c => c.Id == gridRow.Id) is Class cls)
             {
                 try
                 {
@@ -172,9 +258,15 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                     if (cached != null)
                     {
                         cached.CurrentCapacity++;
-                        dgvClasses.DataSource = null;
-                        dgvClasses.DataSource = _classes;
+                        cached.IsRegistered = true;
                     }
+                    var row = _model.Rows.FirstOrDefault(r => r.Id == cls.Id);
+                    if (row != null)
+                    {
+                        row.CurrentCapacity++;
+                        row.IsRegistered = true;
+                    }
+                    RefreshGrid();
                     MessageBox.Show("Registered successfully!");
                 }
                 catch (BusinessException ex)

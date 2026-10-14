@@ -48,7 +48,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                 "Registered",
                 "Pending",
                 "Confirmed",
-                "Cancelled"
+                "Dropped"
             });
 
             cmbStatus.SelectedItem = "Registered";

@@ -13,7 +13,7 @@ public class ClassesController : Controller
 {
     [HttpGet]
     [Authorize(Roles = "Student")]
-    public async Task<IActionResult> Browse()
+    public async Task<IActionResult> Browse(int page = 1, int pageSize = 20)
     {
         var userId = User.GetUserId();
         if (userId <= 0)
@@ -23,66 +23,26 @@ public class ClassesController : Controller
 
         try
         {
-            var classes = (await ClassService.GetAllAsync())
-                .Where(c => c.IsActive)
-                .OrderBy(c => c.StartDate)
-                .ToList();
-            var registeredClassIds = new HashSet<int>();
+            int? studentId = null;
             try
             {
-                var rows = await StudentRegistrationService.GetRegistrationsForUserAsync(userId);
-                foreach (var (registration, _) in rows)
-                {
-                    registeredClassIds.Add(registration.ClassId);
-                }
+                studentId = await StudentRegistrationService.GetStudentIdForUserAsync(userId);
             }
-            catch (BusinessException)
+            catch (Exception)
             {
-                // Fall through with an empty set; the grid still renders.
+                // Rendering empty grid when empty stuff
             }
 
-            // map using automapper and extend model for reg
+            var paged = await ClassService.GetAllAsync(studentId, page, pageSize);
 
-            var model = new List<BrowseClassViewModel>(classes.Count);
-            foreach (var @class in classes)
-            {
-                // sp should return course name, is registered/ not per user, 
-                var courseName = string.Empty;
-                try
-                {
-                    var course = await CourseService.GetByIdAsync(@class.CourseId);
-                    courseName = course?.CourseName ?? string.Empty;
-                }
-                catch (BusinessException)
-                {
-                    // Best-effort enrichment only; grid still renders without it.
-                }
-
-                model.Add(new BrowseClassViewModel
-                {
-                    ClassId = @class.Id,
-                    CourseName = courseName,
-                    ClassName = @class.ClassName,
-                    Instructor = @class.Instructor,
-                    Schedule = ScheduleHelper.GetScheduleString(@class.Schedule),
-                    StartDate = @class.StartDate,
-                    EndDate = @class.EndDate,
-                    CurrentCapacity = @class.CurrentCapacity,
-                    MaxCapacity = @class.MaxCapacity,
-                    IsRegistered = registeredClassIds.Contains(@class.Id),
-                });
-            }
-
-            ViewData["AvailableCount"] = classes.Count;
-            ViewData["OpenSeatsCount"] = classes.Sum(c => Math.Max(0, c.MaxCapacity - c.CurrentCapacity));
-            ViewData["MyRegistrationsCount"] = registeredClassIds.Count;
+            var model = BrowseClassesViewModel.FromResult(paged);
 
             return View(model);
         }
         catch (BusinessException ex)
         {
             ViewData["ErrorMessage"] = ex.Message;
-            return View(new List<BrowseClassViewModel>());
+            return View(BrowseClassesViewModel.Empty(page, pageSize));
         }
     }
 

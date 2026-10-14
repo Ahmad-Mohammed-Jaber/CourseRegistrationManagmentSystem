@@ -1,5 +1,6 @@
 using Mozaic.CourseRegistrationManagementSystem.DAL.Repository;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Results;
 
 namespace Mozaic.CourseRegistrationManagementSystem.BL.Managers;
 
@@ -18,6 +19,8 @@ internal class ClassManager
     public List<Class> GetAll() => _classRepository.GetAll();
 
     public Task<List<Class>> GetAllAsync() => _classRepository.GetAllAsync();
+
+    public Task<ClassBrowseResult> GetAllAsync(int? studentId, int pageNumber, int pageSize) => _classRepository.GetAllAsync(studentId, pageNumber, pageSize);
 
     public void Add(Class classEntity) => _classRepository.Add(classEntity);
 

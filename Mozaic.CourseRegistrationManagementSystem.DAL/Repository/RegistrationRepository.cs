@@ -21,6 +21,11 @@ public class RegistrationRepository : IGenericRepository<Registration>
         return RegistrationDataProvider.ExistsAsync(studentId, classId);
     }
 
+    public Task<Registration?> GetRegistrationByStudentAndClassAsync(int studentId, int classId)
+    {
+        return RegistrationDataProvider.GetRegistrationByStudentAndClassAsync(studentId, classId);
+    }
+
     public List<Registration> GetRegistrationsByStudentId(int studentId)
     {
         return RegistrationDataProvider.GetRegistrationsByStudentId(studentId);

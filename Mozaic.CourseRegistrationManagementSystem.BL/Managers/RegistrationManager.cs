@@ -13,6 +13,8 @@ internal class RegistrationManager
 
     public Task<bool> ExistsAsync(int studentId, int classId) => _registrationRepository.ExistsAsync(studentId, classId);
 
+    public Task<Registration?> GetRegistrationByStudentAndClassAsync(int studentId, int classId) => _registrationRepository.GetRegistrationByStudentAndClassAsync(studentId, classId);
+
     public List<Registration> GetRegistrationsByStudentId(int studentId) => _registrationRepository.GetRegistrationsByStudentId(studentId);
 
     public Task<List<Registration>> GetRegistrationsByStudentIdAsync(int studentId) => _registrationRepository.GetRegistrationsByStudentIdAsync(studentId);

@@ -2,6 +2,7 @@ using Mozaic.CourseRegistrationManagementSystem.BL.Managers;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
 using System.Text.RegularExpressions;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Results;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Logging;
 using Mozaic.CourseRegistrationManagementSystem.BL.Validation;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Session;
@@ -58,6 +59,22 @@ public static class ClassService
         {
             var classManager = new ClassManager();
             return await classManager.GetAllAsync();
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while retrieving classes.", ex);
+        }
+    }
+
+    public static async Task<ClassBrowseResult> GetAllAsync(int? studentId, int pageNumber, int pageSize)
+    {
+        try
+        {
+            PagedResult<Class>.Normalize(ref pageNumber, ref pageSize);
+
+            var classManager = new ClassManager();
+            return await classManager.GetAllAsync(studentId, pageNumber, pageSize);
         }
         catch (Exception ex)
         {

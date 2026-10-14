@@ -221,6 +221,61 @@ public static class ClassDataProvider
         }
     }
 
+    public static async Task<ClassBrowseResult> GetAllAsync(int? studentId, int pageNumber, int pageSize)
+    {
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        SqlDataReader? reader = null;
+        try
+        {
+            connection = DBConnectionFactory.CreateConnection();
+            await connection.OpenAsync();
+
+            command = new SqlCommand("usp_GetAllClasses", connection)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+            command.Parameters.Add("@UserId", SqlDbType.Int).Value = studentId.HasValue ? studentId.Value : DBNull.Value;
+            command.Parameters.Add("@PageNumber", SqlDbType.Int).Value = pageNumber;
+            command.Parameters.Add("@PageSize", SqlDbType.Int).Value = pageSize;
+
+            reader = await command.ExecuteReaderAsync();
+            var classes = new List<Class>();
+            while (await reader.ReadAsync())
+            {
+                classes.Add(MapClass(reader));
+            }
+
+            var page = new ClassBrowseResult
+            {
+                Items = classes,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalCount = classes.Count,
+            };
+
+            if (await reader.NextResultAsync() && await reader.ReadAsync())
+            {
+                page.TotalCount = HasColumn(reader, "TotalCount") && !reader.IsDBNull(reader.GetOrdinal("TotalCount")) ? reader.GetInt32(reader.GetOrdinal("TotalCount")) : classes.Count;
+                page.AvailableCount = HasColumn(reader, "AvailableCount") && !reader.IsDBNull(reader.GetOrdinal("AvailableCount")) ? reader.GetInt32(reader.GetOrdinal("AvailableCount")) : 0;
+                page.OpenSeatsCount = HasColumn(reader, "OpenSeatsCount") && !reader.IsDBNull(reader.GetOrdinal("OpenSeatsCount")) ? reader.GetInt32(reader.GetOrdinal("OpenSeatsCount")) : 0;
+                page.MyRegistrationsCount = HasColumn(reader, "MyRegistrationsCount") && !reader.IsDBNull(reader.GetOrdinal("MyRegistrationsCount")) ? reader.GetInt32(reader.GetOrdinal("MyRegistrationsCount")) : 0;
+            }
+
+            return page;
+        }
+        catch (Exception ex)
+        {
+            throw new DatabaseException("An error occured in ClassDataProvider.GetAllAsync(int? studentId, int pageNumber, int pageSize)", ex);
+        }
+        finally
+        {
+            reader?.Dispose();
+            command?.Dispose();
+            connection?.Dispose();
+        }
+    }
+
     public static void Add(Class entity)
     {
         SqlConnection? connection = null;
@@ -579,13 +634,39 @@ public static class ClassDataProvider
             CurrentCapacity = reader.GetInt32(reader.GetOrdinal("CurrentCapacity")),
             StartDate = reader.GetDateTime(reader.GetOrdinal("StartDate")),
             EndDate = reader.GetDateTime(reader.GetOrdinal("EndDate")),
-            Schedule = (DaysOfTheWeek)reader.GetInt32(reader.GetOrdinal("Schedule")),
-            IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
+            // usp_GetAllClasses (paged browse) aliases the raw schedule int as
+            // ScheduleDisplay; every other procedure returns it as Schedule.
+            Schedule = HasColumn(reader, "Schedule") && !reader.IsDBNull(reader.GetOrdinal("Schedule"))
+                ? (DaysOfTheWeek)reader.GetInt32(reader.GetOrdinal("Schedule"))
+                : HasColumn(reader, "ScheduleDisplay") && !reader.IsDBNull(reader.GetOrdinal("ScheduleDisplay"))
+                    ? (DaysOfTheWeek)reader.GetInt32(reader.GetOrdinal("ScheduleDisplay"))
+                    : default,
+            // The paged browse procedure returns active classes only and omits
+            // this column; default to true for rows coming from that shape.
+            IsActive = HasColumn(reader, "IsActive") && !reader.IsDBNull(reader.GetOrdinal("IsActive"))
+                ? reader.GetBoolean(reader.GetOrdinal("IsActive"))
+                : true,
             CreatedOn = HasColumn(reader, "CreatedOn") && !reader.IsDBNull(reader.GetOrdinal("CreatedOn")) ? reader.GetFieldValue<DateTimeOffset>(reader.GetOrdinal("CreatedOn")) : default,
             ModifiedOn = HasColumn(reader, "ModifiedOn") && !reader.IsDBNull(reader.GetOrdinal("ModifiedOn")) ? reader.GetFieldValue<DateTimeOffset>(reader.GetOrdinal("ModifiedOn")) : default,
             CreatedBy = HasColumn(reader, "CreatedBy") && !reader.IsDBNull(reader.GetOrdinal("CreatedBy")) ? reader.GetInt32(reader.GetOrdinal("CreatedBy")) : 0,
             ModifiedBy = HasColumn(reader, "ModifiedBy") && !reader.IsDBNull(reader.GetOrdinal("ModifiedBy")) ? reader.GetInt32(reader.GetOrdinal("ModifiedBy")) : 0
         };
+
+        if (HasColumn(reader, "CourseName") && !reader.IsDBNull(reader.GetOrdinal("CourseName")))
+        {
+            entity.Course = new Course
+            {
+                Id = entity.CourseId,
+                CourseName = reader.GetString(reader.GetOrdinal("CourseName"))
+            };
+        }
+
+        if (HasColumn(reader, "IsRegistered") && !reader.IsDBNull(reader.GetOrdinal("IsRegistered")))
+        {
+            entity.IsRegistered = reader.GetBoolean(reader.GetOrdinal("IsRegistered"));
+        }
+
+        return entity;
     }
 
     private static bool HasColumn(SqlDataReader reader, string name)

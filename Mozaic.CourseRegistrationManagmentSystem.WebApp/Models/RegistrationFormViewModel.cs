@@ -34,6 +34,6 @@ public class RegistrationFormViewModel
         new SelectListItem("Registered", "Registered"),
         new SelectListItem("Pending", "Pending"),
         new SelectListItem("Confirmed", "Confirmed"),
-        new SelectListItem("Cancelled", "Cancelled"),
+        new SelectListItem("Dropped", "Dropped"),
     };
 }
