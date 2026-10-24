@@ -130,17 +130,13 @@ public class StudentsController : Controller
 
         try
         {
-            var existing = await StudentService.GetByIdAsync(id);
-            if (existing is null)
-            {
-                TempData["ErrorMessage"] = $"Student with id {id} was not found.";
-                return RedirectToAction(nameof(Index));
-            }
-
+            // No pre-read: UserId is a non-editable field that UpdateAsync preserves
+            // server-side, so the controller no longer loads the row just to copy
+            // UserId back into the payload. Existence is validated by UpdateAsync,
+            // which throws BusinessException when the row is missing.
             await StudentService.UpdateAsync(new Student
             {
                 Id = id,
-                UserId = existing.UserId,
                 StudentNumber = model.StudentNumber,
                 UserName = model.UserName.Trim(),
                 FullName = model.FullName.Trim(),
@@ -148,6 +144,7 @@ public class StudentsController : Controller
                 Phone = model.Phone.Trim(),
                 IsActive = model.IsActive,
                 Role = UserEntity.UserRoles.Student,
+                // UserId intentionally omitted — not editable, preserved by UpdateAsync.
             }, User.GetUserId());
 
             TempData["SuccessMessage"] = $"Student '{model.UserName.Trim()}' updated successfully.";

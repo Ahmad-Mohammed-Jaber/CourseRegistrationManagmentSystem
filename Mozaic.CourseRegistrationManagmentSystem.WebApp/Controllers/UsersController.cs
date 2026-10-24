@@ -114,19 +114,16 @@ public class UsersController : Controller
 
         try
         {
-            var existing = await UserService.GetByIdAsync(id);
-            if (existing is null)
-            {
-                TempData["ErrorMessage"] = $"User with id {id} was not found.";
-                return RedirectToAction(nameof(Index));
-            }
-
+            // No pre-read: Role is a non-editable field that UpdateAsync preserves
+            // server-side (like PasswordHash when empty), so the controller no longer
+            // loads the row just to copy Role back into the payload. Existence is
+            // validated by UpdateAsync, which throws BusinessException when missing.
             await UserService.UpdateAsync(new User
             {
                 Id = id,
                 UserName = model.UserName.Trim(),
                 FullName = model.FullName.Trim(),
-                Role = existing.Role,
+                // Role intentionally omitted — not editable, preserved by UpdateAsync.
                 IsActive = model.IsActive,
                 PasswordHash = string.Empty, // Preserved by the service when empty.
             }, User.GetUserId());

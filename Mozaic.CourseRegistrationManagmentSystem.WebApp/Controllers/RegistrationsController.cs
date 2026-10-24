@@ -8,6 +8,7 @@ using Mozaic.CourseRegistrationManagementSystem.Shared.Helpers;
 using Mozaic.CourseRegistrationManagmentSystem.WebApp.Models;
 
 namespace Mozaic.CourseRegistrationManagementSystem.WebApp.Controllers;
+
 public class RegistrationsController : Controller
 {
     [HttpGet]
@@ -220,13 +221,9 @@ public class RegistrationsController : Controller
 
         try
         {
-            var existing = await RegistrationService.GetByIdAsync(id);
-            if (existing is null)
-            {
-                TempData["ErrorMessage"] = $"Registration with id {id} was not found.";
-                return RedirectToAction(nameof(Index));
-            }
-
+            // No pre-read: UpdateAsync validates existence and throws BusinessException
+            // when the row is missing, so the redundant GetByIdAsync (and its extra query)
+            // is dropped. The "not found" message is now surfaced via the catch below.
             await RegistrationService.UpdateAsync(new Registration
             {
                 Id = id,
