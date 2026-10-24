@@ -1,4 +1,4 @@
-@model List<Mozaic.CourseRegistrationManagmentSystem.WebApp.Models.MyRegistrationViewModel>
+@model Mozaic.CourseRegistrationManagmentSystem.WebApp.Models.MyRegistrationsListViewModel
 @{
     ViewData["Title"] = "My Registrations";
 }
@@ -16,16 +16,47 @@
 
 <partial name="_Alerts" />
 
+<!-- Filters Row -->
+<div class="dashboard-card mb-3">
+    <form asp-controller="Registrations" asp-action="Mine" method="get" class="dashboard-card-body">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label for="courseFilter" class="form-label small">Course</label>
+                <input type="text" class="form-control" id="courseFilter" name="course" value="@Model.Course" placeholder="Course code or name" />
+            </div>
+            <div class="col-md-3">
+                <label for="classNameFilter" class="form-label small">Class</label>
+                <input type="text" class="form-control" id="classNameFilter" name="className" value="@Model.ClassName" placeholder="Class name" />
+            </div>
+            <div class="col-md-2">
+                <label for="statusFilter" class="form-label small">Status</label>
+                <select class="form-select" id="statusFilter" name="status">
+                    <option value="All" selected="@(Model.Status == "All")">All</option>
+                    <option value="Registered" selected="@(Model.Status == "Registered")">Registered</option>
+                    <option value="Pending" selected="@(Model.Status == "Pending")">Pending</option>
+                    <option value="Dropped" selected="@(Model.Status == "Dropped")">Dropped</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-funnel me-1"></i>Filter
+                </button>
+                <a class="btn btn-outline-secondary" asp-controller="Registrations" asp-action="Mine">Clear</a>
+            </div>
+        </div>
+    </form>
+</div>
+
 <div class="dashboard-row">
     <div class="dashboard-card">
         <div class="dashboard-card-header d-flex justify-content-between align-items-center">
             <h5 class="dashboard-card-title mb-0">Enrolled Classes</h5>
-            <span class="badge bg-primary">@Model.Count registered</span>
+            <span class="badge bg-primary">@Model.TotalCount registered</span>
         </div>
         <div class="dashboard-card-body">
-            @if (Model.Count == 0)
+            @if (Model.Registrations.Count == 0)
             {
-                <p class="text-muted mb-0">You are not registered for any classes yet.</p>
+                <p class="text-muted mb-0">No registrations match your search.</p>
             }
             else
             {
@@ -33,19 +64,19 @@
                     <table class="table table-hover align-middle mb-0">
                         <thead>
                             <tr>
-                                <th>@Html.DisplayNameFor(m => m[0].CourseName)</th>
-                                <th>@Html.DisplayNameFor(m => m[0].ClassName)</th>
-                                <th>@Html.DisplayNameFor(m => m[0].Instructor)</th>
-                                <th>@Html.DisplayNameFor(m => m[0].Schedule)</th>
-                                <th>@Html.DisplayNameFor(m => m[0].StartDate)</th>
-                                <th>@Html.DisplayNameFor(m => m[0].EndDate)</th>
-                                <th>@Html.DisplayNameFor(m => m[0].RegistrationDate)</th>
-                                <th>@Html.DisplayNameFor(m => m[0].Status)</th>
+                                <th>@Html.DisplayNameFor(m => m.Registrations[0].CourseName)</th>
+                                <th>@Html.DisplayNameFor(m => m.Registrations[0].ClassName)</th>
+                                <th>@Html.DisplayNameFor(m => m.Registrations[0].Instructor)</th>
+                                <th>@Html.DisplayNameFor(m => m.Registrations[0].Schedule)</th>
+                                <th>@Html.DisplayNameFor(m => m.Registrations[0].StartDate)</th>
+                                <th>@Html.DisplayNameFor(m => m.Registrations[0].EndDate)</th>
+                                <th>@Html.DisplayNameFor(m => m.Registrations[0].RegistrationDate)</th>
+                                <th>@Html.DisplayNameFor(m => m.Registrations[0].Status)</th>
                                 <th aria-label="Actions"></th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var item in Model)
+                            @foreach (var item in Model.Registrations)
                             {
                                 <tr>
                                     <td>@Html.DisplayFor(_ => item.CourseName)</td>
@@ -74,5 +105,21 @@
                 </div>
             }
         </div>
+        @if (Model.TotalPages > 1)
+        {
+            <div class="d-flex justify-content-between align-items-center px-3 py-3">
+                <span class="text-muted">Page @(Model.Page) of @(Model.TotalPages) · @(Model.TotalCount) total</span>
+                <nav aria-label="My registrations pages">
+                    <ul class="pagination mb-0">
+                        <li class="page-item @(Model.HasPrevious ? "" : "disabled")">
+                            <a class="page-link" asp-action="Mine" asp-all-route-data="Model.RouteValues" asp-route-page="@(Model.Page - 1)">Previous</a>
+                        </li>
+                        <li class="page-item @(Model.HasNext ? "" : "disabled")">
+                            <a class="page-link" asp-action="Mine" asp-all-route-data="Model.RouteValues" asp-route-page="@(Model.Page + 1)">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        }
     </div>
 </div>

@@ -13,6 +13,10 @@ public static class CourseDataProvider
         int? id = null,
         string? courseCode = null,
         string? search = null,
+        string? codeFilter = null,
+        string? nameFilter = null,
+        string? descriptionFilter = null,
+        bool? isActive = null,
         int? pageNumber = null,
         int? pageSize = null)
     {
@@ -24,7 +28,9 @@ public static class CourseDataProvider
             connection = DBConnectionFactory.CreateConnection();
             await connection.OpenAsync();
 
-            command = CreateGetCommand(connection, id, courseCode, search, pageNumber, pageSize);
+            command = CreateGetCommand(
+                connection, id, courseCode, search, codeFilter, nameFilter,
+                descriptionFilter, isActive, pageNumber, pageSize);
 
             reader = await command.ExecuteReaderAsync();
             var courses = new List<Course>();
@@ -80,7 +86,7 @@ public static class CourseDataProvider
             connection = DBConnectionFactory.CreateConnection();
             await connection.OpenAsync();
 
-            command = CreateGetCommand(connection, id, null, null, null, null);
+            command = CreateGetCommand(connection, id, null, null, null, null, null, null, null, null);
 
             reader = await command.ExecuteReaderAsync();
             return await reader.ReadAsync() ? MapCourse(reader) : null;
@@ -102,6 +108,10 @@ public static class CourseDataProvider
         int? id,
         string? courseCode,
         string? search,
+        string? codeFilter,
+        string? nameFilter,
+        string? descriptionFilter,
+        bool? isActive,
         int? pageNumber,
         int? pageSize)
     {
@@ -114,6 +124,13 @@ public static class CourseDataProvider
             string.IsNullOrWhiteSpace(courseCode) ? DBNull.Value : (object)courseCode!;
         command.Parameters.Add("@Search", SqlDbType.NVarChar, 100).Value =
             string.IsNullOrWhiteSpace(search) ? DBNull.Value : (object)search!;
+        command.Parameters.Add("@CodeFilter", SqlDbType.NVarChar, 100).Value =
+            string.IsNullOrWhiteSpace(codeFilter) ? DBNull.Value : (object)codeFilter!.Trim();
+        command.Parameters.Add("@NameFilter", SqlDbType.NVarChar, 100).Value =
+            string.IsNullOrWhiteSpace(nameFilter) ? DBNull.Value : (object)nameFilter!.Trim();
+        command.Parameters.Add("@DescriptionFilter", SqlDbType.NVarChar, 200).Value =
+            string.IsNullOrWhiteSpace(descriptionFilter) ? DBNull.Value : (object)descriptionFilter!.Trim();
+        command.Parameters.Add("@IsActive", SqlDbType.Bit).Value = isActive.HasValue ? isActive.Value : DBNull.Value;
         command.Parameters.Add("@PageNumber", SqlDbType.Int).Value = pageNumber.HasValue ? pageNumber.Value : DBNull.Value;
         command.Parameters.Add("@PageSize", SqlDbType.Int).Value = pageSize.HasValue ? pageSize.Value : DBNull.Value;
         return command;

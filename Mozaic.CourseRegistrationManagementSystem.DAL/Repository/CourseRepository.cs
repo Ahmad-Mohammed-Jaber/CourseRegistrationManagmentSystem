@@ -11,10 +11,15 @@ public class CourseRepository : IGenericRepository<Course>
         int? id = null,
         string? courseCode = null,
         string? search = null,
+        string? codeFilter = null,
+        string? nameFilter = null,
+        string? descriptionFilter = null,
+        bool? isActive = null,
         int? pageNumber = null,
         int? pageSize = null)
     {
-        return CourseDataProvider.GetAsync(id, courseCode, search, pageNumber, pageSize);
+        return CourseDataProvider.GetAsync(
+            id, courseCode, search, codeFilter, nameFilter, descriptionFilter, isActive, pageNumber, pageSize);
     }
     public Task<Course?> GetByIdAsync(int id)
     {

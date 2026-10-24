@@ -24,11 +24,24 @@ public sealed class BrowseClassesViewModel
 
     public int MyRegistrationsCount { get; set; }
 
+    public string Course { get; set; } = string.Empty;
+
+    public string ClassName { get; set; } = string.Empty;
+
+    public string Instructor { get; set; } = string.Empty;
+
+    public Dictionary<string, string> RouteValues { get; set; } = new();
+
     public bool HasPrevious => Page > 1;
 
     public bool HasNext => Page < TotalPages;
 
-    public static BrowseClassesViewModel FromResult(ClassResult result)
+    public static BrowseClassesViewModel FromResult(
+        ClassResult result,
+        string? course,
+        string? className,
+        string? instructor,
+        int pageSize)
     {
         return new BrowseClassesViewModel
         {
@@ -51,11 +64,36 @@ public sealed class BrowseClassesViewModel
             TotalPages = Math.Max(1, result.TotalPages),
             OpenSeatsCount = result.OpenSeatsCount,
             MyRegistrationsCount = result.MyRegistrationsCount,
+            Course = course?.Trim() ?? string.Empty,
+            ClassName = className?.Trim() ?? string.Empty,
+            Instructor = instructor?.Trim() ?? string.Empty,
+            RouteValues = ListRouteValues.Create(
+                pageSize,
+                ("course", course),
+                ("className", className),
+                ("instructor", instructor)),
         };
     }
 
-    public static BrowseClassesViewModel Empty(int page = 1, int pageSize = 20)
+    public static BrowseClassesViewModel Empty(
+        int page = 1,
+        int pageSize = 20,
+        string? course = null,
+        string? className = null,
+        string? instructor = null)
     {
-        return new BrowseClassesViewModel { Page = page, PageSize = pageSize };
+        return new BrowseClassesViewModel
+        {
+            Page = page,
+            PageSize = pageSize,
+            Course = course?.Trim() ?? string.Empty,
+            ClassName = className?.Trim() ?? string.Empty,
+            Instructor = instructor?.Trim() ?? string.Empty,
+            RouteValues = ListRouteValues.Create(
+                pageSize,
+                ("course", course),
+                ("className", className),
+                ("instructor", instructor)),
+        };
     }
 }

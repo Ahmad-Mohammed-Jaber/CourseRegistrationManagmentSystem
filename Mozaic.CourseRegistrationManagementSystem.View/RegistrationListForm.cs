@@ -15,16 +15,30 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
         private Button btnEdit;
         private Button btnDelete;
         private Button btnBack;
-        private TextBox txtSearch;
-        private Button btnSearch;
+        private TextBox txtStudentFilter;
+        private TextBox txtCourseFilter;
+        private TextBox txtClassNameFilter;
+        private ComboBox cmbStatusFilter;
+        private Button btnFilter;
+        private Button btnClearFilters;
+        private Button btnPrev;
+        private Button btnNext;
+        private Label lblPage;
         private Panel topPanel;
         private List<Registration> _regs = new();
         private List<RegistrationGridRow> _rows = new();
+        private const int PageSize = 20;
+        private int _page = 1;
+        private int _totalPages = 1;
+        private string? _student;
+        private string? _course;
+        private string? _className;
+        private string? _status = "All";
 
         public RegistrationListForm()
         {
             InitializeComponent();
-            LoadRegistrations();
+            _ = LoadRegistrationsAsync();
         }
 
         private void InitializeComponent()
@@ -34,14 +48,21 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             btnEdit = new Button();
             btnDelete = new Button();
             btnBack = new Button();
-            txtSearch = new TextBox();
-            btnSearch = new Button();
+            txtStudentFilter = new TextBox();
+            txtCourseFilter = new TextBox();
+            txtClassNameFilter = new TextBox();
+            cmbStatusFilter = new ComboBox();
+            btnFilter = new Button();
+            btnClearFilters = new Button();
+            btnPrev = new Button();
+            btnNext = new Button();
+            lblPage = new Label();
             topPanel = new Panel();
 
             SuspendLayout();
 
             topPanel.Dock = DockStyle.Top;
-            topPanel.Height = 50;
+            topPanel.Height = 105;
 
             btnBack.Location = new Point(10, 10);
             btnBack.Size = new Size(80, 30);
@@ -63,13 +84,49 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             btnDelete.Text = "Delete Registration";
             btnDelete.Click += btnDelete_Click;
 
-            txtSearch.Location = new Point(530, 12);
-            txtSearch.Size = new Size(150, 25);
+            btnPrev.Location = new Point(540, 10);
+            btnPrev.Size = new Size(70, 30);
+            btnPrev.Text = "Prev";
+            btnPrev.Click += btnPrev_Click;
 
-            btnSearch.Location = new Point(690, 10);
-            btnSearch.Size = new Size(70, 30);
-            btnSearch.Text = "Search";
-            btnSearch.Click += btnSearch_Click;
+            lblPage.Location = new Point(615, 17);
+            lblPage.Size = new Size(150, 20);
+            lblPage.TextAlign = ContentAlignment.MiddleCenter;
+            lblPage.Text = "Page 1 of 1";
+
+            btnNext.Location = new Point(770, 10);
+            btnNext.Size = new Size(70, 30);
+            btnNext.Text = "Next";
+            btnNext.Click += btnNext_Click;
+
+            var lblStudent = new Label { Text = "Student", Location = new Point(10, 48), Size = new Size(180, 18) };
+            txtStudentFilter.Location = new Point(10, 68);
+            txtStudentFilter.Size = new Size(180, 25);
+
+            var lblCourse = new Label { Text = "Course", Location = new Point(200, 48), Size = new Size(160, 18) };
+            txtCourseFilter.Location = new Point(200, 68);
+            txtCourseFilter.Size = new Size(160, 25);
+
+            var lblClass = new Label { Text = "Class", Location = new Point(370, 48), Size = new Size(160, 18) };
+            txtClassNameFilter.Location = new Point(370, 68);
+            txtClassNameFilter.Size = new Size(160, 25);
+
+            var lblStatus = new Label { Text = "Status", Location = new Point(540, 48), Size = new Size(120, 18) };
+            cmbStatusFilter.Location = new Point(540, 68);
+            cmbStatusFilter.Size = new Size(120, 25);
+            cmbStatusFilter.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbStatusFilter.Items.AddRange(new object[] { "All", "Registered", "Pending", "Dropped" });
+            cmbStatusFilter.SelectedIndex = 0;
+
+            btnFilter.Location = new Point(670, 66);
+            btnFilter.Size = new Size(70, 27);
+            btnFilter.Text = "Filter";
+            btnFilter.Click += btnFilter_Click;
+
+            btnClearFilters.Location = new Point(750, 66);
+            btnClearFilters.Size = new Size(70, 27);
+            btnClearFilters.Text = "Clear";
+            btnClearFilters.Click += btnClearFilters_Click;
 
             topPanel.Controls.AddRange(new Control[]
             {
@@ -77,8 +134,19 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                 btnAdd,
                 btnEdit,
                 btnDelete,
-                txtSearch,
-                btnSearch
+                btnPrev,
+                lblPage,
+                btnNext,
+                lblStudent,
+                txtStudentFilter,
+                lblCourse,
+                txtCourseFilter,
+                lblClass,
+                txtClassNameFilter,
+                lblStatus,
+                cmbStatusFilter,
+                btnFilter,
+                btnClearFilters
             });
 
             dgvRegs.Dock = DockStyle.Fill;
@@ -102,29 +170,37 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             Close();
         }
 
-        private async void LoadRegistrations()
+        private async Task LoadRegistrationsAsync(
+            int page = 1,
+            string? student = null,
+            string? course = null,
+            string? className = null,
+            string? status = null,
+            int? selectId = null)
         {
             try
             {
-                var details = await RegistrationService.GetAsync();
-                _regs = details.ToList();
-                _rows = details.Select(x => new RegistrationGridRow
-                {
-                    Id = x.Id,
-                    StudentId = x.StudentId,
-                    ClassId = x.ClassId,
-                    StudentName = x.Student?.UserName ?? string.Empty,
-                    ClassName = x.Class?.ClassName ?? string.Empty,
-                    CourseName = x.Course?.CourseName ?? string.Empty,
-                    RegistrationDate = x.RegistrationDate,
-                    Status = x.Status,
-                    CreatedOn = x.CreatedOn,
-                    ModifiedOn = x.ModifiedOn,
-                    CreatedBy = x.CreatedBy,
-                    ModifiedBy = x.ModifiedBy,
-                }).ToList();
-
+                var result = await RegistrationService.GetAsync(
+                    studentFilter: student,
+                    courseFilter: course,
+                    classFilter: className,
+                    statusFilter: status,
+                    pageNumber: page,
+                    pageSize: PageSize);
+                _regs = result.ToList();
+                _rows = MapRows(_regs);
+                _page = result.PageNumber;
+                _totalPages = Math.Max(1, result.TotalPages);
+                _student = student;
+                _course = course;
+                _className = className;
+                _status = string.IsNullOrWhiteSpace(status) ? "All" : status;
                 RefreshGrid();
+                UpdatePager();
+                if (selectId.HasValue)
+                {
+                    SelectRowById(selectId.Value);
+                }
             }
             catch (BusinessException ex)
             {
@@ -135,6 +211,37 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                 AppLogger.LogViewError(ex);
                 MessageBox.Show("Error loading registrations due to an unexpected error.");
             }
+        }
+
+        private static string? Clean(string? value)
+        {
+            return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+        }
+
+        private static List<RegistrationGridRow> MapRows(IEnumerable<Registration> registrations)
+        {
+            return registrations.Select(x => new RegistrationGridRow
+            {
+                Id = x.Id,
+                StudentId = x.StudentId,
+                ClassId = x.ClassId,
+                StudentName = x.Student?.UserName ?? string.Empty,
+                ClassName = x.Class?.ClassName ?? string.Empty,
+                CourseName = x.Course?.CourseName ?? string.Empty,
+                RegistrationDate = x.RegistrationDate,
+                Status = x.Status,
+                CreatedOn = x.CreatedOn,
+                ModifiedOn = x.ModifiedOn,
+                CreatedBy = x.CreatedBy,
+                ModifiedBy = x.ModifiedBy,
+            }).ToList();
+        }
+
+        private void UpdatePager()
+        {
+            lblPage.Text = $"Page {_page} of {_totalPages}";
+            btnPrev.Enabled = _page > 1;
+            btnNext.Enabled = _page < _totalPages;
         }
 
         private void RefreshGrid()
@@ -157,46 +264,33 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             }
         }
 
-        private async void btnSearch_Click(object sender, EventArgs e)
+        private async void btnFilter_Click(object sender, EventArgs e)
         {
-            try
-            {
-                if (!string.IsNullOrWhiteSpace(txtSearch.Text))
-                {
-                    var details = await RegistrationService.GetAsync(search: txtSearch.Text);
-                    _regs = details.ToList();
-                    _rows = details.Select(x => new RegistrationGridRow
-                    {
-                        Id = x.Id,
-                        StudentId = x.StudentId,
-                        ClassId = x.ClassId,
-                        StudentName = x.Student?.UserName ?? string.Empty,
-                        ClassName = x.Class?.ClassName ?? string.Empty,
-                        CourseName = x.Course?.CourseName ?? string.Empty,
-                        RegistrationDate = x.RegistrationDate,
-                        Status = x.Status,
-                        CreatedOn = x.CreatedOn,
-                        ModifiedOn = x.ModifiedOn,
-                        CreatedBy = x.CreatedBy,
-                        ModifiedBy = x.ModifiedBy,
-                    }).ToList();
+            await LoadRegistrationsAsync(
+                1,
+                Clean(txtStudentFilter.Text),
+                Clean(txtCourseFilter.Text),
+                Clean(txtClassNameFilter.Text),
+                cmbStatusFilter.SelectedItem?.ToString());
+        }
 
-                    RefreshGrid();
-                }
-                else
-                {
-                    LoadRegistrations();
-                }
-            }
-            catch (BusinessException ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                AppLogger.LogViewError(ex);
-                MessageBox.Show("Error searching registrations due to an unexpected error.");
-            }
+        private async void btnClearFilters_Click(object sender, EventArgs e)
+        {
+            txtStudentFilter.Clear();
+            txtCourseFilter.Clear();
+            txtClassNameFilter.Clear();
+            cmbStatusFilter.SelectedIndex = 0;
+            await LoadRegistrationsAsync(1);
+        }
+
+        private async void btnPrev_Click(object sender, EventArgs e)
+        {
+            await LoadRegistrationsAsync(_page - 1, _student, _course, _className, _status);
+        }
+
+        private async void btnNext_Click(object sender, EventArgs e)
+        {
+            await LoadRegistrationsAsync(_page + 1, _student, _course, _className, _status);
         }
 
         private void ConfigureColumns()
@@ -266,31 +360,17 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             }
         }
 
-        private void btnAdd_Click(object sender, EventArgs e)
+        private async void btnAdd_Click(object sender, EventArgs e)
         {
             using var form = new RegistrationDetailForm();
 
             if (form.ShowDialog() == DialogResult.OK && form.SavedEntity != null)
             {
-                _regs.Add(form.SavedEntity);
-                _rows.Add(new RegistrationGridRow
-                {
-                    Id = form.SavedEntity.Id,
-                    StudentId = form.SavedEntity.StudentId,
-                    ClassId = form.SavedEntity.ClassId,
-                    RegistrationDate = form.SavedEntity.RegistrationDate,
-                    Status = form.SavedEntity.Status,
-                    CreatedOn = form.SavedEntity.CreatedOn,
-                    ModifiedOn = form.SavedEntity.ModifiedOn,
-                    CreatedBy = form.SavedEntity.CreatedBy,
-                    ModifiedBy = form.SavedEntity.ModifiedBy,
-                });
-                RefreshGrid();
-                SelectRowById(form.SavedEntity.Id);
+                await LoadRegistrationsAsync(_page, _student, _course, _className, _status, form.SavedEntity.Id);
             }
         }
 
-        private void btnEdit_Click(object sender, EventArgs e)
+        private async void btnEdit_Click(object sender, EventArgs e)
         {
             if (dgvRegs.CurrentRow?.DataBoundItem is RegistrationGridRow gridRow
                 && _regs.FirstOrDefault(r => r.Id == gridRow.Id) is Registration reg)
@@ -299,13 +379,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
 
                 if (form.ShowDialog() == DialogResult.OK && form.SavedEntity != null)
                 {
-                    int index = _regs.FindIndex(r => r.Id == reg.Id);
-                    if (index >= 0)
-                    {
-                        _regs[index] = form.SavedEntity;
-                    }
-                    RefreshGrid();
-                    SelectRowById(reg.Id);
+                    await LoadRegistrationsAsync(_page, _student, _course, _className, _status, form.SavedEntity.Id);
                 }
             }
             else
@@ -330,9 +404,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                     try
                     {
                         await RegistrationService.DeleteAsync(reg.Id);
-                        _regs.RemoveAll(r => r.Id == reg.Id);
-                        _rows.RemoveAll(r => r.Id == reg.Id);
-                        RefreshGrid();
+                        await LoadRegistrationsAsync(_page, _student, _course, _className, _status);
                     }
                     catch (BusinessException ex)
                     {

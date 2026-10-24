@@ -15,15 +15,27 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
         private Button btnEdit;
         private Button btnDelete;
         private Button btnBack;
-        private TextBox txtSearch;
-        private Button btnSearch;
+        private TextBox txtCodeFilter;
+        private TextBox txtNameFilter;
+        private ComboBox cmbStatusFilter;
+        private Button btnFilter;
+        private Button btnClearFilters;
+        private Button btnPrev;
+        private Button btnNext;
+        private Label lblPage;
         private Panel topPanel;
         private List<Course> _courses = new();
+        private const int PageSize = 20;
+        private int _page = 1;
+        private int _totalPages = 1;
+        private string? _code;
+        private string? _name;
+        private string? _status = "All";
 
         public CourseListForm()
         {
             InitializeComponent();
-            LoadCourses();
+            _ = LoadCoursesAsync();
         }
 
         private void InitializeComponent()
@@ -33,14 +45,20 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             btnEdit = new Button();
             btnDelete = new Button();
             btnBack = new Button();
-            txtSearch = new TextBox();
-            btnSearch = new Button();
+            txtCodeFilter = new TextBox();
+            txtNameFilter = new TextBox();
+            cmbStatusFilter = new ComboBox();
+            btnFilter = new Button();
+            btnClearFilters = new Button();
+            btnPrev = new Button();
+            btnNext = new Button();
+            lblPage = new Label();
             topPanel = new Panel();
 
             SuspendLayout();
 
             topPanel.Dock = DockStyle.Top;
-            topPanel.Height = 50;
+            topPanel.Height = 105;
 
             btnBack.Location = new Point(10, 10);
             btnBack.Size = new Size(80, 30);
@@ -62,13 +80,60 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             btnDelete.Text = "Delete Course";
             btnDelete.Click += btnDelete_Click;
 
-            txtSearch.Location = new Point(480, 12);
-            txtSearch.Size = new Size(150, 25);
+            btnPrev.Location = new Point(480, 10);
+            btnPrev.Size = new Size(70, 30);
+            btnPrev.Text = "Prev";
+            btnPrev.Click += btnPrev_Click;
 
-            btnSearch.Location = new Point(640, 10);
-            btnSearch.Size = new Size(70, 30);
-            btnSearch.Text = "Search";
-            btnSearch.Click += btnSearch_Click;
+            lblPage.Location = new Point(555, 17);
+            lblPage.Size = new Size(150, 20);
+            lblPage.TextAlign = ContentAlignment.MiddleCenter;
+            lblPage.Text = "Page 1 of 1";
+
+            btnNext.Location = new Point(710, 10);
+            btnNext.Size = new Size(70, 30);
+            btnNext.Text = "Next";
+            btnNext.Click += btnNext_Click;
+
+            var lblCode = new Label
+            {
+                Text = "Course Code",
+                Location = new Point(10, 48),
+                Size = new Size(120, 18)
+            };
+            txtCodeFilter.Location = new Point(10, 68);
+            txtCodeFilter.Size = new Size(120, 25);
+
+            var lblName = new Label
+            {
+                Text = "Course Name",
+                Location = new Point(140, 48),
+                Size = new Size(180, 18)
+            };
+            txtNameFilter.Location = new Point(140, 68);
+            txtNameFilter.Size = new Size(180, 25);
+
+            var lblStatus = new Label
+            {
+                Text = "Status",
+                Location = new Point(330, 48),
+                Size = new Size(120, 18)
+            };
+            cmbStatusFilter.Location = new Point(330, 68);
+            cmbStatusFilter.Size = new Size(120, 25);
+            cmbStatusFilter.DropDownStyle = ComboBoxStyle.DropDownList;
+            cmbStatusFilter.Items.AddRange(new object[] { "All", "Active", "Inactive" });
+            cmbStatusFilter.SelectedIndex = 0;
+
+            btnFilter.Location = new Point(460, 66);
+            btnFilter.Size = new Size(80, 27);
+            btnFilter.Text = "Filter";
+            btnFilter.Click += btnFilter_Click;
+
+            btnClearFilters.Location = new Point(550, 66);
+            btnClearFilters.Size = new Size(80, 27);
+            btnClearFilters.Text = "Clear";
+            btnClearFilters.Click += btnClearFilters_Click;
 
             topPanel.Controls.AddRange(new Control[]
             {
@@ -76,8 +141,17 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                 btnAdd,
                 btnEdit,
                 btnDelete,
-                txtSearch,
-                btnSearch
+                btnPrev,
+                lblPage,
+                btnNext,
+                lblCode,
+                txtCodeFilter,
+                lblName,
+                txtNameFilter,
+                lblStatus,
+                cmbStatusFilter,
+                btnFilter,
+                btnClearFilters
             });
 
             dgvCourses.Dock = DockStyle.Fill;
@@ -101,13 +175,33 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             Close();
         }
 
-        private async void LoadCourses()
+        private async Task LoadCoursesAsync(
+            int page = 1,
+            string? code = null,
+            string? name = null,
+            string? status = null,
+            int? selectId = null)
         {
             try
             {
-                var courses = await CourseService.GetAsync();
-                _courses = courses.ToList();
+                var result = await CourseService.GetAsync(
+                    codeFilter: code,
+                    nameFilter: name,
+                    isActive: ParseStatus(status),
+                    pageNumber: page,
+                    pageSize: PageSize);
+                _courses = result.ToList();
+                _page = result.PageNumber;
+                _totalPages = Math.Max(1, result.TotalPages);
+                _code = code;
+                _name = name;
+                _status = string.IsNullOrWhiteSpace(status) ? "All" : status;
                 RefreshGrid();
+                UpdatePager();
+                if (selectId.HasValue)
+                {
+                    SelectRowById(selectId.Value);
+                }
             }
             catch (BusinessException ex)
             {
@@ -118,6 +212,28 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                 AppLogger.LogViewError(ex);
                 MessageBox.Show("Error loading courses due to an unexpected error.");
             }
+        }
+
+        private static bool? ParseStatus(string? status)
+        {
+            return status?.Trim().ToLowerInvariant() switch
+            {
+                "active" => true,
+                "inactive" => false,
+                _ => null,
+            };
+        }
+
+        private static string? Clean(string? value)
+        {
+            return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+        }
+
+        private void UpdatePager()
+        {
+            lblPage.Text = $"Page {_page} of {_totalPages}";
+            btnPrev.Enabled = _page > 1;
+            btnNext.Enabled = _page < _totalPages;
         }
 
         private void RefreshGrid()
@@ -167,45 +283,44 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             }
         }
 
-        private async void btnSearch_Click(object sender, EventArgs e)
+        private async void btnFilter_Click(object sender, EventArgs e)
         {
-            try
-            {
-                if (!string.IsNullOrWhiteSpace(txtSearch.Text))
-                {
-                    var courses = await CourseService.GetAsync(search: txtSearch.Text);
-                    _courses = courses.ToList();
-                    RefreshGrid();
-                }
-                else
-                {
-                    LoadCourses();
-                }
-            }
-            catch (BusinessException ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                AppLogger.LogViewError(ex);
-                MessageBox.Show("Error searching courses due to an unexpected error.");
-            }
+            await LoadCoursesAsync(
+                1,
+                Clean(txtCodeFilter.Text),
+                Clean(txtNameFilter.Text),
+                cmbStatusFilter.SelectedItem?.ToString());
         }
 
-        private void btnAdd_Click(object sender, EventArgs e)
+        private async void btnClearFilters_Click(object sender, EventArgs e)
+        {
+            txtCodeFilter.Clear();
+            txtNameFilter.Clear();
+            cmbStatusFilter.SelectedIndex = 0;
+            await LoadCoursesAsync(1);
+        }
+
+        private async void btnPrev_Click(object sender, EventArgs e)
+        {
+            await LoadCoursesAsync(_page - 1, _code, _name, _status);
+        }
+
+        private async void btnNext_Click(object sender, EventArgs e)
+        {
+            await LoadCoursesAsync(_page + 1, _code, _name, _status);
+        }
+
+        private async void btnAdd_Click(object sender, EventArgs e)
         {
             using var form = new CourseDetailForm();
 
             if (form.ShowDialog() == DialogResult.OK && form.SavedEntity != null)
             {
-                _courses.Add(form.SavedEntity);
-                RefreshGrid();
-                SelectRowById(form.SavedEntity.Id);
+                await LoadCoursesAsync(_page, _code, _name, _status, form.SavedEntity.Id);
             }
         }
 
-        private void btnEdit_Click(object sender, EventArgs e)
+        private async void btnEdit_Click(object sender, EventArgs e)
         {
             if (dgvCourses.CurrentRow?.DataBoundItem is Course course)
             {
@@ -213,13 +328,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
 
                 if (form.ShowDialog() == DialogResult.OK && form.SavedEntity != null)
                 {
-                    int index = _courses.FindIndex(c => c.Id == course.Id);
-                    if (index >= 0)
-                    {
-                        _courses[index] = form.SavedEntity;
-                    }
-                    RefreshGrid();
-                    SelectRowById(course.Id);
+                    await LoadCoursesAsync(_page, _code, _name, _status, form.SavedEntity.Id);
                 }
             }
             else
@@ -243,8 +352,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                     try
                     {
                         await CourseService.DeleteAsync(course.Id);
-                        _courses.RemoveAll(c => c.Id == course.Id);
-                        RefreshGrid();
+                        await LoadCoursesAsync(_page, _code, _name, _status);
                     }
                     catch (BusinessException ex)
                     {

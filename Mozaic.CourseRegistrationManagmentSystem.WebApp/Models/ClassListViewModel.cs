@@ -5,8 +5,7 @@ namespace Mozaic.CourseRegistrationManagmentSystem.WebApp.Models;
 
 /// <summary>
 /// Strongly-typed page model for Views/Classes/Index.cshtml.
-/// Holds the current page of classes plus the pager state, the search term
-/// and the active status filter.
+/// Holds the current page of classes plus the pager state and column filters.
 /// </summary>
 public sealed class ClassListViewModel
 {
@@ -20,18 +19,40 @@ public sealed class ClassListViewModel
 
     public int TotalPages { get; set; } = 1;
 
-    /// <summary>The active search term, echoed back into the search box.</summary>
-    public string Query { get; set; } = string.Empty;
+    public string ClassName { get; set; } = string.Empty;
+
+    public string Instructor { get; set; } = string.Empty;
+
+    /// <summary>Matches the course code or course name.</summary>
+    public string Course { get; set; } = string.Empty;
 
     /// <summary>One of 'Active', 'Inactive' or 'All'.</summary>
     public string Status { get; set; } = ClassResult.StatusActive;
+
+    public Dictionary<string, string> RouteValues { get; set; } = new();
 
     public bool HasPrevious => Page > 1;
 
     public bool HasNext => Page < TotalPages;
 
-    public static ClassListViewModel FromResult(ClassResult result, string? query, string? status)
+    public static ClassListViewModel FromResult(
+        ClassResult result,
+        string? className,
+        string? instructor,
+        string? course,
+        string? status,
+        int pageSize)
     {
+        var normalizedStatus = string.IsNullOrWhiteSpace(status) ? ClassResult.StatusActive : status!;
+
+        var routeValues = ListRouteValues.Create(
+            pageSize,
+            ("className", className),
+            ("instructor", instructor),
+            ("course", course),
+            ("status", normalizedStatus));
+        routeValues["status"] = normalizedStatus;
+
         return new ClassListViewModel
         {
             Classes = result.Select(c => new ClassListItemViewModel
@@ -54,19 +75,41 @@ public sealed class ClassListViewModel
             PageSize = result.PageSize,
             TotalCount = result.TotalCount,
             TotalPages = Math.Max(1, result.TotalPages),
-            Query = query?.Trim() ?? string.Empty,
-            Status = string.IsNullOrWhiteSpace(status) ? ClassResult.StatusActive : status!,
+            ClassName = className?.Trim() ?? string.Empty,
+            Instructor = instructor?.Trim() ?? string.Empty,
+            Course = course?.Trim() ?? string.Empty,
+            Status = normalizedStatus,
+            RouteValues = routeValues,
         };
     }
 
-    public static ClassListViewModel Empty(int page = 1, int pageSize = 20, string? query = null, string? status = null)
+    public static ClassListViewModel Empty(
+        int page = 1,
+        int pageSize = 20,
+        string? className = null,
+        string? instructor = null,
+        string? course = null,
+        string? status = null)
     {
+        var normalizedStatus = string.IsNullOrWhiteSpace(status) ? ClassResult.StatusActive : status!;
+
+        var routeValues = ListRouteValues.Create(
+            pageSize,
+            ("className", className),
+            ("instructor", instructor),
+            ("course", course),
+            ("status", normalizedStatus));
+        routeValues["status"] = normalizedStatus;
+
         return new ClassListViewModel
         {
             Page = page,
             PageSize = pageSize,
-            Query = query?.Trim() ?? string.Empty,
-            Status = string.IsNullOrWhiteSpace(status) ? ClassResult.StatusActive : status!,
+            ClassName = className?.Trim() ?? string.Empty,
+            Instructor = instructor?.Trim() ?? string.Empty,
+            Course = course?.Trim() ?? string.Empty,
+            Status = normalizedStatus,
+            RouteValues = routeValues,
         };
     }
 

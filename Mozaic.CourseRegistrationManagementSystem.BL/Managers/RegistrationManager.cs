@@ -13,8 +13,14 @@ internal class RegistrationManager
         int? studentId = null,
         int? classId = null,
         string? search = null,
+        string? studentFilter = null,
+        string? courseFilter = null,
+        string? classFilter = null,
+        string? statusFilter = null,
         int? pageNumber = null,
-        int? pageSize = null) => _registrationRepository.GetAsync(id, studentId, classId, search, pageNumber, pageSize);
+        int? pageSize = null) => _registrationRepository.GetAsync(
+            id, studentId, classId, search, studentFilter, courseFilter, classFilter,
+            statusFilter, pageNumber, pageSize);
 
     public Task<Registration?> GetByIdAsync(int id) => _registrationRepository.GetByIdAsync(id);
 

@@ -13,7 +13,12 @@ public class RegistrationsController : Controller
 {
     [HttpGet]
     [Authorize(Roles = "Student")]
-    public async Task<IActionResult> Mine()
+    public async Task<IActionResult> Mine(
+        string? course = null,
+        string? className = null,
+        string? status = null,
+        int page = 1,
+        int pageSize = 20)
     {
         var userId = User.GetUserId();
         if (userId <= 0)
@@ -27,37 +32,23 @@ public class RegistrationsController : Controller
             if (student is null)
             {
                 ViewData["InfoMessage"] = "No student profile was found for your account. Contact an administrator.";
-                return View(new List<MyRegistrationViewModel>());
+                return View(MyRegistrationsListViewModel.Empty(page, pageSize, course, className, status));
             }
 
-            var rows = await StudentRegistrationService.GetRegistrationsForStudentAsync(student.Id);
+            var rows = await RegistrationService.GetAsync(
+                studentId: student.Id,
+                courseFilter: course,
+                classFilter: className,
+                statusFilter: status,
+                pageNumber: page,
+                pageSize: pageSize);
 
-            var model = new List<MyRegistrationViewModel>(rows.Count);
-            foreach (var registration in rows)
-            {
-                var @class = registration.Class;
-
-                model.Add(new MyRegistrationViewModel
-                {
-                    RegistrationId = registration.Id,
-                    ClassId = @class.Id,
-                    CourseName = registration.Course.CourseName,
-                    ClassName = @class.ClassName,
-                    Instructor = @class.Instructor,
-                    Schedule = ScheduleHelper.GetScheduleString(@class.Schedule),
-                    StartDate = @class.StartDate,
-                    EndDate = @class.EndDate,
-                    RegistrationDate = registration.RegistrationDate,
-                    Status = registration.Status,
-                });
-            }
-
-            return View(model);
+            return View(MyRegistrationsListViewModel.FromResult(rows, course, className, status, pageSize));
         }
         catch (BusinessException ex)
         {
             ViewData["ErrorMessage"] = ex.Message;
-            return View(new List<MyRegistrationViewModel>());
+            return View(MyRegistrationsListViewModel.Empty(page, pageSize, course, className, status));
         }
     }
 
@@ -93,35 +84,30 @@ public class RegistrationsController : Controller
 
     [HttpGet]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Index(string? q = null)
+    public async Task<IActionResult> Index(
+        string? student = null,
+        string? course = null,
+        string? className = null,
+        string? status = null,
+        int page = 1,
+        int pageSize = 20)
     {
-        ViewData["Query"] = q ?? string.Empty;
-
         try
         {
-            var rows = await RegistrationService.GetAsync(search: q);
+            var result = await RegistrationService.GetAsync(
+                studentFilter: student,
+                courseFilter: course,
+                classFilter: className,
+                statusFilter: status,
+                pageNumber: page,
+                pageSize: pageSize);
 
-            return View(rows
-                .OrderByDescending(r => r.RegistrationDate)
-                .Select(r => new RegistrationListItemViewModel
-                {
-                    Id = r.Id,
-                    StudentName = $"{r.Student.FullName} ({r.Student.UserName})",
-                    CourseName = r.Course.CourseName,
-                    ClassName = r.Class.ClassName,
-                    RegistrationDate = r.RegistrationDate,
-                    Status = r.Status,
-                    CreatedOn = r.CreatedOn,
-                    CreatedByName = ResolveUserName(r.CreatedByName, r.CreatedBy),
-                    ModifiedOn = r.ModifiedOn,
-                    ModifiedByName = ResolveUserName(r.ModifiedByName, r.ModifiedBy),
-                })
-                .ToList());
+            return View(RegistrationListViewModel.FromResult(result, student, course, className, status, pageSize));
         }
         catch (BusinessException ex)
         {
             ViewData["ErrorMessage"] = ex.Message;
-            return View(new List<RegistrationListItemViewModel>());
+            return View(RegistrationListViewModel.Empty(page, pageSize, student, course, className, status));
         }
     }
 
@@ -295,15 +281,5 @@ public class RegistrationsController : Controller
         {
             model.Classes = new List<SelectListItem>();
         }
-    }
-
-    private static string ResolveUserName(string? name, int userId)
-    {
-        if (!string.IsNullOrWhiteSpace(name))
-        {
-            return name;
-        }
-
-        return userId <= 0 ? "—" : $"#{userId}";
     }
 }

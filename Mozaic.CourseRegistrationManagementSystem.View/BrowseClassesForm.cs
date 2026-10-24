@@ -17,15 +17,23 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
         private Button btnPrev;
         private Button btnNext;
         private Label lblPage;
+        private TextBox txtCourseFilter;
+        private TextBox txtClassNameFilter;
+        private TextBox txtInstructorFilter;
+        private Button btnFilter;
+        private Button btnClearFilters;
         private Panel topPanel;
         private List<Class> _classes = new();
         private BrowseClassesViewModel _model = new();
         private const int PageSize = 20;
+        private string? _course;
+        private string? _className;
+        private string? _instructor;
 
         public BrowseClassesForm()
         {
             InitializeComponent();
-            LoadAvailableClasses();
+            _ = LoadAvailableClassesAsync();
         }
 
         private void InitializeComponent()
@@ -35,12 +43,17 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             btnPrev = new Button();
             btnNext = new Button();
             lblPage = new Label();
+            txtCourseFilter = new TextBox();
+            txtClassNameFilter = new TextBox();
+            txtInstructorFilter = new TextBox();
+            btnFilter = new Button();
+            btnClearFilters = new Button();
             topPanel = new Panel();
 
             SuspendLayout();
 
             topPanel.Dock = DockStyle.Top;
-            topPanel.Height = 50;
+            topPanel.Height = 105;
 
             btnRegister.Location = new Point(10, 10);
             btnRegister.Size = new Size(140, 30);
@@ -61,10 +74,40 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             lblPage.Size = new Size(200, 30);
             lblPage.TextAlign = ContentAlignment.MiddleLeft;
 
+            var lblCourse = new Label { Text = "Course", Location = new Point(10, 48), Size = new Size(180, 18) };
+            txtCourseFilter.Location = new Point(10, 68);
+            txtCourseFilter.Size = new Size(180, 25);
+
+            var lblClassName = new Label { Text = "Class Name", Location = new Point(200, 48), Size = new Size(160, 18) };
+            txtClassNameFilter.Location = new Point(200, 68);
+            txtClassNameFilter.Size = new Size(160, 25);
+
+            var lblInstructor = new Label { Text = "Instructor", Location = new Point(370, 48), Size = new Size(160, 18) };
+            txtInstructorFilter.Location = new Point(370, 68);
+            txtInstructorFilter.Size = new Size(160, 25);
+
+            btnFilter.Location = new Point(540, 66);
+            btnFilter.Size = new Size(70, 27);
+            btnFilter.Text = "Filter";
+            btnFilter.Click += btnFilter_Click;
+
+            btnClearFilters.Location = new Point(620, 66);
+            btnClearFilters.Size = new Size(70, 27);
+            btnClearFilters.Text = "Clear";
+            btnClearFilters.Click += btnClearFilters_Click;
+
             topPanel.Controls.Add(btnRegister);
             topPanel.Controls.Add(btnPrev);
             topPanel.Controls.Add(btnNext);
             topPanel.Controls.Add(lblPage);
+            topPanel.Controls.Add(lblCourse);
+            topPanel.Controls.Add(txtCourseFilter);
+            topPanel.Controls.Add(lblClassName);
+            topPanel.Controls.Add(txtClassNameFilter);
+            topPanel.Controls.Add(lblInstructor);
+            topPanel.Controls.Add(txtInstructorFilter);
+            topPanel.Controls.Add(btnFilter);
+            topPanel.Controls.Add(btnClearFilters);
 
             dgvClasses.Dock = DockStyle.Fill;
             dgvClasses.ReadOnly = true;
@@ -179,7 +222,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                     DataGridViewContentAlignment.MiddleLeft;
             }
         }
-        private async void LoadAvailableClasses()
+        private async Task LoadAvailableClassesAsync()
         {
             try
             {
@@ -199,7 +242,14 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                     // Best-effort only; the grid still renders with IsRegistered unset.
                 }
 
-                var paged = await ClassService.GetAsync(userId: studentId, statusFilter: ClassResult.StatusActive, pageNumber: _model.Page <= 0 ? 1 : _model.Page, pageSize: PageSize);
+                var paged = await ClassService.GetAsync(
+                    userId: studentId,
+                    statusFilter: ClassResult.StatusActive,
+                    classNameFilter: _className,
+                    instructorFilter: _instructor,
+                    courseFilter: _course,
+                    pageNumber: _model.Page <= 0 ? 1 : _model.Page,
+                    pageSize: PageSize);
                 _model = BrowseClassesViewModel.FromResult(paged);
                 _classes = paged.ToList();
                 RefreshGrid();
@@ -229,22 +279,48 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             btnNext.Enabled = _model.HasNext;
         }
 
-        private void btnPrev_Click(object sender, EventArgs e)
+        private async void btnPrev_Click(object sender, EventArgs e)
         {
             if (_model.HasPrevious)
             {
                 _model.Page--;
-                LoadAvailableClasses();
+                await LoadAvailableClassesAsync();
             }
         }
 
-        private void btnNext_Click(object sender, EventArgs e)
+        private async void btnNext_Click(object sender, EventArgs e)
         {
             if (_model.HasNext)
             {
                 _model.Page++;
-                LoadAvailableClasses();
+                await LoadAvailableClassesAsync();
             }
+        }
+
+        private async void btnFilter_Click(object sender, EventArgs e)
+        {
+            _course = Clean(txtCourseFilter.Text);
+            _className = Clean(txtClassNameFilter.Text);
+            _instructor = Clean(txtInstructorFilter.Text);
+            _model.Page = 1;
+            await LoadAvailableClassesAsync();
+        }
+
+        private async void btnClearFilters_Click(object sender, EventArgs e)
+        {
+            txtCourseFilter.Clear();
+            txtClassNameFilter.Clear();
+            txtInstructorFilter.Clear();
+            _course = null;
+            _className = null;
+            _instructor = null;
+            _model.Page = 1;
+            await LoadAvailableClassesAsync();
+        }
+
+        private static string? Clean(string? value)
+        {
+            return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
         }
 
         private async void btnRegister_Click(object sender, EventArgs e)

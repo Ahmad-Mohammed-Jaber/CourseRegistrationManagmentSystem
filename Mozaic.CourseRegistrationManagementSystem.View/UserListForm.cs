@@ -15,15 +15,29 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
         private Button btnEdit;
         private Button btnDelete;
         private Button btnBack;
-        private TextBox txtSearch;
-        private Button btnSearch;
+        private TextBox txtUserNameFilter;
+        private TextBox txtFullNameFilter;
+        private ComboBox cmbRoleFilter;
+        private ComboBox cmbStatusFilter;
+        private Button btnFilter;
+        private Button btnClearFilters;
+        private Button btnPrev;
+        private Button btnNext;
+        private Label lblPage;
         private Panel topPanel;
         private List<User> _users = new();
+        private const int PageSize = 20;
+        private int _page = 1;
+        private int _totalPages = 1;
+        private string? _userName;
+        private string? _fullName;
+        private string? _role = "All";
+        private string? _status = "All";
 
         public UserListForm()
         {
             InitializeComponent();
-            LoadUsers();
+            _ = LoadUsersAsync();
         }
 
         private void InitializeComponent()
@@ -33,13 +47,20 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             this.btnEdit = new Button();
             this.btnDelete = new Button();
             this.btnBack = new Button();
-            this.txtSearch = new TextBox();
-            this.btnSearch = new Button();
+            this.txtUserNameFilter = new TextBox();
+            this.txtFullNameFilter = new TextBox();
+            this.cmbRoleFilter = new ComboBox();
+            this.cmbStatusFilter = new ComboBox();
+            this.btnFilter = new Button();
+            this.btnClearFilters = new Button();
+            this.btnPrev = new Button();
+            this.btnNext = new Button();
+            this.lblPage = new Label();
             this.topPanel = new Panel();
             this.SuspendLayout();
 
             this.topPanel.Dock = DockStyle.Top;
-            this.topPanel.Height = 50;
+            this.topPanel.Height = 105;
 
             this.btnBack.Location = new Point(10, 10);
             this.btnBack.Size = new Size(80, 30);
@@ -61,15 +82,63 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             this.btnDelete.Text = "Delete User";
             this.btnDelete.Click += btnDelete_Click;
 
-            this.txtSearch.Location = new Point(430, 10);
-            this.txtSearch.Size = new Size(120, 25);
+            this.btnPrev.Location = new Point(450, 10);
+            this.btnPrev.Size = new Size(70, 30);
+            this.btnPrev.Text = "Prev";
+            this.btnPrev.Click += btnPrev_Click;
 
-            this.btnSearch.Location = new Point(560, 10);
-            this.btnSearch.Size = new Size(70, 30);
-            this.btnSearch.Text = "Search";
-            this.btnSearch.Click += btnSearch_Click;
+            this.lblPage.Location = new Point(525, 17);
+            this.lblPage.Size = new Size(150, 20);
+            this.lblPage.TextAlign = ContentAlignment.MiddleCenter;
+            this.lblPage.Text = "Page 1 of 1";
 
-            this.topPanel.Controls.AddRange(new Control[] { btnBack, btnAdd, btnEdit, btnDelete, txtSearch, btnSearch });
+            this.btnNext.Location = new Point(680, 10);
+            this.btnNext.Size = new Size(70, 30);
+            this.btnNext.Text = "Next";
+            this.btnNext.Click += btnNext_Click;
+
+            var lblUserName = new Label { Text = "Username", Location = new Point(10, 48), Size = new Size(150, 18) };
+            this.txtUserNameFilter.Location = new Point(10, 68);
+            this.txtUserNameFilter.Size = new Size(150, 25);
+
+            var lblFullName = new Label { Text = "Full Name", Location = new Point(180, 48), Size = new Size(180, 18) };
+            this.txtFullNameFilter.Location = new Point(180, 68);
+            this.txtFullNameFilter.Size = new Size(180, 25);
+
+            var lblRole = new Label { Text = "Role", Location = new Point(380, 48), Size = new Size(120, 18) };
+            this.cmbRoleFilter.Location = new Point(380, 68);
+            this.cmbRoleFilter.Size = new Size(120, 25);
+            this.cmbRoleFilter.DropDownStyle = ComboBoxStyle.DropDownList;
+            this.cmbRoleFilter.Items.AddRange(new object[] { "All", "Admin", "Student" });
+            this.cmbRoleFilter.SelectedIndex = 0;
+
+            var lblStatus = new Label { Text = "Status", Location = new Point(520, 48), Size = new Size(110, 18) };
+            this.cmbStatusFilter.Location = new Point(520, 68);
+            this.cmbStatusFilter.Size = new Size(110, 25);
+            this.cmbStatusFilter.DropDownStyle = ComboBoxStyle.DropDownList;
+            this.cmbStatusFilter.Items.AddRange(new object[] { "All", "Active", "Inactive" });
+            this.cmbStatusFilter.SelectedIndex = 0;
+
+            this.btnFilter.Location = new Point(650, 66);
+            this.btnFilter.Size = new Size(70, 27);
+            this.btnFilter.Text = "Filter";
+            this.btnFilter.Click += btnFilter_Click;
+
+            this.btnClearFilters.Location = new Point(730, 66);
+            this.btnClearFilters.Size = new Size(70, 27);
+            this.btnClearFilters.Text = "Clear";
+            this.btnClearFilters.Click += btnClearFilters_Click;
+
+            this.topPanel.Controls.AddRange(new Control[]
+            {
+                btnBack, btnAdd, btnEdit, btnDelete,
+                btnPrev, lblPage, btnNext,
+                lblUserName, txtUserNameFilter,
+                lblFullName, txtFullNameFilter,
+                lblRole, cmbRoleFilter,
+                lblStatus, cmbStatusFilter,
+                btnFilter, btnClearFilters
+            });
 
             this.dgvUsers.Dock = DockStyle.Fill;
             this.dgvUsers.ReadOnly = true;
@@ -92,13 +161,36 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             this.Close();
         }
 
-        private async void LoadUsers()
+        private async Task LoadUsersAsync(
+            int page = 1,
+            string? userName = null,
+            string? fullName = null,
+            string? role = null,
+            string? status = null,
+            int? selectId = null)
         {
             try
             {
-                var users = await UserService.GetAsync();
-                _users = users.ToList();
+                var result = await UserService.GetAsync(
+                    userNameFilter: userName,
+                    fullNameFilter: fullName,
+                    role: ParseRole(role),
+                    isActive: ParseStatus(status),
+                    pageNumber: page,
+                    pageSize: PageSize);
+                _users = result.ToList();
+                _page = result.PageNumber;
+                _totalPages = Math.Max(1, result.TotalPages);
+                _userName = userName;
+                _fullName = fullName;
+                _role = string.IsNullOrWhiteSpace(role) ? "All" : role;
+                _status = string.IsNullOrWhiteSpace(status) ? "All" : status;
                 RefreshGrid();
+                UpdatePager();
+                if (selectId.HasValue)
+                {
+                    SelectRowById(selectId.Value);
+                }
             }
             catch (BusinessException ex)
             {
@@ -109,6 +201,38 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                 AppLogger.LogViewError(ex);
                 MessageBox.Show("Error loading users due to an unexpected error.");
             }
+        }
+
+        private static User.UserRoles? ParseRole(string? role)
+        {
+            return role?.Trim().ToLowerInvariant() switch
+            {
+                "admin" => User.UserRoles.Admin,
+                "student" => User.UserRoles.Student,
+                _ => null,
+            };
+        }
+
+        private static bool? ParseStatus(string? status)
+        {
+            return status?.Trim().ToLowerInvariant() switch
+            {
+                "active" => true,
+                "inactive" => false,
+                _ => null,
+            };
+        }
+
+        private static string? Clean(string? value)
+        {
+            return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+        }
+
+        private void UpdatePager()
+        {
+            lblPage.Text = $"Page {_page} of {_totalPages}";
+            btnPrev.Enabled = _page > 1;
+            btnNext.Enabled = _page < _totalPages;
         }
 
         private void RefreshGrid()
@@ -163,46 +287,47 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             }
         }
 
-        private async void btnSearch_Click(object sender, EventArgs e)
+        private async void btnFilter_Click(object sender, EventArgs e)
         {
-            try
-            {
-                if (!string.IsNullOrWhiteSpace(txtSearch.Text))
-                {
-                    var users = await UserService.GetAsync(search: txtSearch.Text);
-                    _users = users.ToList();
-                    RefreshGrid();
-                }
-                else
-                {
-                    LoadUsers();
-                }
-            }
-            catch (BusinessException ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                AppLogger.LogViewError(ex);
-                MessageBox.Show("Error searching users due to an unexpected error.");
-            }
+            await LoadUsersAsync(
+                1,
+                Clean(txtUserNameFilter.Text),
+                Clean(txtFullNameFilter.Text),
+                cmbRoleFilter.SelectedItem?.ToString(),
+                cmbStatusFilter.SelectedItem?.ToString());
         }
 
-        private void btnAdd_Click(object sender, EventArgs e)
+        private async void btnClearFilters_Click(object sender, EventArgs e)
+        {
+            txtUserNameFilter.Clear();
+            txtFullNameFilter.Clear();
+            cmbRoleFilter.SelectedIndex = 0;
+            cmbStatusFilter.SelectedIndex = 0;
+            await LoadUsersAsync(1);
+        }
+
+        private async void btnPrev_Click(object sender, EventArgs e)
+        {
+            await LoadUsersAsync(_page - 1, _userName, _fullName, _role, _status);
+        }
+
+        private async void btnNext_Click(object sender, EventArgs e)
+        {
+            await LoadUsersAsync(_page + 1, _userName, _fullName, _role, _status);
+        }
+
+        private async void btnAdd_Click(object sender, EventArgs e)
         {
             using (var form = new UserDetailForm())
             {
                 if (form.ShowDialog() == DialogResult.OK && form.SavedEntity != null)
                 {
-                    _users.Add(form.SavedEntity);
-                    RefreshGrid();
-                    SelectRowById(form.SavedEntity.Id);
+                    await LoadUsersAsync(_page, _userName, _fullName, _role, _status, form.SavedEntity.Id);
                 }
             }
         }
 
-        private void btnEdit_Click(object sender, EventArgs e)
+        private async void btnEdit_Click(object sender, EventArgs e)
         {
             if (dgvUsers.CurrentRow?.DataBoundItem is User user)
             {
@@ -210,13 +335,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                 {
                     if (form.ShowDialog() == DialogResult.OK && form.SavedEntity != null)
                     {
-                        int index = _users.FindIndex(u => u.Id == user.Id);
-                        if (index >= 0)
-                        {
-                            _users[index] = form.SavedEntity;
-                        }
-                        RefreshGrid();
-                        SelectRowById(user.Id);
+                        await LoadUsersAsync(_page, _userName, _fullName, _role, _status, form.SavedEntity.Id);
                     }
                 }
             }
@@ -241,8 +360,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                     try
                     {
                         await UserService.DeleteAsync(user.Id);
-                        _users.RemoveAll(u => u.Id == user.Id);
-                        RefreshGrid();
+                        await LoadUsersAsync(_page, _userName, _fullName, _role, _status);
                     }
                     catch (BusinessException ex)
                     {

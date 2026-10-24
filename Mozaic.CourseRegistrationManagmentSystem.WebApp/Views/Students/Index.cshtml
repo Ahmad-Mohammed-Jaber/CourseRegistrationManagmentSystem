@@ -1,4 +1,4 @@
-@model List<Mozaic.CourseRegistrationManagmentSystem.WebApp.Models.StudentListItemViewModel>
+@model Mozaic.CourseRegistrationManagmentSystem.WebApp.Models.StudentListViewModel
 @{
     ViewData["Title"] = "Students";
 }
@@ -24,13 +24,37 @@
 <div class="dashboard-card mb-3">
     <form asp-controller="Students" asp-action="Index" method="get" class="dashboard-card-body">
         <div class="row g-2 align-items-end">
-            <div class="col-md-10">
-                <label for="searchFilter" class="form-label small">Search</label>
-                <input type="text" class="form-control" id="searchFilter" name="q" value="@ViewData["Query"]" placeholder="Search by name, username, email..." />
+            <div class="col-md-2">
+                <label for="studentNumberFilter" class="form-label small">Student Number</label>
+                <input type="text" class="form-control" id="studentNumberFilter" name="studentNumber" value="@Model.StudentNumber" placeholder="e.g. 2024001" />
             </div>
-            <div class="col-md-2 d-flex gap-2">
+            <div class="col-md-2">
+                <label for="fullNameFilter" class="form-label small">Full Name</label>
+                <input type="text" class="form-control" id="fullNameFilter" name="fullName" value="@Model.FullName" placeholder="Student name" />
+            </div>
+            <div class="col-md-2">
+                <label for="userNameFilter" class="form-label small">Username</label>
+                <input type="text" class="form-control" id="userNameFilter" name="userName" value="@Model.UserName" placeholder="Login name" />
+            </div>
+            <div class="col-md-2">
+                <label for="emailFilter" class="form-label small">Email</label>
+                <input type="text" class="form-control" id="emailFilter" name="email" value="@Model.Email" placeholder="name@example.com" />
+            </div>
+            <div class="col-md-2">
+                <label for="phoneFilter" class="form-label small">Phone</label>
+                <input type="text" class="form-control" id="phoneFilter" name="phone" value="@Model.Phone" placeholder="Phone number" />
+            </div>
+            <div class="col-md-2">
+                <label for="statusFilter" class="form-label small">Status</label>
+                <select class="form-select" id="statusFilter" name="status">
+                    <option value="All" selected="@(Model.Status == "All")">All</option>
+                    <option value="Active" selected="@(Model.Status == "Active")">Active</option>
+                    <option value="Inactive" selected="@(Model.Status == "Inactive")">Inactive</option>
+                </select>
+            </div>
+            <div class="col-12 d-flex gap-2">
                 <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-search me-1"></i>Search
+                    <i class="bi bi-funnel me-1"></i>Filter
                 </button>
                 <a class="btn btn-outline-secondary" asp-controller="Students" asp-action="Index">Clear</a>
             </div>
@@ -42,10 +66,10 @@
 <div class="dashboard-card">
     <div class="dashboard-card-header d-flex justify-content-between align-items-center">
         <h5 class="dashboard-card-title mb-0">All Students</h5>
-        <span class="badge bg-primary">@Model.Count students</span>
+        <span class="badge bg-primary">@Model.TotalCount students</span>
     </div>
     <div class="table-responsive">
-        @if (Model.Count == 0)
+        @if (Model.Students.Count == 0)
         {
             <p class="text-muted px-3 py-3 mb-0">No students found.</p>
         }
@@ -54,24 +78,24 @@
             <table class="table table-hover align-middle">
                 <thead>
                     <tr>
-                        <th scope="col">@Html.DisplayNameFor(m => m[0].StudentNumber)</th>
-                        <th scope="col">@Html.DisplayNameFor(m => m[0].FullName)</th>
-                        <th scope="col">@Html.DisplayNameFor(m => m[0].UserName)</th>
-                        <th scope="col">@Html.DisplayNameFor(m => m[0].Email)</th>
-                        <th scope="col">@Html.DisplayNameFor(m => m[0].Phone)</th>
-                        <th scope="col">@Html.DisplayNameFor(m => m[0].IsActive)</th>
+                        <th scope="col">@Html.DisplayNameFor(m => m.Students[0].StudentNumber)</th>
+                        <th scope="col">@Html.DisplayNameFor(m => m.Students[0].FullName)</th>
+                        <th scope="col">@Html.DisplayNameFor(m => m.Students[0].UserName)</th>
+                        <th scope="col">@Html.DisplayNameFor(m => m.Students[0].Email)</th>
+                        <th scope="col">@Html.DisplayNameFor(m => m.Students[0].Phone)</th>
+                        <th scope="col">@Html.DisplayNameFor(m => m.Students[0].IsActive)</th>
                         @if (User.IsInRole("Admin"))
                         {
-                            <th scope="col">@Html.DisplayNameFor(m => m[0].CreatedOn)</th>
-                            <th scope="col">@Html.DisplayNameFor(m => m[0].CreatedByName)</th>
-                            <th scope="col">@Html.DisplayNameFor(m => m[0].ModifiedOn)</th>
-                            <th scope="col">@Html.DisplayNameFor(m => m[0].ModifiedByName)</th>
+                            <th scope="col">@Html.DisplayNameFor(m => m.Students[0].CreatedOn)</th>
+                            <th scope="col">@Html.DisplayNameFor(m => m.Students[0].CreatedByName)</th>
+                            <th scope="col">@Html.DisplayNameFor(m => m.Students[0].ModifiedOn)</th>
+                            <th scope="col">@Html.DisplayNameFor(m => m.Students[0].ModifiedByName)</th>
                         }
                         <th scope="col">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var item in Model)
+                    @foreach (var item in Model.Students)
                     {
                         <tr>
                             <td>@Html.DisplayFor(_ => item.StudentNumber)</td>
@@ -128,4 +152,20 @@
             </table>
         }
     </div>
+    @if (Model.TotalPages > 1)
+    {
+        <div class="d-flex justify-content-between align-items-center px-3 py-3">
+            <span class="text-muted">Page @(Model.Page) of @(Model.TotalPages) · @(Model.TotalCount) total</span>
+            <nav aria-label="Students pages">
+                <ul class="pagination mb-0">
+                    <li class="page-item @(Model.HasPrevious ? "" : "disabled")">
+                        <a class="page-link" asp-action="Index" asp-all-route-data="Model.RouteValues" asp-route-page="@(Model.Page - 1)">Previous</a>
+                    </li>
+                    <li class="page-item @(Model.HasNext ? "" : "disabled")">
+                        <a class="page-link" asp-action="Index" asp-all-route-data="Model.RouteValues" asp-route-page="@(Model.Page + 1)">Next</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    }
 </div>

@@ -28,13 +28,33 @@
 <div class="dashboard-card mb-3">
     <form asp-controller="Users" asp-action="Index" method="get" class="dashboard-card-body">
         <div class="row g-2 align-items-end">
-            <div class="col-md-10">
-                <label for="searchFilter" class="form-label small">Search</label>
-                <input type="text" class="form-control" id="searchFilter" name="q" value="@Model.Query" placeholder="Search by username or full name..." />
+            <div class="col-md-3">
+                <label for="userNameFilter" class="form-label small">Username</label>
+                <input type="text" class="form-control" id="userNameFilter" name="userName" value="@Model.UserName" placeholder="Login name" />
+            </div>
+            <div class="col-md-3">
+                <label for="fullNameFilter" class="form-label small">Full Name</label>
+                <input type="text" class="form-control" id="fullNameFilter" name="fullName" value="@Model.FullName" placeholder="User name" />
+            </div>
+            <div class="col-md-2">
+                <label for="roleFilter" class="form-label small">Role</label>
+                <select class="form-select" id="roleFilter" name="role">
+                    <option value="All" selected="@(Model.Role == "All")">All</option>
+                    <option value="Admin" selected="@(Model.Role == "Admin")">Admin</option>
+                    <option value="Student" selected="@(Model.Role == "Student")">Student</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="statusFilter" class="form-label small">Status</label>
+                <select class="form-select" id="statusFilter" name="status">
+                    <option value="All" selected="@(Model.Status == "All")">All</option>
+                    <option value="Active" selected="@(Model.Status == "Active")">Active</option>
+                    <option value="Inactive" selected="@(Model.Status == "Inactive")">Inactive</option>
+                </select>
             </div>
             <div class="col-md-2 d-flex gap-2">
                 <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-search me-1"></i>Search
+                    <i class="bi bi-funnel me-1"></i>Filter
                 </button>
                 <a class="btn btn-outline-secondary" asp-controller="Users" asp-action="Index">Clear</a>
             </div>
@@ -144,10 +164,10 @@
             <nav aria-label="Users pages">
                 <ul class="pagination mb-0">
                     <li class="page-item @(Model.HasPrevious ? "" : "disabled")">
-                        <a class="page-link" asp-action="Index" asp-route-page="@(Model.Page - 1)" asp-route-pageSize="@Model.PageSize" asp-route-q="@Model.Query">Previous</a>
+                        <a class="page-link" asp-action="Index" asp-all-route-data="Model.RouteValues" asp-route-page="@(Model.Page - 1)">Previous</a>
                     </li>
                     <li class="page-item @(Model.HasNext ? "" : "disabled")">
-                        <a class="page-link" asp-action="Index" asp-route-page="@(Model.Page + 1)" asp-route-pageSize="@Model.PageSize" asp-route-q="@Model.Query">Next</a>
+                        <a class="page-link" asp-action="Index" asp-all-route-data="Model.RouteValues" asp-route-page="@(Model.Page + 1)">Next</a>
                     </li>
                 </ul>
             </nav>

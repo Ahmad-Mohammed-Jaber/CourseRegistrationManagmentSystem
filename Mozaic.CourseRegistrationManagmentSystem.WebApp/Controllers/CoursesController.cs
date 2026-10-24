@@ -11,34 +11,30 @@ namespace Mozaic.CourseRegistrationManagementSystem.WebApp.Controllers;
 public class CoursesController : Controller
 {
     [HttpGet]
-    public async Task<IActionResult> Index(string? q = null)
+    public async Task<IActionResult> Index(
+        string? code = null,
+        string? name = null,
+        string? description = null,
+        string? status = null,
+        int page = 1,
+        int pageSize = 20)
     {
-        ViewData["Query"] = q ?? string.Empty;
-
         try
         {
-            var courses = await CourseService.GetAsync(search: q);
+            var result = await CourseService.GetAsync(
+                codeFilter: code,
+                nameFilter: name,
+                descriptionFilter: description,
+                isActive: FilterValues.ParseActive(status),
+                pageNumber: page,
+                pageSize: pageSize);
 
-            return View(courses
-                .OrderBy(c => c.CourseCode)
-                .Select(c => new CourseListItemViewModel
-                {
-                    Id = c.Id,
-                    CourseCode = c.CourseCode,
-                    CourseName = c.CourseName,
-                    CreditHours = c.CreditHours,
-                    IsActive = c.IsActive,
-                    CreatedOn = c.CreatedOn,
-                    CreatedByName = ResolveUserName(c.CreatedByName, c.CreatedBy),
-                    ModifiedOn = c.ModifiedOn,
-                    ModifiedByName = ResolveUserName(c.ModifiedByName, c.ModifiedBy),
-                })
-                .ToList());
+            return View(CourseListViewModel.FromResult(result, code, name, description, status, pageSize));
         }
         catch (BusinessException ex)
         {
             ViewData["ErrorMessage"] = ex.Message;
-            return View(new List<CourseListItemViewModel>());
+            return View(CourseListViewModel.Empty(page, pageSize, code, name, description, status));
         }
     }
 
@@ -174,15 +170,5 @@ public class CoursesController : Controller
         }
 
         return RedirectToAction(nameof(Index));
-    }
-
-    private static string ResolveUserName(string? name, int userId)
-    {
-        if (!string.IsNullOrWhiteSpace(name))
-        {
-            return name;
-        }
-
-        return userId <= 0 ? "—" : $"#{userId}";
     }
 }

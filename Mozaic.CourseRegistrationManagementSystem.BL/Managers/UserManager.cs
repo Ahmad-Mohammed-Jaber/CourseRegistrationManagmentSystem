@@ -12,8 +12,13 @@ internal class UserManager
         int? id = null,
         string? userName = null,
         string? search = null,
+        string? userNameFilter = null,
+        string? fullNameFilter = null,
+        User.UserRoles? role = null,
+        bool? isActive = null,
         int? pageNumber = null,
-        int? pageSize = null) => _userRepository.GetAsync(id, userName, search, pageNumber, pageSize);
+        int? pageSize = null) => _userRepository.GetAsync(
+            id, userName, search, userNameFilter, fullNameFilter, role, isActive, pageNumber, pageSize);
 
     public Task<User?> GetByIdAsync(int id) => _userRepository.GetByIdAsync(id);
 

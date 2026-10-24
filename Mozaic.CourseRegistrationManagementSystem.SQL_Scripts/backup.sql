@@ -479,13 +479,16 @@ GO
 -- the page and the counters are then derived from it, so the predicate
 -- never has to be repeated.
 CREATE PROCEDURE [dbo].[usp_GetClasses]
-    @Id           INT = NULL,
-    @CourseId     INT = NULL,
-    @UserId       INT = NULL,
-    @Search       NVARCHAR(100) = NULL,
-    @StatusFilter NVARCHAR(10) = NULL,
-    @PageNumber   INT = NULL,
-    @PageSize     INT = NULL
+    @Id               INT = NULL,
+    @CourseId         INT = NULL,
+    @UserId           INT = NULL,
+    @Search           NVARCHAR(100) = NULL,
+    @StatusFilter     NVARCHAR(10) = NULL,
+    @ClassNameFilter  NVARCHAR(100) = NULL,
+    @InstructorFilter NVARCHAR(100) = NULL,
+    @CourseFilter     NVARCHAR(100) = NULL,
+    @PageNumber       INT = NULL,
+    @PageSize         INT = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -495,12 +498,26 @@ BEGIN
     IF @PageSize   IS NOT NULL AND @PageSize   < 1 SET @PageSize   = 20;
     IF @PageSize   IS NOT NULL AND @PageSize   > 100 SET @PageSize = 100;
 
-    -- 2. Escape the LIKE wildcards so the search term matches literally.
-    --    The backslash is escaped first, otherwise it would double-escape.
+    -- 2. Escape LIKE wildcards so every filter matches literally.
     DECLARE @Pattern NVARCHAR(300) = NULL;
     IF @Search IS NOT NULL AND LEN(@Search) > 0
     BEGIN
         SET @Pattern = REPLACE(REPLACE(REPLACE(@Search, N'\', N'\\'), N'%', N'\%'), N'_', N'\_') + N'%';
+    END
+    DECLARE @ClassNamePattern NVARCHAR(300) = NULL;
+    IF @ClassNameFilter IS NOT NULL AND LEN(@ClassNameFilter) > 0
+    BEGIN
+        SET @ClassNamePattern = N'%' + REPLACE(REPLACE(REPLACE(@ClassNameFilter, N'\', N'\\'), N'%', N'\%'), N'_', N'\_') + N'%';
+    END
+    DECLARE @InstructorPattern NVARCHAR(300) = NULL;
+    IF @InstructorFilter IS NOT NULL AND LEN(@InstructorFilter) > 0
+    BEGIN
+        SET @InstructorPattern = N'%' + REPLACE(REPLACE(REPLACE(@InstructorFilter, N'\', N'\\'), N'%', N'\%'), N'_', N'\_') + N'%';
+    END
+    DECLARE @CoursePattern NVARCHAR(300) = NULL;
+    IF @CourseFilter IS NOT NULL AND LEN(@CourseFilter) > 0
+    BEGIN
+        SET @CoursePattern = N'%' + REPLACE(REPLACE(REPLACE(@CourseFilter, N'\', N'\\'), N'%', N'\%'), N'_', N'\_') + N'%';
     END
 
     -------------------------------------------------------------------
@@ -522,6 +539,11 @@ BEGIN
                        ON co.[Id] = c.[CourseId]
     WHERE (@Id IS NULL OR c.[Id] = @Id)
       AND (@CourseId IS NULL OR c.[CourseId] = @CourseId)
+      AND (@ClassNamePattern IS NULL OR c.[ClassName] LIKE @ClassNamePattern ESCAPE N'\')
+      AND (@InstructorPattern IS NULL OR c.[Instructor] LIKE @InstructorPattern ESCAPE N'\')
+      AND (@CoursePattern IS NULL
+           OR co.[CourseCode] LIKE @CoursePattern ESCAPE N'\'
+           OR co.[CourseName] LIKE @CoursePattern ESCAPE N'\')
       AND (@StatusFilter IS NULL
            OR @StatusFilter = N'All'
            OR (@StatusFilter = N'Active' AND c.[IsActive] = 1)
@@ -553,8 +575,6 @@ BEGIN
 
     -------------------------------------------------------------------
     -- STEP 3: Join back to base tables for ONLY the current page.
-    -- The course and the audit actors are joined in so the row carries
-    -- their names without a second round trip.
     -------------------------------------------------------------------
     SELECT
         c.[Id],
@@ -589,7 +609,7 @@ BEGIN
                        ON sr.[ClassId] = c.[Id]
                            AND @UserId IS NOT NULL
                            AND sr.[StudentId] = @UserId
-                           AND sr.[Status] <> N'Dropped'  -- Dropped rows don't count as registered
+                           AND sr.[Status] <> N'Dropped'
     ORDER BY
         c.[StartDate] ASC,
         c.[Id] ASC;
@@ -709,11 +729,15 @@ GO
 --   @PageNumber -> NULL returns every matching row; otherwise one page
 --                  plus a second result set carrying TotalCount.
 CREATE PROCEDURE [dbo].[usp_GetCourses]
-    @Id         INT = NULL,
-    @CourseCode NVARCHAR(20) = NULL,
-    @Search     NVARCHAR(100) = NULL,
-    @PageNumber INT = NULL,
-    @PageSize   INT = NULL
+    @Id                INT = NULL,
+    @CourseCode        NVARCHAR(20) = NULL,
+    @Search            NVARCHAR(100) = NULL,
+    @CodeFilter        NVARCHAR(100) = NULL,
+    @NameFilter        NVARCHAR(100) = NULL,
+    @DescriptionFilter NVARCHAR(200) = NULL,
+    @IsActive          BIT = NULL,
+    @PageNumber        INT = NULL,
+    @PageSize          INT = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -723,12 +747,26 @@ BEGIN
     IF @PageSize   IS NOT NULL AND @PageSize   < 1 SET @PageSize   = 20;
     IF @PageSize   IS NOT NULL AND @PageSize   > 100 SET @PageSize = 100;
 
-    -- 2. Escape the LIKE wildcards so the search term matches literally.
-    --    The backslash is escaped first, otherwise it would double-escape.
+    -- 2. Escape LIKE wildcards so every filter matches literally.
     DECLARE @Pattern NVARCHAR(300) = NULL;
     IF @Search IS NOT NULL AND LEN(@Search) > 0
     BEGIN
         SET @Pattern = REPLACE(REPLACE(REPLACE(@Search, N'\', N'\\'), N'%', N'\%'), N'_', N'\_') + N'%';
+    END
+    DECLARE @CodePattern NVARCHAR(300) = NULL;
+    IF @CodeFilter IS NOT NULL AND LEN(@CodeFilter) > 0
+    BEGIN
+        SET @CodePattern = N'%' + REPLACE(REPLACE(REPLACE(@CodeFilter, N'\', N'\\'), N'%', N'\%'), N'_', N'\_') + N'%';
+    END
+    DECLARE @NamePattern NVARCHAR(300) = NULL;
+    IF @NameFilter IS NOT NULL AND LEN(@NameFilter) > 0
+    BEGIN
+        SET @NamePattern = N'%' + REPLACE(REPLACE(REPLACE(@NameFilter, N'\', N'\\'), N'%', N'\%'), N'_', N'\_') + N'%';
+    END
+    DECLARE @DescriptionPattern NVARCHAR(300) = NULL;
+    IF @DescriptionFilter IS NOT NULL AND LEN(@DescriptionFilter) > 0
+    BEGIN
+        SET @DescriptionPattern = N'%' + REPLACE(REPLACE(REPLACE(@DescriptionFilter, N'\', N'\\'), N'%', N'\%'), N'_', N'\_') + N'%';
     END
 
     -------------------------------------------------------------------
@@ -742,6 +780,10 @@ BEGIN
     FROM dbo.[Course] AS co
     WHERE (@Id IS NULL OR co.[Id] = @Id)
       AND (@CourseCode IS NULL OR co.[CourseCode] = @CourseCode)
+      AND (@CodePattern IS NULL OR co.[CourseCode] LIKE @CodePattern ESCAPE N'\')
+      AND (@NamePattern IS NULL OR co.[CourseName] LIKE @NamePattern ESCAPE N'\')
+      AND (@DescriptionPattern IS NULL OR co.[Description] LIKE @DescriptionPattern ESCAPE N'\')
+      AND (@IsActive IS NULL OR co.[IsActive] = @IsActive)
       AND (@Pattern IS NULL
            OR co.[CourseCode] LIKE @Pattern ESCAPE N'\'
            OR co.[CourseName] LIKE @Pattern ESCAPE N'\'
@@ -886,11 +928,15 @@ GO
 -- PasswordHash is only carried when a single user is looked up by id or
 -- user name, so it never travels with a list.
 CREATE PROCEDURE [dbo].[usp_GetUsers]
-    @Id         INT = NULL,
-    @UserName   NVARCHAR(100) = NULL,
-    @Search     NVARCHAR(100) = NULL,
-    @PageNumber INT = NULL,
-    @PageSize   INT = NULL
+    @Id             INT = NULL,
+    @UserName       NVARCHAR(100) = NULL,
+    @Search         NVARCHAR(100) = NULL,
+    @UserNameFilter NVARCHAR(100) = NULL,
+    @FullNameFilter NVARCHAR(100) = NULL,
+    @Role           INT = NULL,
+    @IsActive       BIT = NULL,
+    @PageNumber     INT = NULL,
+    @PageSize       INT = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -900,12 +946,21 @@ BEGIN
     IF @PageSize   IS NOT NULL AND @PageSize   < 1 SET @PageSize   = 20;
     IF @PageSize   IS NOT NULL AND @PageSize   > 100 SET @PageSize = 100;
 
-    -- 2. Escape the LIKE wildcards so the search term matches literally.
-    --    The backslash is escaped first, otherwise it would double-escape.
+    -- 2. Escape LIKE wildcards so every filter matches literally.
     DECLARE @Pattern NVARCHAR(300) = NULL;
     IF @Search IS NOT NULL AND LEN(@Search) > 0
     BEGIN
         SET @Pattern = REPLACE(REPLACE(REPLACE(@Search, N'\', N'\\'), N'%', N'\%'), N'_', N'\_') + N'%';
+    END
+    DECLARE @UserNamePattern NVARCHAR(300) = NULL;
+    IF @UserNameFilter IS NOT NULL AND LEN(@UserNameFilter) > 0
+    BEGIN
+        SET @UserNamePattern = N'%' + REPLACE(REPLACE(REPLACE(@UserNameFilter, N'\', N'\\'), N'%', N'\%'), N'_', N'\_') + N'%';
+    END
+    DECLARE @FullNamePattern NVARCHAR(300) = NULL;
+    IF @FullNameFilter IS NOT NULL AND LEN(@FullNameFilter) > 0
+    BEGIN
+        SET @FullNamePattern = N'%' + REPLACE(REPLACE(REPLACE(@FullNameFilter, N'\', N'\\'), N'%', N'\%'), N'_', N'\_') + N'%';
     END
 
     -------------------------------------------------------------------
@@ -919,6 +974,10 @@ BEGIN
     FROM dbo.[User] AS u
     WHERE (@Id IS NULL OR u.[Id] = @Id)
       AND (@UserName IS NULL OR u.[UserName] = @UserName)
+      AND (@UserNamePattern IS NULL OR u.[UserName] LIKE @UserNamePattern ESCAPE N'\')
+      AND (@FullNamePattern IS NULL OR u.[FullName] LIKE @FullNamePattern ESCAPE N'\')
+      AND (@Role IS NULL OR u.[Role] = @Role)
+      AND (@IsActive IS NULL OR u.[IsActive] = @IsActive)
       AND (@Pattern IS NULL
            OR u.[UserName] LIKE @Pattern ESCAPE N'\'
            OR u.[FullName] LIKE @Pattern ESCAPE N'\');
@@ -944,8 +1003,6 @@ BEGIN
 
     -------------------------------------------------------------------
     -- STEP 3: Join back to base tables for ONLY the current page.
-    -- The audit actors are joined in so the row carries their names
-    -- without a second round trip for the whole user table.
     -------------------------------------------------------------------
     SELECT
         u.[Id],
@@ -1151,11 +1208,17 @@ GO
 -- user row separately. PasswordHash is only carried for a single-student
 -- lookup, where the create/update flow needs it.
 CREATE PROCEDURE [dbo].[usp_GetStudents]
-    @Id         INT = NULL,
-    @UserId     INT = NULL,
-    @Search     NVARCHAR(100) = NULL,
-    @PageNumber INT = NULL,
-    @PageSize   INT = NULL
+    @Id                  INT = NULL,
+    @UserId              INT = NULL,
+    @Search              NVARCHAR(100) = NULL,
+    @StudentNumberFilter NVARCHAR(30) = NULL,
+    @FullNameFilter      NVARCHAR(100) = NULL,
+    @UserNameFilter      NVARCHAR(100) = NULL,
+    @EmailFilter         NVARCHAR(100) = NULL,
+    @PhoneFilter         NVARCHAR(20) = NULL,
+    @IsActive            BIT = NULL,
+    @PageNumber          INT = NULL,
+    @PageSize            INT = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -1165,12 +1228,36 @@ BEGIN
     IF @PageSize   IS NOT NULL AND @PageSize   < 1 SET @PageSize   = 20;
     IF @PageSize   IS NOT NULL AND @PageSize   > 100 SET @PageSize = 100;
 
-    -- 2. Escape the LIKE wildcards so the search term matches literally.
-    --    The backslash is escaped first, otherwise it would double-escape.
+    -- 2. Escape LIKE wildcards so every filter matches literally.
     DECLARE @Pattern NVARCHAR(300) = NULL;
     IF @Search IS NOT NULL AND LEN(@Search) > 0
     BEGIN
         SET @Pattern = REPLACE(REPLACE(REPLACE(@Search, N'\', N'\\'), N'%', N'\%'), N'_', N'\_') + N'%';
+    END
+    DECLARE @StudentNumberPattern NVARCHAR(300) = NULL;
+    IF @StudentNumberFilter IS NOT NULL AND LEN(@StudentNumberFilter) > 0
+    BEGIN
+        SET @StudentNumberPattern = N'%' + REPLACE(REPLACE(REPLACE(@StudentNumberFilter, N'\', N'\\'), N'%', N'\%'), N'_', N'\_') + N'%';
+    END
+    DECLARE @FullNamePattern NVARCHAR(300) = NULL;
+    IF @FullNameFilter IS NOT NULL AND LEN(@FullNameFilter) > 0
+    BEGIN
+        SET @FullNamePattern = N'%' + REPLACE(REPLACE(REPLACE(@FullNameFilter, N'\', N'\\'), N'%', N'\%'), N'_', N'\_') + N'%';
+    END
+    DECLARE @UserNamePattern NVARCHAR(300) = NULL;
+    IF @UserNameFilter IS NOT NULL AND LEN(@UserNameFilter) > 0
+    BEGIN
+        SET @UserNamePattern = N'%' + REPLACE(REPLACE(REPLACE(@UserNameFilter, N'\', N'\\'), N'%', N'\%'), N'_', N'\_') + N'%';
+    END
+    DECLARE @EmailPattern NVARCHAR(300) = NULL;
+    IF @EmailFilter IS NOT NULL AND LEN(@EmailFilter) > 0
+    BEGIN
+        SET @EmailPattern = N'%' + REPLACE(REPLACE(REPLACE(@EmailFilter, N'\', N'\\'), N'%', N'\%'), N'_', N'\_') + N'%';
+    END
+    DECLARE @PhonePattern NVARCHAR(300) = NULL;
+    IF @PhoneFilter IS NOT NULL AND LEN(@PhoneFilter) > 0
+    BEGIN
+        SET @PhonePattern = N'%' + REPLACE(REPLACE(REPLACE(@PhoneFilter, N'\', N'\\'), N'%', N'\%'), N'_', N'\_') + N'%';
     END
 
     -------------------------------------------------------------------
@@ -1185,8 +1272,14 @@ BEGIN
              INNER JOIN dbo.[User] AS u ON u.[Id] = s.[UserId]
     WHERE (@Id IS NULL OR s.[Id] = @Id)
       AND (@UserId IS NULL OR s.[UserId] = @UserId)
+      AND (@StudentNumberPattern IS NULL OR CAST(s.[StudentNumber] AS NVARCHAR(20)) LIKE @StudentNumberPattern ESCAPE N'\')
+      AND (@FullNamePattern IS NULL OR u.[FullName] LIKE @FullNamePattern ESCAPE N'\')
+      AND (@UserNamePattern IS NULL OR u.[UserName] LIKE @UserNamePattern ESCAPE N'\')
+      AND (@EmailPattern IS NULL OR s.[Email] LIKE @EmailPattern ESCAPE N'\')
+      AND (@PhonePattern IS NULL OR s.[Phone] LIKE @PhonePattern ESCAPE N'\')
+      AND (@IsActive IS NULL OR u.[IsActive] = @IsActive)
       AND (@Pattern IS NULL
-           OR s.[StudentNumber] LIKE @Pattern ESCAPE N'\'
+           OR CAST(s.[StudentNumber] AS NVARCHAR(20)) LIKE @Pattern ESCAPE N'\'
            OR s.[Email] LIKE @Pattern ESCAPE N'\'
            OR u.[UserName] LIKE @Pattern ESCAPE N'\'
            OR u.[FullName] LIKE @Pattern ESCAPE N'\');
@@ -1360,12 +1453,16 @@ GO
 -- The class, student, user and course are joined in, so no caller has to
 -- fetch the related rows separately.
 CREATE PROCEDURE [dbo].[usp_GetRegistrations]
-    @Id         INT = NULL,
-    @StudentId  INT = NULL,
-    @ClassId    INT = NULL,
-    @Search     NVARCHAR(100) = NULL,
-    @PageNumber INT = NULL,
-    @PageSize   INT = NULL
+    @Id           INT = NULL,
+    @StudentId    INT = NULL,
+    @ClassId      INT = NULL,
+    @Search       NVARCHAR(100) = NULL,
+    @StudentFilter NVARCHAR(100) = NULL,
+    @CourseFilter  NVARCHAR(100) = NULL,
+    @ClassFilter   NVARCHAR(100) = NULL,
+    @StatusFilter  NVARCHAR(20) = NULL,
+    @PageNumber   INT = NULL,
+    @PageSize     INT = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -1375,12 +1472,26 @@ BEGIN
     IF @PageSize   IS NOT NULL AND @PageSize   < 1 SET @PageSize   = 20;
     IF @PageSize   IS NOT NULL AND @PageSize   > 100 SET @PageSize = 100;
 
-    -- 2. Escape the LIKE wildcards so the search term matches literally.
-    --    The backslash is escaped first, otherwise it would double-escape.
+    -- 2. Escape LIKE wildcards so every filter matches literally.
     DECLARE @Pattern NVARCHAR(300) = NULL;
     IF @Search IS NOT NULL AND LEN(@Search) > 0
     BEGIN
         SET @Pattern = REPLACE(REPLACE(REPLACE(@Search, N'\', N'\\'), N'%', N'\%'), N'_', N'\_') + N'%';
+    END
+    DECLARE @StudentPattern NVARCHAR(300) = NULL;
+    IF @StudentFilter IS NOT NULL AND LEN(@StudentFilter) > 0
+    BEGIN
+        SET @StudentPattern = N'%' + REPLACE(REPLACE(REPLACE(@StudentFilter, N'\', N'\\'), N'%', N'\%'), N'_', N'\_') + N'%';
+    END
+    DECLARE @CoursePattern NVARCHAR(300) = NULL;
+    IF @CourseFilter IS NOT NULL AND LEN(@CourseFilter) > 0
+    BEGIN
+        SET @CoursePattern = N'%' + REPLACE(REPLACE(REPLACE(@CourseFilter, N'\', N'\\'), N'%', N'\%'), N'_', N'\_') + N'%';
+    END
+    DECLARE @ClassPattern NVARCHAR(300) = NULL;
+    IF @ClassFilter IS NOT NULL AND LEN(@ClassFilter) > 0
+    BEGIN
+        SET @ClassPattern = N'%' + REPLACE(REPLACE(REPLACE(@ClassFilter, N'\', N'\\'), N'%', N'\%'), N'_', N'\_') + N'%';
     END
 
     -------------------------------------------------------------------
@@ -1399,8 +1510,20 @@ BEGIN
     WHERE (@Id IS NULL OR r.[Id] = @Id)
       AND (@StudentId IS NULL OR r.[StudentId] = @StudentId)
       AND (@ClassId IS NULL OR r.[ClassId] = @ClassId)
+      AND (@StudentPattern IS NULL
+           OR CAST(s.[StudentNumber] AS NVARCHAR(20)) LIKE @StudentPattern ESCAPE N'\'
+           OR s.[Email] LIKE @StudentPattern ESCAPE N'\'
+           OR u.[UserName] LIKE @StudentPattern ESCAPE N'\'
+           OR u.[FullName] LIKE @StudentPattern ESCAPE N'\')
+      AND (@CoursePattern IS NULL
+           OR co.[CourseCode] LIKE @CoursePattern ESCAPE N'\'
+           OR co.[CourseName] LIKE @CoursePattern ESCAPE N'\')
+      AND (@ClassPattern IS NULL OR c.[ClassName] LIKE @ClassPattern ESCAPE N'\')
+      AND (@StatusFilter IS NULL
+           OR @StatusFilter = N'All'
+           OR r.[Status] = @StatusFilter)
       AND (@Pattern IS NULL
-           OR s.[StudentNumber] LIKE @Pattern ESCAPE N'\'
+           OR CAST(s.[StudentNumber] AS NVARCHAR(20)) LIKE @Pattern ESCAPE N'\'
            OR s.[Email] LIKE @Pattern ESCAPE N'\'
            OR u.[UserName] LIKE @Pattern ESCAPE N'\'
            OR u.[FullName] LIKE @Pattern ESCAPE N'\'
@@ -1429,8 +1552,6 @@ BEGIN
 
     -------------------------------------------------------------------
     -- STEP 3: Join back for ONLY the current page.
-    -- Every column is prefixed by the entity it belongs to, so the flat
-    -- result set can be mapped back into the related objects.
     -------------------------------------------------------------------
     SELECT
         r.[Id]                AS RegistrationId,

@@ -19,6 +19,10 @@ public static class UserService
         int? id = null,
         string? userName = null,
         string? search = null,
+        string? userNameFilter = null,
+        string? fullNameFilter = null,
+        User.UserRoles? role = null,
+        bool? isActive = null,
         int? pageNumber = null,
         int? pageSize = null)
     {
@@ -29,13 +33,15 @@ public static class UserService
             var term = string.IsNullOrWhiteSpace(search) ? null : search!.Trim();
 
             var userManager = new UserManager();
-            var page = await userManager.GetAsync(id, userName, term, pageNumber, pageSize);
+            var page = await userManager.GetAsync(
+                id, userName, term, userNameFilter, fullNameFilter, role, isActive, pageNumber, pageSize);
 
             // A page past the end of the result set comes back empty; fall back
             // to the last page so the view never shows "Page 9 of 3".
             if (page.Count == 0 && page.TotalPages > 0 && page.PageNumber > page.TotalPages)
             {
-                page = await userManager.GetAsync(id, userName, term, page.TotalPages, pageSize);
+                page = await userManager.GetAsync(
+                    id, userName, term, userNameFilter, fullNameFilter, role, isActive, page.TotalPages, pageSize);
             }
 
             return page;

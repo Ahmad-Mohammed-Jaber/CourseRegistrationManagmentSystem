@@ -21,6 +21,12 @@ public static class StudentService
         int? id = null,
         int? userId = null,
         string? search = null,
+        string? studentNumberFilter = null,
+        string? fullNameFilter = null,
+        string? userNameFilter = null,
+        string? emailFilter = null,
+        string? phoneFilter = null,
+        bool? isActive = null,
         int? pageNumber = null,
         int? pageSize = null)
     {
@@ -31,13 +37,17 @@ public static class StudentService
             var term = string.IsNullOrWhiteSpace(search) ? null : search!.Trim();
 
             var studentManager = new StudentManager();
-            var page = await studentManager.GetAsync(id, userId, term, pageNumber, pageSize);
+            var page = await studentManager.GetAsync(
+                id, userId, term, studentNumberFilter, fullNameFilter, userNameFilter,
+                emailFilter, phoneFilter, isActive, pageNumber, pageSize);
 
             // A page past the end of the result set comes back empty; fall back
             // to the last page so the view never shows "Page 9 of 3".
             if (page.Count == 0 && page.TotalPages > 0 && page.PageNumber > page.TotalPages)
             {
-                page = await studentManager.GetAsync(id, userId, term, page.TotalPages, pageSize);
+                page = await studentManager.GetAsync(
+                    id, userId, term, studentNumberFilter, fullNameFilter, userNameFilter,
+                    emailFilter, phoneFilter, isActive, page.TotalPages, pageSize);
             }
 
             return page;

@@ -4,7 +4,7 @@ namespace Mozaic.CourseRegistrationManagmentSystem.WebApp.Models;
 
 /// <summary>
 /// Strongly-typed page model for Views/Users/Index.cshtml.
-/// Holds the current page of users plus the pager state and the search term.
+/// Holds the current page of users plus the pager state and column filters.
 /// </summary>
 public sealed class UserListViewModel
 {
@@ -18,15 +18,33 @@ public sealed class UserListViewModel
 
     public int TotalPages { get; set; } = 1;
 
-    /// <summary>The active search term, echoed back into the search box.</summary>
-    public string Query { get; set; } = string.Empty;
+    public string UserName { get; set; } = string.Empty;
+
+    public string FullName { get; set; } = string.Empty;
+
+    /// <summary>One of 'Admin', 'Student' or 'All'.</summary>
+    public string Role { get; set; } = "All";
+
+    /// <summary>One of 'Active', 'Inactive' or 'All'.</summary>
+    public string Status { get; set; } = "All";
+
+    public Dictionary<string, string> RouteValues { get; set; } = new();
 
     public bool HasPrevious => Page > 1;
 
     public bool HasNext => Page < TotalPages;
 
-    public static UserListViewModel FromResult(UserResult result, string? query)
+    public static UserListViewModel FromResult(
+        UserResult result,
+        string? userName,
+        string? fullName,
+        string? role,
+        string? status,
+        int pageSize)
     {
+        var normalizedRole = string.IsNullOrWhiteSpace(role) ? "All" : role!;
+        var normalizedStatus = string.IsNullOrWhiteSpace(status) ? "All" : status!;
+
         return new UserListViewModel
         {
             Users = result.Select(u => new UserListItemViewModel
@@ -45,13 +63,45 @@ public sealed class UserListViewModel
             PageSize = result.PageSize,
             TotalCount = result.TotalCount,
             TotalPages = Math.Max(1, result.TotalPages),
-            Query = query?.Trim() ?? string.Empty,
+            UserName = userName?.Trim() ?? string.Empty,
+            FullName = fullName?.Trim() ?? string.Empty,
+            Role = normalizedRole,
+            Status = normalizedStatus,
+            RouteValues = ListRouteValues.Create(
+                pageSize,
+                ("userName", userName),
+                ("fullName", fullName),
+                ("role", normalizedRole),
+                ("status", normalizedStatus)),
         };
     }
 
-    public static UserListViewModel Empty(int page = 1, int pageSize = 20, string? query = null)
+    public static UserListViewModel Empty(
+        int page = 1,
+        int pageSize = 20,
+        string? userName = null,
+        string? fullName = null,
+        string? role = null,
+        string? status = null)
     {
-        return new UserListViewModel { Page = page, PageSize = pageSize, Query = query?.Trim() ?? string.Empty };
+        var normalizedRole = string.IsNullOrWhiteSpace(role) ? "All" : role!;
+        var normalizedStatus = string.IsNullOrWhiteSpace(status) ? "All" : status!;
+
+        return new UserListViewModel
+        {
+            Page = page,
+            PageSize = pageSize,
+            UserName = userName?.Trim() ?? string.Empty,
+            FullName = fullName?.Trim() ?? string.Empty,
+            Role = normalizedRole,
+            Status = normalizedStatus,
+            RouteValues = ListRouteValues.Create(
+                pageSize,
+                ("userName", userName),
+                ("fullName", fullName),
+                ("role", normalizedRole),
+                ("status", normalizedStatus)),
+        };
     }
 
     /// <summary>

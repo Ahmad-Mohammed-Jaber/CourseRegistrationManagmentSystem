@@ -14,8 +14,13 @@ internal class ClassManager
         int? userId = null,
         string? search = null,
         string? statusFilter = null,
+        string? classNameFilter = null,
+        string? instructorFilter = null,
+        string? courseFilter = null,
         int? pageNumber = null,
-        int? pageSize = null) => _classRepository.GetAsync(id, courseId, userId, search, statusFilter, pageNumber, pageSize);
+        int? pageSize = null) => _classRepository.GetAsync(
+            id, courseId, userId, search, statusFilter, classNameFilter, instructorFilter,
+            courseFilter, pageNumber, pageSize);
 
     public Task<Class?> GetByIdAsync(int id) => _classRepository.GetByIdAsync(id);
 

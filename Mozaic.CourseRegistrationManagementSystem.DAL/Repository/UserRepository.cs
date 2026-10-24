@@ -11,10 +11,15 @@ public class UserRepository : IGenericRepository<User>
         int? id = null,
         string? userName = null,
         string? search = null,
+        string? userNameFilter = null,
+        string? fullNameFilter = null,
+        User.UserRoles? role = null,
+        bool? isActive = null,
         int? pageNumber = null,
         int? pageSize = null)
     {
-        return UserDataProvider.GetAsync(id, userName, search, pageNumber, pageSize);
+        return UserDataProvider.GetAsync(
+            id, userName, search, userNameFilter, fullNameFilter, role, isActive, pageNumber, pageSize);
     }
     public Task<User?> GetByIdAsync(int id)
     {

@@ -12,8 +12,13 @@ internal class CourseManager
         int? id = null,
         string? courseCode = null,
         string? search = null,
+        string? codeFilter = null,
+        string? nameFilter = null,
+        string? descriptionFilter = null,
+        bool? isActive = null,
         int? pageNumber = null,
-        int? pageSize = null) => _courseRepository.GetAsync(id, courseCode, search, pageNumber, pageSize);
+        int? pageSize = null) => _courseRepository.GetAsync(
+            id, courseCode, search, codeFilter, nameFilter, descriptionFilter, isActive, pageNumber, pageSize);
 
     public Task<Course?> GetByIdAsync(int id) => _courseRepository.GetByIdAsync(id);
 

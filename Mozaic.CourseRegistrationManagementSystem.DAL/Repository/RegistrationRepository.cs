@@ -12,10 +12,16 @@ public class RegistrationRepository : IGenericRepository<Registration>
         int? studentId = null,
         int? classId = null,
         string? search = null,
+        string? studentFilter = null,
+        string? courseFilter = null,
+        string? classFilter = null,
+        string? statusFilter = null,
         int? pageNumber = null,
         int? pageSize = null)
     {
-        return RegistrationDataProvider.GetAsync(id, studentId, classId, search, pageNumber, pageSize);
+        return RegistrationDataProvider.GetAsync(
+            id, studentId, classId, search, studentFilter, courseFilter, classFilter,
+            statusFilter, pageNumber, pageSize);
     }
     public Task<Registration?> GetByIdAsync(int id)
     {

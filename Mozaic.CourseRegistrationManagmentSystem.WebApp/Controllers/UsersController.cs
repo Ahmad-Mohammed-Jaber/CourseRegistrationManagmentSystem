@@ -18,18 +18,30 @@ public class UsersController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Index(string? q = null, int page = 1, int pageSize = 20)
+    public async Task<IActionResult> Index(
+        string? userName = null,
+        string? fullName = null,
+        string? role = null,
+        string? status = null,
+        int page = 1,
+        int pageSize = 20)
     {
         try
         {
-            var result = await UserService.GetAsync(search: q, pageNumber: page, pageSize: pageSize);
+            var result = await UserService.GetAsync(
+                userNameFilter: userName,
+                fullNameFilter: fullName,
+                role: FilterValues.ParseRole(role),
+                isActive: FilterValues.ParseActive(status),
+                pageNumber: page,
+                pageSize: pageSize);
 
-            return View(UserListViewModel.FromResult(result, q));
+            return View(UserListViewModel.FromResult(result, userName, fullName, role, status, pageSize));
         }
         catch (BusinessException ex)
         {
             ViewData["ErrorMessage"] = ex.Message;
-            return View(UserListViewModel.Empty(page, pageSize, q));
+            return View(UserListViewModel.Empty(page, pageSize, userName, fullName, role, status));
         }
     }
 

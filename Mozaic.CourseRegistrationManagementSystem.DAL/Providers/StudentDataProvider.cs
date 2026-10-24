@@ -13,6 +13,12 @@ public static class StudentDataProvider
         int? id = null,
         int? userId = null,
         string? search = null,
+        string? studentNumberFilter = null,
+        string? fullNameFilter = null,
+        string? userNameFilter = null,
+        string? emailFilter = null,
+        string? phoneFilter = null,
+        bool? isActive = null,
         int? pageNumber = null,
         int? pageSize = null)
     {
@@ -24,7 +30,9 @@ public static class StudentDataProvider
             connection = DBConnectionFactory.CreateConnection();
             await connection.OpenAsync();
 
-            command = CreateGetCommand(connection, id, userId, search, pageNumber, pageSize);
+            command = CreateGetCommand(
+                connection, id, userId, search, studentNumberFilter, fullNameFilter,
+                userNameFilter, emailFilter, phoneFilter, isActive, pageNumber, pageSize);
 
             reader = await command.ExecuteReaderAsync();
             var students = new List<Student>();
@@ -80,7 +88,7 @@ public static class StudentDataProvider
             connection = DBConnectionFactory.CreateConnection();
             await connection.OpenAsync();
 
-            command = CreateGetCommand(connection, id, null, null, null, null);
+            command = CreateGetCommand(connection, id, null, null, null, null, null, null, null, null, null, null);
 
             reader = await command.ExecuteReaderAsync();
             return await reader.ReadAsync() ? MapStudent(reader) : null;
@@ -102,6 +110,12 @@ public static class StudentDataProvider
         int? id,
         int? userId,
         string? search,
+        string? studentNumberFilter,
+        string? fullNameFilter,
+        string? userNameFilter,
+        string? emailFilter,
+        string? phoneFilter,
+        bool? isActive,
         int? pageNumber,
         int? pageSize)
     {
@@ -113,6 +127,17 @@ public static class StudentDataProvider
         command.Parameters.Add("@UserId", SqlDbType.Int).Value = userId.HasValue ? userId.Value : DBNull.Value;
         command.Parameters.Add("@Search", SqlDbType.NVarChar, 100).Value =
             string.IsNullOrWhiteSpace(search) ? DBNull.Value : (object)search!;
+        command.Parameters.Add("@StudentNumberFilter", SqlDbType.NVarChar, 30).Value =
+            string.IsNullOrWhiteSpace(studentNumberFilter) ? DBNull.Value : (object)studentNumberFilter!.Trim();
+        command.Parameters.Add("@FullNameFilter", SqlDbType.NVarChar, 100).Value =
+            string.IsNullOrWhiteSpace(fullNameFilter) ? DBNull.Value : (object)fullNameFilter!.Trim();
+        command.Parameters.Add("@UserNameFilter", SqlDbType.NVarChar, 100).Value =
+            string.IsNullOrWhiteSpace(userNameFilter) ? DBNull.Value : (object)userNameFilter!.Trim();
+        command.Parameters.Add("@EmailFilter", SqlDbType.NVarChar, 100).Value =
+            string.IsNullOrWhiteSpace(emailFilter) ? DBNull.Value : (object)emailFilter!.Trim();
+        command.Parameters.Add("@PhoneFilter", SqlDbType.NVarChar, 20).Value =
+            string.IsNullOrWhiteSpace(phoneFilter) ? DBNull.Value : (object)phoneFilter!.Trim();
+        command.Parameters.Add("@IsActive", SqlDbType.Bit).Value = isActive.HasValue ? isActive.Value : DBNull.Value;
         command.Parameters.Add("@PageNumber", SqlDbType.Int).Value = pageNumber.HasValue ? pageNumber.Value : DBNull.Value;
         command.Parameters.Add("@PageSize", SqlDbType.Int).Value = pageSize.HasValue ? pageSize.Value : DBNull.Value;
         return command;

@@ -349,10 +349,20 @@ public static class StudentRegistrationService
         }
     }
 
-    public static async Task<RegistrationResult> GetRegistrationsAsync()
+    public static async Task<RegistrationResult> GetRegistrationsAsync(
+        string? search = null,
+        string? courseFilter = null,
+        string? classFilter = null,
+        string? statusFilter = null,
+        int? pageNumber = null,
+        int? pageSize = null)
     {
         try
         {
+            PagedResult<Registration>.Normalize(ref pageNumber, ref pageSize);
+
+            var term = string.IsNullOrWhiteSpace(search) ? null : search!.Trim();
+
             var studentId = await RequireStudentIdAsync();
             if (studentId == null)
             {
@@ -360,7 +370,28 @@ public static class StudentRegistrationService
             }
 
             var registrationManager = new RegistrationManager();
-            return await registrationManager.GetAsync(studentId: studentId.Value);
+            var page = await registrationManager.GetAsync(
+                studentId: studentId.Value,
+                search: term,
+                courseFilter: courseFilter,
+                classFilter: classFilter,
+                statusFilter: statusFilter,
+                pageNumber: pageNumber,
+                pageSize: pageSize);
+
+            if (page.Count == 0 && page.TotalPages > 0 && page.PageNumber > page.TotalPages)
+            {
+                page = await registrationManager.GetAsync(
+                    studentId: studentId.Value,
+                    search: term,
+                    courseFilter: courseFilter,
+                    classFilter: classFilter,
+                    statusFilter: statusFilter,
+                    pageNumber: page.TotalPages,
+                    pageSize: pageSize);
+            }
+
+            return page;
         }
         catch (Exception ex)
         {

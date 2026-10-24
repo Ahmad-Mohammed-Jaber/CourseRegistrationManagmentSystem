@@ -19,6 +19,10 @@ public static class CourseService
         int? id = null,
         string? courseCode = null,
         string? search = null,
+        string? codeFilter = null,
+        string? nameFilter = null,
+        string? descriptionFilter = null,
+        bool? isActive = null,
         int? pageNumber = null,
         int? pageSize = null)
     {
@@ -29,13 +33,15 @@ public static class CourseService
             var term = string.IsNullOrWhiteSpace(search) ? null : search!.Trim();
 
             var courseManager = new CourseManager();
-            var page = await courseManager.GetAsync(id, courseCode, term, pageNumber, pageSize);
+            var page = await courseManager.GetAsync(
+                id, courseCode, term, codeFilter, nameFilter, descriptionFilter, isActive, pageNumber, pageSize);
 
             // A page past the end of the result set comes back empty; fall back
             // to the last page so the view never shows "Page 9 of 3".
             if (page.Count == 0 && page.TotalPages > 0 && page.PageNumber > page.TotalPages)
             {
-                page = await courseManager.GetAsync(id, courseCode, term, page.TotalPages, pageSize);
+                page = await courseManager.GetAsync(
+                    id, courseCode, term, codeFilter, nameFilter, descriptionFilter, isActive, page.TotalPages, pageSize);
             }
 
             return page;

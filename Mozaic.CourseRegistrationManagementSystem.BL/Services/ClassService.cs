@@ -21,6 +21,9 @@ public static class ClassService
         int? userId = null,
         string? search = null,
         string? statusFilter = null,
+        string? classNameFilter = null,
+        string? instructorFilter = null,
+        string? courseFilter = null,
         int? pageNumber = null,
         int? pageSize = null)
     {
@@ -32,13 +35,17 @@ public static class ClassService
             var status = NormalizeStatusFilter(statusFilter);
 
             var classManager = new ClassManager();
-            var page = await classManager.GetAsync(id, courseId, userId, term, status, pageNumber, pageSize);
+            var page = await classManager.GetAsync(
+                id, courseId, userId, term, status, classNameFilter, instructorFilter,
+                courseFilter, pageNumber, pageSize);
 
             // A page past the end of the result set comes back empty; fall back
             // to the last page so the view never shows "Page 9 of 3".
             if (page.Count == 0 && page.TotalPages > 0 && page.PageNumber > page.TotalPages)
             {
-                page = await classManager.GetAsync(id, courseId, userId, term, status, page.TotalPages, pageSize);
+                page = await classManager.GetAsync(
+                    id, courseId, userId, term, status, classNameFilter, instructorFilter,
+                    courseFilter, page.TotalPages, pageSize);
             }
 
             return page;

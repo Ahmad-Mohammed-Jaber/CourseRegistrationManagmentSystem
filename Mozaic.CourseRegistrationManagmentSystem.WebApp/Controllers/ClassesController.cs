@@ -14,7 +14,12 @@ public class ClassesController : Controller
 {
     [HttpGet]
     [Authorize(Roles = "Student")]
-    public async Task<IActionResult> Browse(int page = 1, int pageSize = 20)
+    public async Task<IActionResult> Browse(
+        string? course = null,
+        string? className = null,
+        string? instructor = null,
+        int page = 1,
+        int pageSize = 20)
     {
         var userId = User.GetUserId();
         if (userId <= 0)
@@ -34,16 +39,23 @@ public class ClassesController : Controller
                 // Rendering empty grid when empty stuff
             }
 
-            var paged = await ClassService.GetAsync(userId: studentId, statusFilter: ClassResult.StatusActive, pageNumber: page, pageSize: pageSize);
+            var paged = await ClassService.GetAsync(
+                userId: studentId,
+                statusFilter: ClassResult.StatusActive,
+                classNameFilter: className,
+                instructorFilter: instructor,
+                courseFilter: course,
+                pageNumber: page,
+                pageSize: pageSize);
 
-            var model = BrowseClassesViewModel.FromResult(paged);
+            var model = BrowseClassesViewModel.FromResult(paged, course, className, instructor, pageSize);
 
             return View(model);
         }
         catch (BusinessException ex)
         {
             ViewData["ErrorMessage"] = ex.Message;
-            return View(BrowseClassesViewModel.Empty(page, pageSize));
+            return View(BrowseClassesViewModel.Empty(page, pageSize, course, className, instructor));
         }
     }
 
@@ -79,20 +91,32 @@ public class ClassesController : Controller
 
     [HttpGet]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Index(string? q = null, int page = 1, int pageSize = 20, string? status = null)
+    public async Task<IActionResult> Index(
+        string? className = null,
+        string? instructor = null,
+        string? course = null,
+        string? status = null,
+        int page = 1,
+        int pageSize = 20)
     {
         var statusFilter = string.IsNullOrWhiteSpace(status) ? ClassResult.StatusActive : status!;
 
         try
         {
-            var result = await ClassService.GetAsync(search: q, statusFilter: statusFilter, pageNumber: page, pageSize: pageSize);
+            var result = await ClassService.GetAsync(
+                statusFilter: statusFilter,
+                classNameFilter: className,
+                instructorFilter: instructor,
+                courseFilter: course,
+                pageNumber: page,
+                pageSize: pageSize);
 
-            return View(ClassListViewModel.FromResult(result, q, statusFilter));
+            return View(ClassListViewModel.FromResult(result, className, instructor, course, statusFilter, pageSize));
         }
         catch (BusinessException ex)
         {
             ViewData["ErrorMessage"] = ex.Message;
-            return View(ClassListViewModel.Empty(page, pageSize, q, statusFilter));
+            return View(ClassListViewModel.Empty(page, pageSize, className, instructor, course, statusFilter));
         }
     }
 

@@ -19,36 +19,36 @@ public class StudentsController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Index(string? q = null)
+    public async Task<IActionResult> Index(
+        string? studentNumber = null,
+        string? fullName = null,
+        string? userName = null,
+        string? email = null,
+        string? phone = null,
+        string? status = null,
+        int page = 1,
+        int pageSize = 20)
     {
-        ViewData["Query"] = q ?? string.Empty;
-
         try
         {
-            var students = await StudentService.GetAsync(search: q);
+            var result = await StudentService.GetAsync(
+                studentNumberFilter: studentNumber,
+                fullNameFilter: fullName,
+                userNameFilter: userName,
+                emailFilter: email,
+                phoneFilter: phone,
+                isActive: FilterValues.ParseActive(status),
+                pageNumber: page,
+                pageSize: pageSize);
 
-            return View(students
-                .OrderBy(s => s.UserName)
-                .Select(s => new StudentListItemViewModel
-                {
-                    Id = s.Id,
-                    StudentNumber = s.StudentNumber,
-                    UserName = s.UserName,
-                    FullName = s.FullName,
-                    Email = s.Email,
-                    Phone = s.Phone,
-                    IsActive = s.IsActive,
-                    CreatedOn = s.CreatedOn,
-                    CreatedByName = ResolveUserName(s.CreatedByName, s.CreatedBy),
-                    ModifiedOn = s.ModifiedOn,
-                    ModifiedByName = ResolveUserName(s.ModifiedByName, s.ModifiedBy),
-                })
-                .ToList());
+            return View(StudentListViewModel.FromResult(
+                result, studentNumber, fullName, userName, email, phone, status, pageSize));
         }
         catch (BusinessException ex)
         {
             ViewData["ErrorMessage"] = ex.Message;
-            return View(new List<StudentListItemViewModel>());
+            return View(StudentListViewModel.Empty(
+                page, pageSize, studentNumber, fullName, userName, email, phone, status));
         }
     }
 
@@ -200,15 +200,5 @@ public class StudentsController : Controller
         {
             ModelState.AddModelError(string.Empty, "Could not enroll the student.");
         }
-    }
-
-    private static string ResolveUserName(string? name, int userId)
-    {
-        if (!string.IsNullOrWhiteSpace(name))
-        {
-            return name;
-        }
-
-        return userId <= 0 ? "—" : $"#{userId}";
     }
 }

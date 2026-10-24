@@ -22,6 +22,10 @@ public static class RegistrationService
         int? studentId = null,
         int? classId = null,
         string? search = null,
+        string? studentFilter = null,
+        string? courseFilter = null,
+        string? classFilter = null,
+        string? statusFilter = null,
         int? pageNumber = null,
         int? pageSize = null)
     {
@@ -32,13 +36,17 @@ public static class RegistrationService
             var term = string.IsNullOrWhiteSpace(search) ? null : search!.Trim();
 
             var registrationManager = new RegistrationManager();
-            var page = await registrationManager.GetAsync(id, studentId, classId, term, pageNumber, pageSize);
+            var page = await registrationManager.GetAsync(
+                id, studentId, classId, term, studentFilter, courseFilter, classFilter,
+                statusFilter, pageNumber, pageSize);
 
             // A page past the end of the result set comes back empty; fall back
             // to the last page so the view never shows "Page 9 of 3".
             if (page.Count == 0 && page.TotalPages > 0 && page.PageNumber > page.TotalPages)
             {
-                page = await registrationManager.GetAsync(id, studentId, classId, term, page.TotalPages, pageSize);
+                page = await registrationManager.GetAsync(
+                    id, studentId, classId, term, studentFilter, courseFilter, classFilter,
+                    statusFilter, page.TotalPages, pageSize);
             }
 
             return page;

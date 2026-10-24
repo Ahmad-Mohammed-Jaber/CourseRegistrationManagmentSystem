@@ -11,10 +11,18 @@ public class StudentRepository : IGenericRepository<Student>
         int? id = null,
         int? userId = null,
         string? search = null,
+        string? studentNumberFilter = null,
+        string? fullNameFilter = null,
+        string? userNameFilter = null,
+        string? emailFilter = null,
+        string? phoneFilter = null,
+        bool? isActive = null,
         int? pageNumber = null,
         int? pageSize = null)
     {
-        return StudentDataProvider.GetAsync(id, userId, search, pageNumber, pageSize);
+        return StudentDataProvider.GetAsync(
+            id, userId, search, studentNumberFilter, fullNameFilter, userNameFilter,
+            emailFilter, phoneFilter, isActive, pageNumber, pageSize);
     }
     public Task<Student?> GetByIdAsync(int id)
     {
