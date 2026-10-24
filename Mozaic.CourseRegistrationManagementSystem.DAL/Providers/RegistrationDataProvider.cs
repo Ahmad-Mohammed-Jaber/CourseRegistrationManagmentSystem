@@ -85,7 +85,7 @@ public static class RegistrationDataProvider
             connection = DBConnectionFactory.CreateConnection();
             await connection.OpenAsync();
 
-            command = CreateGetCommand(connection, id, null, null, null, null, null, null, null, null, null);
+            command = CreateGetCommand(connection, id);
 
             reader = await command.ExecuteReaderAsync();
             return await reader.ReadAsync() ? MapRegistration(reader) : null;
@@ -104,16 +104,16 @@ public static class RegistrationDataProvider
 
     private static SqlCommand CreateGetCommand(
         SqlConnection connection,
-        int? id,
-        int? studentId,
-        int? classId,
-        string? search,
-        string? studentFilter,
-        string? courseFilter,
-        string? classFilter,
-        string? statusFilter,
-        int? pageNumber,
-        int? pageSize)
+        int? id = null,
+        int? studentId = null,
+        int? classId = null,
+        string? search = null,
+        string? studentFilter = null,
+        string? courseFilter = null,
+        string? classFilter = null,
+        string? statusFilter = null,
+        int? pageNumber = null,
+        int? pageSize = null)
     {
         var command = new SqlCommand("usp_GetRegistrations", connection)
         {

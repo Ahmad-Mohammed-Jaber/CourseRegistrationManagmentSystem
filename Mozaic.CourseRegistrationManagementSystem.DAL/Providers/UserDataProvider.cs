@@ -83,7 +83,7 @@ public static class UserDataProvider
             connection = DBConnectionFactory.CreateConnection();
             await connection.OpenAsync();
 
-            command = CreateGetCommand(connection, id, null, null, null, null, null, null, null, null);
+            command = CreateGetCommand(connection, id);
 
             reader = await command.ExecuteReaderAsync();
             return await reader.ReadAsync() ? MapUser(reader) : null;
@@ -102,15 +102,15 @@ public static class UserDataProvider
 
     private static SqlCommand CreateGetCommand(
         SqlConnection connection,
-        int? id,
-        string? userName,
-        string? search,
-        string? userNameFilter,
-        string? fullNameFilter,
-        User.UserRoles? role,
-        bool? isActive,
-        int? pageNumber,
-        int? pageSize)
+        int? id = null,
+        string? userName = null,
+        string? search = null,
+        string? userNameFilter = null,
+        string? fullNameFilter = null,
+        User.UserRoles? role = null,
+        bool? isActive = null,
+        int? pageNumber = null,
+        int? pageSize = null)
     {
         var command = new SqlCommand("usp_GetUsers", connection)
         {

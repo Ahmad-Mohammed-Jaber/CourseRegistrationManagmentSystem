@@ -85,7 +85,7 @@ public static class StudentDataProvider
             connection = DBConnectionFactory.CreateConnection();
             await connection.OpenAsync();
 
-            command = CreateGetCommand(connection, id, null, null, null, null, null, null, null, null, null, null);
+            command = CreateGetCommand(connection, id);
 
             reader = await command.ExecuteReaderAsync();
             return await reader.ReadAsync() ? MapStudent(reader) : null;
@@ -104,17 +104,17 @@ public static class StudentDataProvider
 
     private static SqlCommand CreateGetCommand(
         SqlConnection connection,
-        int? id,
-        int? userId,
-        string? search,
-        string? studentNumberFilter,
-        string? fullNameFilter,
-        string? userNameFilter,
-        string? emailFilter,
-        string? phoneFilter,
-        bool? isActive,
-        int? pageNumber,
-        int? pageSize)
+        int? id = null,
+        int? userId = null,
+        string? search = null,
+        string? studentNumberFilter = null,
+        string? fullNameFilter = null,
+        string? userNameFilter = null,
+        string? emailFilter = null,
+        string? phoneFilter = null,
+        bool? isActive = null,
+        int? pageNumber = null,
+        int? pageSize = null)
     {
         var command = new SqlCommand("usp_GetStudents", connection)
         {
