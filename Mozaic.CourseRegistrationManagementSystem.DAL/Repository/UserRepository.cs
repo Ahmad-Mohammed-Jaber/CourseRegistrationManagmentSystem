@@ -16,6 +16,11 @@ public class UserRepository : IGenericRepository<User>
     {
         return UserDataProvider.GetAsync(id, userName, search, pageNumber, pageSize);
     }
+    public Task<User?> GetByIdAsync(int id)
+    {
+        return UserDataProvider.GetByIdAsync(id);
+    }
+
     public void Add(User entity)
     {
         UserDataProvider.Add(entity);

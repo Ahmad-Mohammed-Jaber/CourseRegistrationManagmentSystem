@@ -17,6 +17,11 @@ public class RegistrationRepository : IGenericRepository<Registration>
     {
         return RegistrationDataProvider.GetAsync(id, studentId, classId, search, pageNumber, pageSize);
     }
+    public Task<Registration?> GetByIdAsync(int id)
+    {
+        return RegistrationDataProvider.GetByIdAsync(id);
+    }
+
     public void Add(Registration entity)
     {
         RegistrationDataProvider.Add(entity);

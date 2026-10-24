@@ -16,6 +16,8 @@ internal class RegistrationManager
         int? pageNumber = null,
         int? pageSize = null) => _registrationRepository.GetAsync(id, studentId, classId, search, pageNumber, pageSize);
 
+    public Task<Registration?> GetByIdAsync(int id) => _registrationRepository.GetByIdAsync(id);
+
     public void Add(Registration registration) => _registrationRepository.Add(registration);
 
     public Task AddAsync(Registration registration) => _registrationRepository.AddAsync(registration);

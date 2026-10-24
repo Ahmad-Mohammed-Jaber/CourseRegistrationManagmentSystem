@@ -15,6 +15,7 @@ internal class UserManager
         int? pageNumber = null,
         int? pageSize = null) => _userRepository.GetAsync(id, userName, search, pageNumber, pageSize);
 
+    public Task<User?> GetByIdAsync(int id) => _userRepository.GetByIdAsync(id);
 
     public void Add(User user) => _userRepository.Add(user);
 

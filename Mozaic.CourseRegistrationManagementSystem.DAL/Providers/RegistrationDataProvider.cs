@@ -70,6 +70,42 @@ public static class RegistrationDataProvider
         }
     }
 
+    /// <summary>
+    /// Fetches one registration by primary key, with the class, student and
+    /// course rows joined in, or null when no such row exists.
+    /// </summary>
+    public static async Task<Registration?> GetByIdAsync(int id)
+    {
+        if (id <= 0)
+        {
+            return null;
+        }
+
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        SqlDataReader? reader = null;
+        try
+        {
+            connection = DBConnectionFactory.CreateConnection();
+            await connection.OpenAsync();
+
+            command = CreateGetCommand(connection, id, null, null, null, null, null);
+
+            reader = await command.ExecuteReaderAsync();
+            return await reader.ReadAsync() ? MapRegistration(reader) : null;
+        }
+        catch (Exception ex)
+        {
+            throw new DatabaseException("An error occured in RegistrationDataProvider.GetByIdAsync(int id)", ex);
+        }
+        finally
+        {
+            reader?.Dispose();
+            command?.Dispose();
+            connection?.Dispose();
+        }
+    }
+
     private static SqlCommand CreateGetCommand(
         SqlConnection connection,
         int? id,

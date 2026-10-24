@@ -97,7 +97,7 @@ public static class StudentRegistrationService
             var classManager = new ClassManager();
             var registrationManager = new RegistrationManager();
 
-            Class? @class = (await classManager.GetAsync(id: classId)).FirstOrDefault();
+            Class? @class = await classManager.GetByIdAsync(classId);
 
             var exists = ClassValidator.RequireExists(@class, classId);
             if (!exists.IsSuccess)
@@ -172,7 +172,7 @@ public static class StudentRegistrationService
             var registrationManager = new RegistrationManager();
             var classManager = new ClassManager();
 
-            Registration? registration = (await registrationManager.GetAsync(id: registrationId)).FirstOrDefault();
+            Registration? registration = await registrationManager.GetByIdAsync(registrationId);
 
             var exists = RegistrationValidator.RequireExists(registration, registrationId);
             if (!exists.IsSuccess)
@@ -186,7 +186,7 @@ public static class StudentRegistrationService
                 throw new BusinessException(ownership.Message);
             }
 
-            Class? @class = (await classManager.GetAsync(id: registration.ClassId)).FirstOrDefault();
+            Class? @class = await classManager.GetByIdAsync(registration.ClassId);
 
             if (@class == null)
             {
@@ -232,7 +232,7 @@ public static class StudentRegistrationService
             var classManager = new ClassManager();
             var registrationManager = new RegistrationManager();
 
-            Class? @class = (await classManager.GetAsync(id: classId)).FirstOrDefault();
+            Class? @class = await classManager.GetByIdAsync(classId);
 
             var exists = ClassValidator.RequireExists(@class, classId);
             if (!exists.IsSuccess)
@@ -309,7 +309,7 @@ public static class StudentRegistrationService
             var registrationManager = new RegistrationManager();
             var classManager = new ClassManager();
 
-            Registration? registration = (await registrationManager.GetAsync(id: registrationId)).FirstOrDefault();
+            Registration? registration = await registrationManager.GetByIdAsync(registrationId);
 
             var exists = RegistrationValidator.RequireExists(registration, registrationId);
             if (!exists.IsSuccess)
@@ -323,7 +323,7 @@ public static class StudentRegistrationService
                 throw new BusinessException(ownership.Message);
             }
 
-            Class? @class = (await classManager.GetAsync(id: registration.ClassId)).FirstOrDefault();
+            Class? @class = await classManager.GetByIdAsync(registration.ClassId);
 
             if (@class == null)
             {

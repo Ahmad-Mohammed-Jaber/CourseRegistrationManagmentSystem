@@ -144,7 +144,7 @@ public class AuthService
 
         await _userManager.AddAsync(user);
         var createdUser = user.Id > 0
-            ? (await _userManager.GetAsync(id: user.Id)).FirstOrDefault()
+            ? await _userManager.GetByIdAsync(user.Id)
                 ?? (await _userManager.GetAsync(userName: userName)).FirstOrDefault()
             : (await _userManager.GetAsync(userName: userName)).FirstOrDefault();
         if (createdUser == null)

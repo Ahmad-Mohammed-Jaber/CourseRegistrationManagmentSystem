@@ -154,7 +154,7 @@ public class ClassesController : Controller
 
         try
         {
-            var @class = (await ClassService.GetAsync(id: id)).FirstOrDefault();
+            var @class = await ClassService.GetByIdAsync(id);
             if (@class is null)
             {
                 TempData["ErrorMessage"] = $"Class with id {id} was not found.";
@@ -201,7 +201,7 @@ public class ClassesController : Controller
 
         try
         {
-            var existing = (await ClassService.GetAsync(id: id)).FirstOrDefault();
+            var existing = await ClassService.GetByIdAsync(id);
             if (existing is null)
             {
                 TempData["ErrorMessage"] = $"Class with id {id} was not found.";

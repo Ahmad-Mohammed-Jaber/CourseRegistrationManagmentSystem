@@ -69,7 +69,7 @@ public class UsersController : Controller
 
         try
         {
-            var user = (await UserService.GetAsync(id: id)).FirstOrDefault();
+            var user = await UserService.GetByIdAsync(id);
             if (user is null)
             {
                 TempData["ErrorMessage"] = $"User with id {id} was not found.";
@@ -114,7 +114,7 @@ public class UsersController : Controller
 
         try
         {
-            var existing = (await UserService.GetAsync(id: id)).FirstOrDefault();
+            var existing = await UserService.GetByIdAsync(id);
             if (existing is null)
             {
                 TempData["ErrorMessage"] = $"User with id {id} was not found.";

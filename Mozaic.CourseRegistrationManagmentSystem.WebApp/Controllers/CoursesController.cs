@@ -86,7 +86,7 @@ public class CoursesController : Controller
 
         try
         {
-            var course = (await CourseService.GetAsync(id: id)).FirstOrDefault();
+            var course = await CourseService.GetByIdAsync(id);
             if (course is null)
             {
                 TempData["ErrorMessage"] = $"Course with id {id} was not found.";
@@ -126,7 +126,7 @@ public class CoursesController : Controller
 
         try
         {
-            var existing = (await CourseService.GetAsync(id: id)).FirstOrDefault();
+            var existing = await CourseService.GetByIdAsync(id);
             if (existing is null)
             {
                 TempData["ErrorMessage"] = $"Course with id {id} was not found.";

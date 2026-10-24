@@ -16,6 +16,11 @@ public class StudentRepository : IGenericRepository<Student>
     {
         return StudentDataProvider.GetAsync(id, userId, search, pageNumber, pageSize);
     }
+    public Task<Student?> GetByIdAsync(int id)
+    {
+        return StudentDataProvider.GetByIdAsync(id);
+    }
+
     public void Add(Student entity)
     {
         StudentDataProvider.Add(entity);

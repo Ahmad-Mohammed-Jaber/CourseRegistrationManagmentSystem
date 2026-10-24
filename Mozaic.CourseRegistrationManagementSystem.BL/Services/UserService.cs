@@ -47,6 +47,23 @@ public static class UserService
         }
     }
 
+    /// <summary>
+    /// Fetches a single user by id, or null when no such row exists.
+    /// </summary>
+    public static async Task<User?> GetByIdAsync(int id)
+    {
+        try
+        {
+            var userManager = new UserManager();
+            return await userManager.GetByIdAsync(id);
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while retrieving user.", ex);
+        }
+    }
+
     public static async Task AddAsync(User user, int? actorId = null)
     {
         try
@@ -84,7 +101,7 @@ public static class UserService
         try
         {
             var userManager = new UserManager();
-            var existingUser = (await userManager.GetAsync(id: user.Id)).FirstOrDefault();
+            var existingUser = await userManager.GetByIdAsync(user.Id);
             var exists = UserValidator.RequireExists(existingUser, user.Id);
             if (!exists.IsSuccess)
             {
@@ -128,7 +145,7 @@ public static class UserService
         try
         {
             var userManager = new UserManager();
-            var existingUser = (await userManager.GetAsync(id: id)).FirstOrDefault();
+            var existingUser = await userManager.GetByIdAsync(id);
             var exists = UserValidator.RequireExists(existingUser, id);
             if (!exists.IsSuccess)
             {

@@ -177,7 +177,7 @@ public class RegistrationsController : Controller
 
         try
         {
-            var registration = (await RegistrationService.GetAsync(id: id)).FirstOrDefault();
+            var registration = await RegistrationService.GetByIdAsync(id);
             if (registration is null)
             {
                 TempData["ErrorMessage"] = $"Registration with id {id} was not found.";
@@ -220,7 +220,7 @@ public class RegistrationsController : Controller
 
         try
         {
-            var existing = (await RegistrationService.GetAsync(id: id)).FirstOrDefault();
+            var existing = await RegistrationService.GetByIdAsync(id);
             if (existing is null)
             {
                 TempData["ErrorMessage"] = $"Registration with id {id} was not found.";

@@ -15,6 +15,7 @@ internal class StudentManager
         int? pageNumber = null,
         int? pageSize = null) => _studentRepository.GetAsync(id, userId, search, pageNumber, pageSize);
 
+    public Task<Student?> GetByIdAsync(int id) => _studentRepository.GetByIdAsync(id);
 
     public void Add(Student student) => _studentRepository.Add(student);
 

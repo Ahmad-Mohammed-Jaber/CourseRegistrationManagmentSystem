@@ -50,6 +50,23 @@ public static class ClassService
         }
     }
 
+    /// <summary>
+    /// Fetches a single class by id, or null when no such row exists.
+    /// </summary>
+    public static async Task<Class?> GetByIdAsync(int id)
+    {
+        try
+        {
+            var classManager = new ClassManager();
+            return await classManager.GetByIdAsync(id);
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while retrieving class.", ex);
+        }
+    }
+
     public static async Task AddAsync(Class classEntity, int? actorId = null)
     {
         try
@@ -86,7 +103,7 @@ public static class ClassService
         try
         {
             var classManager = new ClassManager();
-            var existingClass = (await classManager.GetAsync(id: classEntity.Id)).FirstOrDefault();
+            var existingClass = await classManager.GetByIdAsync(classEntity.Id);
             var exists = ClassValidator.RequireExists(existingClass, classEntity.Id);
             if (!exists.IsSuccess)
             {
@@ -130,7 +147,7 @@ public static class ClassService
         try
         {
             var classManager = new ClassManager();
-            var existingClass = (await classManager.GetAsync(id: id)).FirstOrDefault();
+            var existingClass = await classManager.GetByIdAsync(id);
             var exists = ClassValidator.RequireExists(existingClass, id);
             if (!exists.IsSuccess)
             {
@@ -149,7 +166,7 @@ public static class ClassService
     private static async Task<ValidationResult> EnsureCourseExistsAsync(int courseId)
     {
         var courseManager = new CourseManager();
-        var course = (await courseManager.GetAsync(id: courseId)).FirstOrDefault();
+        var course = await courseManager.GetByIdAsync(courseId);
         return CourseValidator.RequireExists(course, courseId);
     }
 

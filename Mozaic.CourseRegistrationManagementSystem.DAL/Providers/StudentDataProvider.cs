@@ -62,6 +62,41 @@ public static class StudentDataProvider
         }
     }
 
+    /// <summary>
+    /// Fetches one student by primary key, or null when no such row exists.
+    /// </summary>
+    public static async Task<Student?> GetByIdAsync(int id)
+    {
+        if (id <= 0)
+        {
+            return null;
+        }
+
+        SqlConnection? connection = null;
+        SqlCommand? command = null;
+        SqlDataReader? reader = null;
+        try
+        {
+            connection = DBConnectionFactory.CreateConnection();
+            await connection.OpenAsync();
+
+            command = CreateGetCommand(connection, id, null, null, null, null);
+
+            reader = await command.ExecuteReaderAsync();
+            return await reader.ReadAsync() ? MapStudent(reader) : null;
+        }
+        catch (Exception ex)
+        {
+            throw new DatabaseException("An error occured in StudentDataProvider.GetByIdAsync(int id)", ex);
+        }
+        finally
+        {
+            reader?.Dispose();
+            command?.Dispose();
+            connection?.Dispose();
+        }
+    }
+
     private static SqlCommand CreateGetCommand(
         SqlConnection connection,
         int? id,

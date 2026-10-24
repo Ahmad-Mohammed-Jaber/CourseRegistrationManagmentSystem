@@ -89,7 +89,7 @@ public class StudentsController : Controller
 
         try
         {
-            var student = (await StudentService.GetAsync(id: id)).FirstOrDefault();
+            var student = await StudentService.GetByIdAsync(id);
             if (student is null)
             {
                 TempData["ErrorMessage"] = $"Student with id {id} was not found.";
@@ -130,7 +130,7 @@ public class StudentsController : Controller
 
         try
         {
-            var existing = (await StudentService.GetAsync(id: id)).FirstOrDefault();
+            var existing = await StudentService.GetByIdAsync(id);
             if (existing is null)
             {
                 TempData["ErrorMessage"] = $"Student with id {id} was not found.";

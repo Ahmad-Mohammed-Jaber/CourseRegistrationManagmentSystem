@@ -50,6 +50,24 @@ public static class RegistrationService
         }
     }
 
+    /// <summary>
+    /// Fetches a single registration by id, with the class, student and
+    /// course joined in, or null when no such row exists.
+    /// </summary>
+    public static async Task<Registration?> GetByIdAsync(int id)
+    {
+        try
+        {
+            var registrationManager = new RegistrationManager();
+            return await registrationManager.GetByIdAsync(id);
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while retrieving registration.", ex);
+        }
+    }
+
     public static async Task AddAsync(Registration registration, int? actorId = null)
     {
         try
@@ -106,7 +124,7 @@ public static class RegistrationService
             }
 
             var registrationManager = new RegistrationManager();
-            var existing = (await registrationManager.GetAsync(id: registration.Id)).FirstOrDefault();
+            var existing = await registrationManager.GetByIdAsync(registration.Id);
             var exists = RegistrationValidator.RequireExists(existing, registration.Id);
             if (!exists.IsSuccess)
             {
@@ -154,7 +172,7 @@ public static class RegistrationService
         try
         {
             var registrationManager = new RegistrationManager();
-            var existing = (await registrationManager.GetAsync(id: id)).FirstOrDefault();
+            var existing = await registrationManager.GetByIdAsync(id);
             var exists = RegistrationValidator.RequireExists(existing, id);
             if (!exists.IsSuccess)
             {
@@ -173,14 +191,14 @@ public static class RegistrationService
     private static async Task<ValidationResult> EnsureStudentExistsAsync(int studentId)
     {
         var studentManager = new StudentManager();
-        var student = (await studentManager.GetAsync(id: studentId)).FirstOrDefault();
+        var student = await studentManager.GetByIdAsync(studentId);
         return StudentValidator.RequireExists(student, studentId);
     }
 
     private static async Task<ValidationResult> EnsureClassExistsAsync(int classId)
     {
         var classManager = new ClassManager();
-        var @class = (await classManager.GetAsync(id: classId)).FirstOrDefault();
+        var @class = await classManager.GetByIdAsync(classId);
         return ClassValidator.RequireExists(@class, classId);
     }
 }

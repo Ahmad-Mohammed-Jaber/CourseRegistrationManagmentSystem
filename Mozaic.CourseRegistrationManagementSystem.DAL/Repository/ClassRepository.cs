@@ -18,6 +18,11 @@ public class ClassRepository : IGenericRepository<Class>
     {
         return ClassDataProvider.GetAsync(id, courseId, userId, search, statusFilter, pageNumber, pageSize);
     }
+    public Task<Class?> GetByIdAsync(int id)
+    {
+        return ClassDataProvider.GetByIdAsync(id);
+    }
+
     public void Add(Class entity)
     {
         ClassDataProvider.Add(entity);

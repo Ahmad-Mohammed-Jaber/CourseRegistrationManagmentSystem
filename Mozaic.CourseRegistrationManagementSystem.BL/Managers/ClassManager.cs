@@ -17,6 +17,7 @@ internal class ClassManager
         int? pageNumber = null,
         int? pageSize = null) => _classRepository.GetAsync(id, courseId, userId, search, statusFilter, pageNumber, pageSize);
 
+    public Task<Class?> GetByIdAsync(int id) => _classRepository.GetByIdAsync(id);
 
     public void Add(Class classEntity) => _classRepository.Add(classEntity);
 

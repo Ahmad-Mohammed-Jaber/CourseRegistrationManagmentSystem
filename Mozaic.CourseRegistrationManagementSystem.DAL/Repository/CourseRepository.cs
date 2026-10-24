@@ -16,6 +16,11 @@ public class CourseRepository : IGenericRepository<Course>
     {
         return CourseDataProvider.GetAsync(id, courseCode, search, pageNumber, pageSize);
     }
+    public Task<Course?> GetByIdAsync(int id)
+    {
+        return CourseDataProvider.GetByIdAsync(id);
+    }
+
     public void Add(Course entity)
     {
         CourseDataProvider.Add(entity);

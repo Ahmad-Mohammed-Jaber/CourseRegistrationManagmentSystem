@@ -49,6 +49,24 @@ public static class StudentService
         }
     }
 
+    /// <summary>
+    /// Fetches a single student by id, with the user's display columns
+    /// joined in, or null when no such row exists.
+    /// </summary>
+    public static async Task<Student?> GetByIdAsync(int id)
+    {
+        try
+        {
+            var studentManager = new StudentManager();
+            return await studentManager.GetByIdAsync(id);
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while retrieving student.", ex);
+        }
+    }
+
     public static async Task AddAsync(Student student, int? actorId = null)
     {
         try
@@ -87,7 +105,7 @@ public static class StudentService
             };
             await userManager.AddAsync(user);
 
-            var created = (await userManager.GetAsync(id: user.Id)).FirstOrDefault()
+            var created = await userManager.GetByIdAsync(user.Id)
                 ?? (await userManager.GetAsync(userName: user.UserName)).FirstOrDefault();
             if (created == null)
             {
@@ -135,7 +153,7 @@ public static class StudentService
 
             var studentManager = new StudentManager();
             var userManager = new UserManager();
-            var existingStudent = (await studentManager.GetAsync(id: student.Id)).FirstOrDefault();
+            var existingStudent = await studentManager.GetByIdAsync(student.Id);
             var exists = StudentValidator.RequireExists(existingStudent, student.Id);
             if (!exists.IsSuccess)
             {
@@ -155,7 +173,7 @@ public static class StudentService
             student.ModifiedBy = effectiveActorId;
             await studentManager.UpdateAsync(student);
 
-            var existingUser = (await userManager.GetAsync(id: existingStudent.UserId)).FirstOrDefault();
+            var existingUser = await userManager.GetByIdAsync(existingStudent.UserId);
             if (existingUser != null)
             {
                 existingUser.FullName = student.FullName;
@@ -184,7 +202,7 @@ public static class StudentService
         {
             var studentManager = new StudentManager();
             var userManager = new UserManager();
-            var student = (await studentManager.GetAsync(id: id)).FirstOrDefault();
+            var student = await studentManager.GetByIdAsync(id);
             var exists = StudentValidator.RequireExists(student, id);
             if (!exists.IsSuccess)
             {

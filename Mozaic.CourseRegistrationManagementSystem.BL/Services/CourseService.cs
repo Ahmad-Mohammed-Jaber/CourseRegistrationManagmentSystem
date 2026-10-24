@@ -47,6 +47,23 @@ public static class CourseService
         }
     }
 
+    /// <summary>
+    /// Fetches a single course by id, or null when no such row exists.
+    /// </summary>
+    public static async Task<Course?> GetByIdAsync(int id)
+    {
+        try
+        {
+            var courseManager = new CourseManager();
+            return await courseManager.GetByIdAsync(id);
+        }
+        catch (Exception ex)
+        {
+            AppLogger.LogCaught(ex);
+            throw new BusinessException("An error occurred while retrieving course.", ex);
+        }
+    }
+
     public static async Task AddAsync(Course course, int? actorId = null)
     {
         try
@@ -83,7 +100,7 @@ public static class CourseService
         try
         {
             var courseManager = new CourseManager();
-            var existingCourse = (await courseManager.GetAsync(id: course.Id)).FirstOrDefault();
+            var existingCourse = await courseManager.GetByIdAsync(course.Id);
             var exists = CourseValidator.RequireExists(existingCourse, course.Id);
             if (!exists.IsSuccess)
             {
@@ -120,7 +137,7 @@ public static class CourseService
         try
         {
             var courseManager = new CourseManager();
-            var existingCourse = (await courseManager.GetAsync(id: id)).FirstOrDefault();
+            var existingCourse = await courseManager.GetByIdAsync(id);
             var exists = CourseValidator.RequireExists(existingCourse, id);
             if (!exists.IsSuccess)
             {

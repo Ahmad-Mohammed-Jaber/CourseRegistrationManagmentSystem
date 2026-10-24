@@ -15,6 +15,7 @@ internal class CourseManager
         int? pageNumber = null,
         int? pageSize = null) => _courseRepository.GetAsync(id, courseCode, search, pageNumber, pageSize);
 
+    public Task<Course?> GetByIdAsync(int id) => _courseRepository.GetByIdAsync(id);
 
     public void Add(Course course) => _courseRepository.Add(course);
 
