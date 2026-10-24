@@ -68,6 +68,9 @@ DROP PROCEDURE IF EXISTS [dbo].[usp_GetRefreshTokenByHash];
 DROP PROCEDURE IF EXISTS [dbo].[usp_RevokeRefreshToken];
 DROP PROCEDURE IF EXISTS [dbo].[usp_RevokeRefreshTokensForUser];
 DROP PROCEDURE IF EXISTS [dbo].[usp_DeleteExpiredRefreshTokens];
+-- Obsolete/broken procedure left behind by older installations. The app does
+-- not call it and its ReplacedByHash column is not part of the current schema.
+DROP PROCEDURE IF EXISTS [dbo].[usp_MarkRefreshTokenRotated];
 
 DROP PROCEDURE IF EXISTS [dbo].[usp_CreateStudent];
 DROP PROCEDURE IF EXISTS [dbo].[usp_GetStudents];
