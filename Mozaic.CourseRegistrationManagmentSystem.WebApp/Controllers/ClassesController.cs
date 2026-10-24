@@ -168,6 +168,7 @@ public class ClassesController : Controller
                 ClassName = @class.ClassName,
                 Instructor = @class.Instructor,
                 MaxCapacity = @class.MaxCapacity,
+                CurrentCapacity = @class.CurrentCapacity,
                 StartDate = @class.StartDate,
                 EndDate = @class.EndDate,
                 IsActive = @class.IsActive,
@@ -193,12 +194,6 @@ public class ClassesController : Controller
             return RedirectToAction(nameof(Index));
         }
 
-        if (!ModelState.IsValid)
-        {
-            await PopulateCoursesAsync(model);
-            return View(model);
-        }
-
         try
         {
             var existing = await ClassService.GetByIdAsync(id);
@@ -206,6 +201,15 @@ public class ClassesController : Controller
             {
                 TempData["ErrorMessage"] = $"Class with id {id} was not found.";
                 return RedirectToAction(nameof(Index));
+            }
+
+            // Current capacity is display-only; always show the stored enrollment.
+            model.CurrentCapacity = existing.CurrentCapacity;
+
+            if (!ModelState.IsValid)
+            {
+                await PopulateCoursesAsync(model);
+                return View(model);
             }
 
             await ClassService.UpdateAsync(new Class

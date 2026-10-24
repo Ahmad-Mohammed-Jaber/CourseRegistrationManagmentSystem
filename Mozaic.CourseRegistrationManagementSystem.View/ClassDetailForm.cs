@@ -17,6 +17,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
         private TextBox txtName;
         private TextBox txtInstructor;
         private NumericUpDown numCapacity;
+        private Label lblCurrentCapacity;
         private TableLayoutPanel pnlSchedule;
         private Dictionary<DaysOfTheWeek, CheckBox> chkDays = new();
         private DateTimePicker dtStart;
@@ -108,6 +109,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             this.lblName = new Label();
             this.lblInstructor = new Label();
             this.lblCapacity = new Label();
+            this.lblCurrentCapacity = new Label();
             this.lblSchedule = new Label();
             this.lblStart = new Label();
             this.lblEnd = new Label();
@@ -150,8 +152,12 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
 
             this.numCapacity.Location = new Point(120, 138);
             this.numCapacity.Size = new Size(80, 25);
-            this.numCapacity.Minimum = 0;
+            this.numCapacity.Minimum = 1;
             this.numCapacity.Maximum = 1000;
+
+            this.lblCurrentCapacity.AutoSize = true;
+            this.lblCurrentCapacity.Location = new Point(210, 143);
+            this.lblCurrentCapacity.Text = "Current: 0";
 
             this.lblSchedule.AutoSize = true;
             this.lblSchedule.Location = new Point(20, 180);
@@ -200,6 +206,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             this.Controls.Add(this.txtInstructor);
             this.Controls.Add(this.lblCapacity);
             this.Controls.Add(this.numCapacity);
+            this.Controls.Add(this.lblCurrentCapacity);
             this.Controls.Add(this.lblSchedule);
             this.Controls.Add(this.pnlSchedule);
             this.Controls.Add(this.lblStart);
@@ -232,7 +239,11 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             cmbCourse.SelectedValue = _class.CourseId;
             txtName.Text = _class.ClassName;
             txtInstructor.Text = _class.Instructor;
-            numCapacity.Value = _class.MaxCapacity;
+            // Current enrollment is read-only here. Cap the max-capacity input
+            // at it so the value can never be lowered below seats taken.
+            numCapacity.Minimum = Math.Max(1, _class.CurrentCapacity);
+            numCapacity.Value = Math.Clamp(_class.MaxCapacity, (int)numCapacity.Minimum, (int)numCapacity.Maximum);
+            lblCurrentCapacity.Text = $"Current: {_class.CurrentCapacity}";
             foreach (var entry in chkDays)
             {
                 entry.Value.Checked = (_class.Schedule & entry.Key) == entry.Key;

@@ -52,8 +52,14 @@
 
                 <div class="mb-3">
                     <label asp-for="MaxCapacity" class="form-label"></label>
-                    <input asp-for="MaxCapacity" class="form-control" type="number" min="0" max="1000" />
+                    <input asp-for="MaxCapacity" class="form-control" type="number" min="1" max="1000" />
                     <span asp-validation-for="MaxCapacity" class="text-danger d-block small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="CurrentCapacity" class="form-label"></label>
+                    <input asp-for="CurrentCapacity" class="form-control" disabled />
+                    <div class="form-text">Starts at 0 and is maintained automatically by student registrations.</div>
                 </div>
 
                 <div class="mb-3">

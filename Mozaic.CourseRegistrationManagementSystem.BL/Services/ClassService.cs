@@ -71,6 +71,10 @@ public static class ClassService
     {
         try
         {
+            // A class always starts empty; the enrollment is owned by the
+            // registration flow, so any caller-supplied value is ignored.
+            classEntity.CurrentCapacity = 0;
+
             var valid = ClassValidator.ValidateClass(classEntity);
             if (!valid.IsSuccess)
             {
@@ -91,6 +95,10 @@ public static class ClassService
             var classManager = new ClassManager();
             await classManager.AddAsync(classEntity);
         }
+        catch (BusinessException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             AppLogger.LogCaught(ex);
@@ -110,6 +118,19 @@ public static class ClassService
                 throw new BusinessException(exists.Message);
             }
 
+            // The max capacity may never drop below the seats already taken.
+            // Checked against the stored enrollment, not the caller's value.
+            var capacity = ClassValidator.ValidateMaxCapacityNotBelowEnrollment(
+                classEntity.MaxCapacity, existingClass!.CurrentCapacity);
+            if (!capacity.IsSuccess)
+            {
+                throw new BusinessException(capacity.Message);
+            }
+
+            // Enrollment belongs to the registration flow; a class edit must
+            // never overwrite it, whatever the caller posted.
+            classEntity.CurrentCapacity = existingClass.CurrentCapacity;
+
             var valid = ClassValidator.ValidateClass(classEntity);
             if (!valid.IsSuccess)
             {
@@ -122,18 +143,15 @@ public static class ClassService
                 throw new BusinessException(course.Message);
             }
 
-            var capacity = ClassValidator.ValidateMaxCapacityNotBelowEnrollment(
-                classEntity.MaxCapacity, existingClass!.CurrentCapacity);
-            if (!capacity.IsSuccess)
-            {
-                throw new BusinessException(capacity.Message);
-            }
-
-            classEntity.CreatedBy = existingClass!.CreatedBy;
+            classEntity.CreatedBy = existingClass.CreatedBy;
             classEntity.ModifiedBy = actorId.HasValue && actorId.Value > 0
                 ? actorId.Value
                 : SessionManager.Current?.UserId ?? existingClass.ModifiedBy;
             await classManager.UpdateAsync(classEntity);
+        }
+        catch (BusinessException)
+        {
+            throw;
         }
         catch (Exception ex)
         {

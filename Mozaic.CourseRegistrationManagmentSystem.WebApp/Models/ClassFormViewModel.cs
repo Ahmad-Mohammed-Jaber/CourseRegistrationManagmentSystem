@@ -21,8 +21,16 @@ public class ClassFormViewModel
     [Display(Name = "Instructor")]
     public string Instructor { get; set; } = string.Empty;
 
+    [Range(1, 1000, ErrorMessage = "Max capacity must be between 1 and 1000.")]
     [Display(Name = "Max Capacity")]
-    public int MaxCapacity { get; set; }
+    public int MaxCapacity { get; set; } = 1;
+
+    /// <summary>
+    /// Seats already taken. Read-only: it is owned by the registration flow,
+    /// so this value is only shown back to the user, never trusted on post.
+    /// </summary>
+    [Display(Name = "Current Capacity")]
+    public int CurrentCapacity { get; set; }
 
     [Display(Name = "Start Date")]
     [DataType(DataType.Date)]
