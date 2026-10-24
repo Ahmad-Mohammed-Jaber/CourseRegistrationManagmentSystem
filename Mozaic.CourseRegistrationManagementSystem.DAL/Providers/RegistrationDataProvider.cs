@@ -10,12 +10,6 @@ namespace Mozaic.CourseRegistrationManagementSystem.DAL.Providers;
 
 public static class RegistrationDataProvider
 {
-    /// <summary>
-    /// The single read path for registrations. Every filter is optional; a
-    /// null filter means "no restriction". Each row carries the joined class,
-    /// student and course. When @pageNumber is supplied the procedure returns
-    /// one page plus a second result set with the counter.
-    /// </summary>
     public static async Task<RegistrationResult> GetAsync(
         int? id = null,
         int? studentId = null,
@@ -76,10 +70,6 @@ public static class RegistrationDataProvider
         }
     }
 
-    /// <summary>
-    /// Fetches one registration by primary key, with the class, student and
-    /// course rows joined in, or null when no such row exists.
-    /// </summary>
     public static async Task<Registration?> GetByIdAsync(int id)
     {
         if (id <= 0)

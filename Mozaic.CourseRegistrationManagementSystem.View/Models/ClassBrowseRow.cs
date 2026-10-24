@@ -4,10 +4,6 @@ using Mozaic.CourseRegistrationManagementSystem.Shared.Helpers;
 
 namespace Mozaic.CourseRegistrationManagementSystem.View.Models;
 
-/// <summary>
-/// WinForms equivalent of the MVC BrowseClassViewModel: a grid-ready
-/// projection of Class with CourseName joined and Schedule formatted.
-/// </summary>
 public sealed class ClassBrowseRow
 {
     public int Id { get; set; }

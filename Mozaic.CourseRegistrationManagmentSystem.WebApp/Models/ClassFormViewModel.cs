@@ -25,10 +25,6 @@ public class ClassFormViewModel
     [Display(Name = "Max Capacity")]
     public int MaxCapacity { get; set; } = 1;
 
-    /// <summary>
-    /// Seats already taken. Read-only: it is owned by the registration flow,
-    /// so this value is only shown back to the user, never trusted on post.
-    /// </summary>
     [Display(Name = "Current Capacity")]
     public int CurrentCapacity { get; set; }
 

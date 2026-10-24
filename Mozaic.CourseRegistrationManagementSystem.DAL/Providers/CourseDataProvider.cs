@@ -68,9 +68,6 @@ public static class CourseDataProvider
         }
     }
 
-    /// <summary>
-    /// Fetches one course by primary key, or null when no such row exists.
-    /// </summary>
     public static async Task<Course?> GetByIdAsync(int id)
     {
         if (id <= 0)

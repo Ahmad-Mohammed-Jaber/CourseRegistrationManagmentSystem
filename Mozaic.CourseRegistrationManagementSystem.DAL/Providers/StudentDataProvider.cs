@@ -70,9 +70,6 @@ public static class StudentDataProvider
         }
     }
 
-    /// <summary>
-    /// Fetches one student by primary key, or null when no such row exists.
-    /// </summary>
     public static async Task<Student?> GetByIdAsync(int id)
     {
         if (id <= 0)

@@ -10,11 +10,6 @@ namespace Mozaic.CourseRegistrationManagementSystem.BL.Services;
 
 public static class CourseService
 {
-    /// <summary>
-    /// The single read path for courses. Every filter is optional; a null
-    /// filter means "no restriction". Pass a page number to get one page
-    /// plus the counter, or leave it out to get every matching row.
-    /// </summary>
     public static async Task<CourseResult> GetAsync(
         int? id = null,
         string? courseCode = null,
@@ -53,9 +48,6 @@ public static class CourseService
         }
     }
 
-    /// <summary>
-    /// Fetches a single course by id, or null when no such row exists.
-    /// </summary>
     public static async Task<Course?> GetByIdAsync(int id)
     {
         try
@@ -159,10 +151,6 @@ public static class CourseService
         }
     }
 
-    /// <summary>
-    /// Course codes are unique among the active courses, so a soft-deleted
-    /// course releases its code for reuse.
-    /// </summary>
     private static async Task<ValidationResult> EnsureUniqueCourseCodeAsync(string courseCode, int? excludeCourseId = null)
     {
         var courseManager = new CourseManager();

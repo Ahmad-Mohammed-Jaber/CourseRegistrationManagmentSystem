@@ -4,11 +4,6 @@ namespace Mozaic.CourseRegistrationManagementSystem.BL.Validation;
 
 public static class RegistrationValidator
 {
-    /// <summary>
-    /// Canonical soft-delete status. usp_DeleteRegistration writes this;
-    /// capacity sync, browse flags and duplicate checks all treat any other
-    /// status as occupying the seat.
-    /// </summary>
     public const string DroppedStatus = "Dropped";
 
     public static bool IsDropped(string? status) =>

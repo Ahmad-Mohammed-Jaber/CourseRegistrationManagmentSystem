@@ -10,11 +10,6 @@ namespace Mozaic.CourseRegistrationManagementSystem.BL.Services;
 
 public static class ClassService
 {
-    /// <summary>
-    /// The single read path for classes. Every filter is optional; a null
-    /// filter means "no restriction". Pass a page number to get one page
-    /// plus the counters, or leave it out to get every matching row.
-    /// </summary>
     public static async Task<ClassResult> GetAsync(
         int? id = null,
         int? courseId = null,
@@ -57,9 +52,6 @@ public static class ClassService
         }
     }
 
-    /// <summary>
-    /// Fetches a single class by id, or null when no such row exists.
-    /// </summary>
     public static async Task<Class?> GetByIdAsync(int id)
     {
         try
@@ -195,11 +187,6 @@ public static class ClassService
         return CourseValidator.RequireExists(course, courseId);
     }
 
-    /// <summary>
-    /// Maps the requested status filter onto the values the procedure
-    /// understands. A null filter means "no restriction" (every class);
-    /// an unrecognised value falls back to the active classes.
-    /// </summary>
     private static string? NormalizeStatusFilter(string? statusFilter)
     {
         if (string.IsNullOrWhiteSpace(statusFilter))

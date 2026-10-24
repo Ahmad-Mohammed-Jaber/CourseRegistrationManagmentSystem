@@ -10,13 +10,6 @@ namespace Mozaic.CourseRegistrationManagementSystem.BL.Services;
 
 public static class StudentService
 {
-    /// <summary>
-    /// The single read path for students. Every filter is optional; a null
-    /// filter means "no restriction". The user's display columns and the
-    /// audit actor names are joined in by the procedure, so no caller has to
-    /// fetch the user row separately. Pass a page number to get one page
-    /// plus the counter, or leave it out to get every matching row.
-    /// </summary>
     public static async Task<StudentResult> GetAsync(
         int? id = null,
         int? userId = null,
@@ -59,10 +52,6 @@ public static class StudentService
         }
     }
 
-    /// <summary>
-    /// Fetches a single student by id, with the user's display columns
-    /// joined in, or null when no such row exists.
-    /// </summary>
     public static async Task<Student?> GetByIdAsync(int id)
     {
         try

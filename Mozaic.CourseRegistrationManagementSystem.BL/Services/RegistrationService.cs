@@ -10,13 +10,6 @@ namespace Mozaic.CourseRegistrationManagementSystem.BL.Services;
 
 public static class RegistrationService
 {
-    /// <summary>
-    /// The single read path for registrations. Every filter is optional; a
-    /// null filter means "no restriction". Each row carries the joined class,
-    /// student and course, so no caller has to fetch them separately. Pass a
-    /// page number to get one page plus the counter, or leave it out to get
-    /// every matching row.
-    /// </summary>
     public static async Task<RegistrationResult> GetAsync(
         int? id = null,
         int? studentId = null,
@@ -58,10 +51,6 @@ public static class RegistrationService
         }
     }
 
-    /// <summary>
-    /// Fetches a single registration by id, with the class, student and
-    /// course joined in, or null when no such row exists.
-    /// </summary>
     public static async Task<Registration?> GetByIdAsync(int id)
     {
         try

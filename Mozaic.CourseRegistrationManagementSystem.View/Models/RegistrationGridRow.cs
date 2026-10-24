@@ -2,12 +2,6 @@ using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
 
 namespace Mozaic.CourseRegistrationManagementSystem.View.Models;
 
-/// <summary>
-/// Grid row for the registration list: the registration columns plus the
-/// display names of the related student, class and course. Those names come
-/// from joins, not from [dbo].[Registrations], so they live here rather than
-/// on the entity.
-/// </summary>
 public sealed class RegistrationGridRow
 {
     public int Id { get; set; }

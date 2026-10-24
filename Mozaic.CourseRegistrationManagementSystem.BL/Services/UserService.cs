@@ -10,11 +10,6 @@ namespace Mozaic.CourseRegistrationManagementSystem.BL.Services;
 
 public static class UserService
 {
-    /// <summary>
-    /// The single read path for users. Every filter is optional; a null
-    /// filter means "no restriction". Pass a page number to get one page
-    /// plus the counter, or leave it out to get every matching row.
-    /// </summary>
     public static async Task<UserResult> GetAsync(
         int? id = null,
         string? userName = null,
@@ -53,9 +48,6 @@ public static class UserService
         }
     }
 
-    /// <summary>
-    /// Fetches a single user by id, or null when no such row exists.
-    /// </summary>
     public static async Task<User?> GetByIdAsync(int id)
     {
         try

@@ -2,10 +2,6 @@ using Mozaic.CourseRegistrationManagementSystem.Shared.Results;
 
 namespace Mozaic.CourseRegistrationManagementSystem.View.Models;
 
-/// <summary>
-/// WinForms equivalent of the MVC BrowseClassesViewModel: the page of
-/// grid rows plus pager state and browse counters for BrowseClassesForm.
-/// </summary>
 public sealed class BrowseClassesViewModel
 {
     public List<ClassBrowseRow> Rows { get; set; } = new();

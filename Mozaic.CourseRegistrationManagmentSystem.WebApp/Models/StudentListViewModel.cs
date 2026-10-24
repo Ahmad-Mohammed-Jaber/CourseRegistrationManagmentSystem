@@ -2,10 +2,6 @@ using Mozaic.CourseRegistrationManagementSystem.Shared.Results;
 
 namespace Mozaic.CourseRegistrationManagmentSystem.WebApp.Models;
 
-/// <summary>
-/// Strongly-typed page model for Views/Students/Index.cshtml.
-/// Holds the current page of students plus the pager state and column filters.
-/// </summary>
 public sealed class StudentListViewModel
 {
     public List<StudentListItemViewModel> Students { get; set; } = new();
@@ -28,7 +24,6 @@ public sealed class StudentListViewModel
 
     public string Phone { get; set; } = string.Empty;
 
-    /// <summary>One of 'Active', 'Inactive' or 'All'.</summary>
     public string Status { get; set; } = "All";
 
     public Dictionary<string, string> RouteValues { get; set; } = new();
@@ -119,10 +114,6 @@ public sealed class StudentListViewModel
         };
     }
 
-    /// <summary>
-    /// Falls back to the raw id when the audit actor row is missing, matching
-    /// the placeholder the controller used to render.
-    /// </summary>
     private static string ResolveUserName(string? name, int userId)
     {
         if (!string.IsNullOrWhiteSpace(name))

@@ -3,10 +3,6 @@ using Mozaic.CourseRegistrationManagementSystem.Shared.Results;
 
 namespace Mozaic.CourseRegistrationManagmentSystem.WebApp.Models;
 
-/// <summary>
-/// Strongly-typed page model for Views/Registrations/Mine.cshtml.
-/// Holds the current page of the student's registrations plus pager state and filters.
-/// </summary>
 public sealed class MyRegistrationsListViewModel
 {
     public List<MyRegistrationViewModel> Registrations { get; set; } = new();
@@ -23,7 +19,6 @@ public sealed class MyRegistrationsListViewModel
 
     public string ClassName { get; set; } = string.Empty;
 
-    /// <summary>One of 'Registered', 'Dropped' or 'All'.</summary>
     public string Status { get; set; } = "All";
 
     public Dictionary<string, string> RouteValues { get; set; } = new();

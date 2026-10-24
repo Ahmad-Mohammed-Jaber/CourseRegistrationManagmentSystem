@@ -80,10 +80,6 @@ public static class StudentRegistrationService
         await RegisterClassForStudentAsync(studentId.Value, classId, userId);
     }
 
-    /// <summary>
-    /// The registrations of one student, with the class, student and course
-    /// joined in by the procedure.
-    /// </summary>
     public static async Task<RegistrationResult> GetRegistrationsForStudentAsync(int studentId)
     {
         var registrationManager = new RegistrationManager();

@@ -2,16 +2,6 @@ using System.Collections;
 
 namespace Mozaic.CourseRegistrationManagementSystem.Shared.Results;
 
-/// <summary>
-/// Generic paginated result. Replaces entity-specific page wrappers
-/// (e.g. the old ClassBrowsePage) so any entity can be paginated
-/// as PagedResult&lt;Course&gt;, PagedResult&lt;Student&gt;, etc.
-/// This is a transport/DTO type, not a database entity.
-///
-/// The result *is* the list of rows: it implements IReadOnlyList&lt;T&gt;, so
-/// an unpaged read can be used directly as a collection. Items stays
-/// available for the callers that want the page metadata alongside the rows.
-/// </summary>
 public class PagedResult<T> : IReadOnlyList<T>
 {
     public List<T> Items { get; set; } = new();
@@ -54,11 +44,6 @@ public class PagedResult<T> : IReadOnlyList<T>
         }
     }
 
-    /// <summary>
-    /// Normalizes the paging inputs of a read that may or may not be paged.
-    /// Both stay null when no page was asked for, which means "every matching
-    /// row"; otherwise the page number and size are clamped to the allowed range.
-    /// </summary>
     public static void Normalize(ref int? pageNumber, ref int? pageSize, int defaultPageSize = 20, int maxPageSize = 100)
     {
         if (!pageNumber.HasValue && !pageSize.HasValue)
@@ -73,11 +58,6 @@ public class PagedResult<T> : IReadOnlyList<T>
         pageSize = size;
     }
 
-    /// <summary>
-    /// Builds a page from an already-fetched sequence (e.g. rows from an
-    /// existing stored procedure). Paging happens in memory, so this works
-    /// with any SP shape — no paged-proc support required. Preserves source order.
-    /// </summary>
     public static PagedResult<T> FromList(IEnumerable<T> source, int pageNumber, int pageSize)
     {
         Normalize(ref pageNumber, ref pageSize);

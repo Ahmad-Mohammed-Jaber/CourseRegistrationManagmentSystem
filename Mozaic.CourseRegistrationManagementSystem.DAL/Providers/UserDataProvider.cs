@@ -68,11 +68,6 @@ public static class UserDataProvider
         }
     }
 
-    /// <summary>
-    /// Fetches one user by primary key, or null when no such row exists.
-    /// The stored procedure only returns the password hash for id/user-name
-    /// lookups, so this row includes it.
-    /// </summary>
     public static async Task<User?> GetByIdAsync(int id)
     {
         if (id <= 0)

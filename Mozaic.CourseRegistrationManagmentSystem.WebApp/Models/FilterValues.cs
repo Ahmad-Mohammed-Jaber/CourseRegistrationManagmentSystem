@@ -2,10 +2,6 @@ using UserEntity = Mozaic.CourseRegistrationManagementSystem.Shared.Entities.Use
 
 namespace Mozaic.CourseRegistrationManagmentSystem.WebApp.Models;
 
-/// <summary>
-/// Translates the string values posted by the filter dropdowns into the
-/// nullable values understood by the service layer.
-/// </summary>
 internal static class FilterValues
 {
     public static bool? ParseActive(string? status)

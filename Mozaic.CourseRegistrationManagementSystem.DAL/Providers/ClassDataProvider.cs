@@ -70,9 +70,6 @@ public static class ClassDataProvider
         }
     }
 
-    /// <summary>
-    /// Fetches one class by primary key, or null when no such row exists.
-    /// </summary>
     public static async Task<Class?> GetByIdAsync(int id)
     {
         if (id <= 0)

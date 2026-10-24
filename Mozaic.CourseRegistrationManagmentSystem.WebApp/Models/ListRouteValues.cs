@@ -1,9 +1,5 @@
 namespace Mozaic.CourseRegistrationManagmentSystem.WebApp.Models;
 
-/// <summary>
-/// Builds the query-string values carried by a list pager. Empty filters and
-/// the "All" pseudo-value are omitted so the URL stays readable.
-/// </summary>
 internal static class ListRouteValues
 {
     public static Dictionary<string, string> Create(int pageSize, params (string Key, string? Value)[] filters)

@@ -3,11 +3,6 @@ using Mozaic.CourseRegistrationManagementSystem.Shared.Results;
 
 namespace Mozaic.CourseRegistrationManagmentSystem.WebApp.Models;
 
-/// <summary>
-/// Strongly-typed page model for Views/Classes/Browse.cshtml.
-/// Replaces the ViewData bag (Page, PageSize, TotalPages, TotalCount,
-/// AvailableCount, OpenSeatsCount, MyRegistrationsCount).
-/// </summary>
 public sealed class BrowseClassesViewModel
 {
     public List<BrowseClassViewModel> Classes { get; set; } = new();
