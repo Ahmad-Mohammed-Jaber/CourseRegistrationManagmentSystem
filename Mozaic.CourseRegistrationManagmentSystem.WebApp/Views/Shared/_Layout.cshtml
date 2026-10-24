@@ -13,9 +13,9 @@
     <link rel="icon" type="image/png" href="~/kiaalap/images/logo.png" />
 
     @* Same versions as kiaalap/package.json: bootstrap 5.3.8, bootstrap-icons 1.13.1 (vendored locally). *@
-    <link rel="stylesheet" href="~/kiaalap/vendor/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/kiaalap/vendor/css/bootstrap-icons.min.css" />
-    <link rel="stylesheet" href="~/kiaalap/css/dashboard.css" />
+    <link rel="stylesheet" href="~/kiaalap/vendor/css/bootstrap.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/kiaalap/vendor/css/bootstrap-icons.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/kiaalap/css/dashboard.css" asp-append-version="true" />
     @await RenderSectionAsync("Styles", required: false)
 
     @* Same as kiaalap/src/partials/head.hbs diagnostic block. *@
