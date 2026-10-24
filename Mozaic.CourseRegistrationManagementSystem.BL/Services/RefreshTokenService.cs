@@ -24,7 +24,8 @@ public class RefreshTokenService
         {
             throw new ArgumentOutOfRangeException(nameof(options), "Jwt RefreshTokenExpiryDays must be positive.");
         }
-        _userResolver = userResolver ?? (id => new UserManager().GetByIdAsync(id));
+        _userResolver = userResolver ?? (id =>
+            new UserManager().GetAsync(id: id).ContinueWith(t => t.Result.Items.FirstOrDefault(), TaskContinuationOptions.ExecuteSynchronously));
     }
 
     public static string HashToken(string plaintextToken)

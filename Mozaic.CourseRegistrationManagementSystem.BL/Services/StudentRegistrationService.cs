@@ -4,6 +4,7 @@ using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Logging;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Session;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Results;
 
 namespace Mozaic.CourseRegistrationManagementSystem.BL.Services;
 
@@ -23,7 +24,7 @@ public static class StudentRegistrationService
     private static async Task<int?> ResolveStudentIdAsync(int userId)
     {
         var studentManager = new StudentManager();
-        var student = await studentManager.GetByUserIdAsync(userId);
+        var student = (await studentManager.GetAsync(userId: userId)).FirstOrDefault();
         var profile = StudentValidator.RequireProfileExists(student);
         if (!profile.IsSuccess)
         {
@@ -38,14 +39,14 @@ public static class StudentRegistrationService
         return await ResolveStudentIdAsync(userId);
     }
 
-    public static async Task<List<(Registration Registration, Class Class)>> GetRegistrationsForUserAsync(int userId)
+    public static async Task<RegistrationResult> GetRegistrationsForUserAsync(int userId)
     {
         try
         {
             var studentId = await ResolveStudentIdAsync(userId);
             if (studentId == null)
             {
-                return new List<(Registration, Class)>();
+                return new RegistrationResult();
             }
 
             return await GetRegistrationsForStudentAsync(studentId.Value);
@@ -79,10 +80,14 @@ public static class StudentRegistrationService
         await RegisterClassForStudentAsync(studentId.Value, classId, userId);
     }
 
-    private static async Task<List<(Registration Registration, Class Class)>> GetRegistrationsForStudentAsync(int studentId)
+    /// <summary>
+    /// The registrations of one student, with the class, student and course
+    /// joined in by the procedure.
+    /// </summary>
+    public static async Task<RegistrationResult> GetRegistrationsForStudentAsync(int studentId)
     {
         var registrationManager = new RegistrationManager();
-        return await registrationManager.GetStudentRegistrationsWithClassesAsync(studentId);
+        return await registrationManager.GetAsync(studentId: studentId);
     }
 
     private static async Task RegisterClassForStudentAsync(int studentId, int classId, int? actorId = null)
@@ -92,7 +97,7 @@ public static class StudentRegistrationService
             var classManager = new ClassManager();
             var registrationManager = new RegistrationManager();
 
-            Class? @class = await classManager.GetByIdAsync(classId);
+            Class? @class = (await classManager.GetAsync(id: classId)).FirstOrDefault();
 
             var exists = ClassValidator.RequireExists(@class, classId);
             if (!exists.IsSuccess)
@@ -106,8 +111,9 @@ public static class StudentRegistrationService
                 throw new BusinessException(active.Message);
             }
 
+            var existingRegistration = (await registrationManager.GetAsync(studentId: studentId, classId: classId)).FirstOrDefault();
             var dup = RegistrationValidator.ValidateAlreadyRegistered(
-                await registrationManager.ExistsAsync(studentId, classId));
+                existingRegistration != null && !RegistrationValidator.IsDropped(existingRegistration.Status));
             if (!dup.IsSuccess)
             {
                 throw new BusinessException(dup.Message);
@@ -122,16 +128,27 @@ public static class StudentRegistrationService
             var effectiveActorId = actorId.HasValue && actorId.Value > 0
                 ? actorId.Value
                 : SessionManager.Current?.UserId ?? 0;
-            var registration = new Registration
+            if (existingRegistration != null)
             {
-                StudentId = studentId,
-                ClassId = classId,
-                RegistrationDate = DateTime.Now,
-                Status = "Registered",
-                CreatedBy = effectiveActorId,
-                ModifiedBy = effectiveActorId
-            };
-            await registrationManager.AddAsync(registration);
+                // Dropped row → reactivate in place (keeps history/identity, no duplicate).
+                existingRegistration.Status = "Registered";
+                existingRegistration.RegistrationDate = DateTime.Now;
+                existingRegistration.ModifiedBy = effectiveActorId;
+                await registrationManager.UpdateAsync(existingRegistration);
+            }
+            else
+            {
+                var registration = new Registration
+                {
+                    StudentId = studentId,
+                    ClassId = classId,
+                    RegistrationDate = DateTime.Now,
+                    Status = "Registered",
+                    CreatedBy = effectiveActorId,
+                    ModifiedBy = effectiveActorId
+                };
+                await registrationManager.AddAsync(registration);
+            }
 
             @class!.CurrentCapacity++;
             @class.ModifiedBy = effectiveActorId > 0 ? effectiveActorId : @class.ModifiedBy;
@@ -155,7 +172,7 @@ public static class StudentRegistrationService
             var registrationManager = new RegistrationManager();
             var classManager = new ClassManager();
 
-            Registration? registration = await registrationManager.GetByIdAsync(registrationId);
+            Registration? registration = (await registrationManager.GetAsync(id: registrationId)).FirstOrDefault();
 
             var exists = RegistrationValidator.RequireExists(registration, registrationId);
             if (!exists.IsSuccess)
@@ -169,7 +186,7 @@ public static class StudentRegistrationService
                 throw new BusinessException(ownership.Message);
             }
 
-            Class? @class = await classManager.GetByIdAsync(registration.ClassId);
+            Class? @class = (await classManager.GetAsync(id: registration.ClassId)).FirstOrDefault();
 
             if (@class == null)
             {
@@ -215,7 +232,7 @@ public static class StudentRegistrationService
             var classManager = new ClassManager();
             var registrationManager = new RegistrationManager();
 
-            Class? @class = await classManager.GetByIdAsync(classId);
+            Class? @class = (await classManager.GetAsync(id: classId)).FirstOrDefault();
 
             var exists = ClassValidator.RequireExists(@class, classId);
             if (!exists.IsSuccess)
@@ -229,8 +246,9 @@ public static class StudentRegistrationService
                 throw new BusinessException(active.Message);
             }
 
+            var existingRegistration = (await registrationManager.GetAsync(studentId: studentId.Value, classId: classId)).FirstOrDefault();
             var dup = RegistrationValidator.ValidateAlreadyRegistered(
-                await registrationManager.ExistsAsync(studentId.Value, classId));
+                existingRegistration != null && !RegistrationValidator.IsDropped(existingRegistration.Status));
             if (!dup.IsSuccess)
             {
                 throw new BusinessException(dup.Message);
@@ -243,16 +261,27 @@ public static class StudentRegistrationService
             }
 
             var sessionActorId = SessionManager.Current?.UserId ?? 0;
-            var registration = new Registration
+            if (existingRegistration != null)
             {
-                StudentId = studentId.Value,
-                ClassId = classId,
-                RegistrationDate = DateTime.Now,
-                Status = "Registered",
-                CreatedBy = sessionActorId,
-                ModifiedBy = sessionActorId
-            };
-            await registrationManager.AddAsync(registration);
+                // Dropped row → reactivate in place (keeps history/identity, no duplicate).
+                existingRegistration.Status = "Registered";
+                existingRegistration.RegistrationDate = DateTime.Now;
+                existingRegistration.ModifiedBy = sessionActorId;
+                await registrationManager.UpdateAsync(existingRegistration);
+            }
+            else
+            {
+                var registration = new Registration
+                {
+                    StudentId = studentId.Value,
+                    ClassId = classId,
+                    RegistrationDate = DateTime.Now,
+                    Status = "Registered",
+                    CreatedBy = sessionActorId,
+                    ModifiedBy = sessionActorId
+                };
+                await registrationManager.AddAsync(registration);
+            }
 
             @class!.CurrentCapacity++;
             @class.ModifiedBy = sessionActorId > 0 ? sessionActorId : @class.ModifiedBy;
@@ -280,7 +309,7 @@ public static class StudentRegistrationService
             var registrationManager = new RegistrationManager();
             var classManager = new ClassManager();
 
-            Registration? registration = await registrationManager.GetByIdAsync(registrationId);
+            Registration? registration = (await registrationManager.GetAsync(id: registrationId)).FirstOrDefault();
 
             var exists = RegistrationValidator.RequireExists(registration, registrationId);
             if (!exists.IsSuccess)
@@ -294,7 +323,7 @@ public static class StudentRegistrationService
                 throw new BusinessException(ownership.Message);
             }
 
-            Class? @class = await classManager.GetByIdAsync(registration.ClassId);
+            Class? @class = (await classManager.GetAsync(id: registration.ClassId)).FirstOrDefault();
 
             if (@class == null)
             {
@@ -320,18 +349,18 @@ public static class StudentRegistrationService
         }
     }
 
-    public static async Task<List<(Registration Registration, Class Class)>> GetRegistrationsAsync()
+    public static async Task<RegistrationResult> GetRegistrationsAsync()
     {
         try
         {
             var studentId = await RequireStudentIdAsync();
             if (studentId == null)
             {
-                return new List<(Registration, Class)>();
+                return new RegistrationResult();
             }
 
             var registrationManager = new RegistrationManager();
-            return await registrationManager.GetStudentRegistrationsWithClassesAsync(studentId.Value);
+            return await registrationManager.GetAsync(studentId: studentId.Value);
         }
         catch (Exception ex)
         {

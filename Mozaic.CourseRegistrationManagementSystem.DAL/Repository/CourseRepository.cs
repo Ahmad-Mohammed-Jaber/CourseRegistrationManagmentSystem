@@ -1,31 +1,21 @@
 using Mozaic.CourseRegistrationManagementSystem.DAL.Interfaces;
 using Mozaic.CourseRegistrationManagementSystem.DAL.Providers;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Results;
 
 namespace Mozaic.CourseRegistrationManagementSystem.DAL.Repository;
 
 public class CourseRepository : IGenericRepository<Course>
 {
-    public Course? GetById(int id)
+    public Task<CourseResult> GetAsync(
+        int? id = null,
+        string? courseCode = null,
+        string? search = null,
+        int? pageNumber = null,
+        int? pageSize = null)
     {
-        return CourseDataProvider.GetById(id);
+        return CourseDataProvider.GetAsync(id, courseCode, search, pageNumber, pageSize);
     }
-
-    public Task<Course?> GetByIdAsync(int id)
-    {
-        return CourseDataProvider.GetByIdAsync(id);
-    }
-
-    public List<Course> GetAll()
-    {
-        return CourseDataProvider.GetAll();
-    }
-
-    public Task<List<Course>> GetAllAsync()
-    {
-        return CourseDataProvider.GetAllAsync();
-    }
-
     public void Add(Course entity)
     {
         CourseDataProvider.Add(entity);
@@ -56,13 +46,4 @@ public class CourseRepository : IGenericRepository<Course>
         return CourseDataProvider.DeleteAsync(id);
     }
 
-    public List<Course> Search(string regex)
-    {
-        return CourseDataProvider.Search(regex);
-    }
-
-    public Task<List<Course>> SearchAsync(string regex)
-    {
-        return CourseDataProvider.SearchAsync(regex);
-    }
 }

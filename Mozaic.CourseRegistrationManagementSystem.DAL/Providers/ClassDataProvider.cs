@@ -1,6 +1,7 @@
 using Microsoft.Data.SqlClient;
 using System.Data;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Results;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Enums;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
 using Mozaic.CourseRegistrationManagementSystem.DAL.Database;
@@ -9,42 +10,14 @@ namespace Mozaic.CourseRegistrationManagementSystem.DAL.Providers;
 
 public static class ClassDataProvider
 {
-    public static Class? GetById(int id)
-    {
-        SqlConnection? connection = null;
-        SqlCommand? command = null;
-        SqlDataReader? reader = null;
-        try
-        {
-            connection = DBConnectionFactory.CreateConnection();
-            connection.Open();
-
-            command = new SqlCommand("usp_GetClassById", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
-
-            reader = command.ExecuteReader();
-            if (reader.Read())
-            {
-                return MapClass(reader);
-            }
-            return null;
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in ClassDataProvider.GetById(int id)", ex);
-        }
-        finally
-        {
-            reader?.Dispose();
-            command?.Dispose();
-            connection?.Dispose();
-        }
-    }
-
-    public static async Task<Class?> GetByIdAsync(int id)
+    public static async Task<ClassResult> GetAsync(
+        int? id = null,
+        int? courseId = null,
+        int? userId = null,
+        string? search = null,
+        string? statusFilter = null,
+        int? pageNumber = null,
+        int? pageSize = null)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -54,190 +27,7 @@ public static class ClassDataProvider
             connection = DBConnectionFactory.CreateConnection();
             await connection.OpenAsync();
 
-            command = new SqlCommand("usp_GetClassById", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
-
-            reader = await command.ExecuteReaderAsync();
-            if (await reader.ReadAsync())
-            {
-                return MapClass(reader);
-            }
-            return null;
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in ClassDataProvider.GetByIdAsync(int id)", ex);
-        }
-        finally
-        {
-            reader?.Dispose();
-            command?.Dispose();
-            connection?.Dispose();
-        }
-    }
-
-    public static List<Class> GetClassesByCourseId(int courseId)
-    {
-        SqlConnection? connection = null;
-        SqlCommand? command = null;
-        SqlDataReader? reader = null;
-        try
-        {
-            connection = DBConnectionFactory.CreateConnection();
-            connection.Open();
-
-            command = new SqlCommand("usp_GetClassesByCourseId", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.Add("@CourseId", SqlDbType.Int).Value = courseId;
-
-            reader = command.ExecuteReader();
-            var classes = new List<Class>();
-            while (reader.Read())
-            {
-                classes.Add(MapClass(reader));
-            }
-            return classes;
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in ClassDataProvider.GetClassesByCourseId(int courseId)", ex);
-        }
-        finally
-        {
-            reader?.Dispose();
-            command?.Dispose();
-            connection?.Dispose();
-        }
-    }
-
-    public static async Task<List<Class>> GetClassesByCourseIdAsync(int courseId)
-    {
-        SqlConnection? connection = null;
-        SqlCommand? command = null;
-        SqlDataReader? reader = null;
-        try
-        {
-            connection = DBConnectionFactory.CreateConnection();
-            await connection.OpenAsync();
-
-            command = new SqlCommand("usp_GetClassesByCourseId", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.Add("@CourseId", SqlDbType.Int).Value = courseId;
-
-            reader = await command.ExecuteReaderAsync();
-            var classes = new List<Class>();
-            while (await reader.ReadAsync())
-            {
-                classes.Add(MapClass(reader));
-            }
-            return classes;
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in ClassDataProvider.GetClassesByCourseIdAsync(int courseId)", ex);
-        }
-        finally
-        {
-            reader?.Dispose();
-            command?.Dispose();
-            connection?.Dispose();
-        }
-    }
-
-    public static List<Class> GetAll()
-    {
-        SqlConnection? connection = null;
-        SqlCommand? command = null;
-        SqlDataReader? reader = null;
-        try
-        {
-            connection = DBConnectionFactory.CreateConnection();
-            connection.Open();
-
-            command = new SqlCommand("usp_GetAllClasses", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-
-            reader = command.ExecuteReader();
-            var classes = new List<Class>();
-            while (reader.Read())
-            {
-                classes.Add(MapClass(reader));
-            }
-            return classes;
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in ClassDataProvider.GetAll()", ex);
-        }
-        finally
-        {
-            reader?.Dispose();
-            command?.Dispose();
-            connection?.Dispose();
-        }
-    }
-
-    public static async Task<List<Class>> GetAllAsync()
-    {
-        SqlConnection? connection = null;
-        SqlCommand? command = null;
-        SqlDataReader? reader = null;
-        try
-        {
-            connection = DBConnectionFactory.CreateConnection();
-            await connection.OpenAsync();
-
-            command = new SqlCommand("usp_GetAllClasses", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-
-            reader = await command.ExecuteReaderAsync();
-            var classes = new List<Class>();
-            while (await reader.ReadAsync())
-            {
-                classes.Add(MapClass(reader));
-            }
-            return classes;
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in ClassDataProvider.GetAllAsync()", ex);
-        }
-        finally
-        {
-            reader?.Dispose();
-            command?.Dispose();
-            connection?.Dispose();
-        }
-    }
-
-    public static async Task<ClassBrowseResult> GetAllAsync(int? studentId, int pageNumber, int pageSize)
-    {
-        SqlConnection? connection = null;
-        SqlCommand? command = null;
-        SqlDataReader? reader = null;
-        try
-        {
-            connection = DBConnectionFactory.CreateConnection();
-            await connection.OpenAsync();
-
-            command = new SqlCommand("usp_GetAllClasses", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.Add("@UserId", SqlDbType.Int).Value = studentId.HasValue ? studentId.Value : DBNull.Value;
-            command.Parameters.Add("@PageNumber", SqlDbType.Int).Value = pageNumber;
-            command.Parameters.Add("@PageSize", SqlDbType.Int).Value = pageSize;
+            command = CreateGetCommand(connection, id, courseId, userId, search, statusFilter, pageNumber, pageSize);
 
             reader = await command.ExecuteReaderAsync();
             var classes = new List<Class>();
@@ -246,27 +36,26 @@ public static class ClassDataProvider
                 classes.Add(MapClass(reader));
             }
 
-            var page = new ClassBrowseResult
+            var result = new ClassResult
             {
                 Items = classes,
-                PageNumber = pageNumber,
-                PageSize = pageSize,
+                PageNumber = pageNumber ?? 1,
+                PageSize = pageSize ?? classes.Count,
                 TotalCount = classes.Count,
             };
 
             if (await reader.NextResultAsync() && await reader.ReadAsync())
             {
-                page.TotalCount = HasColumn(reader, "TotalCount") && !reader.IsDBNull(reader.GetOrdinal("TotalCount")) ? reader.GetInt32(reader.GetOrdinal("TotalCount")) : classes.Count;
-                page.AvailableCount = HasColumn(reader, "AvailableCount") && !reader.IsDBNull(reader.GetOrdinal("AvailableCount")) ? reader.GetInt32(reader.GetOrdinal("AvailableCount")) : 0;
-                page.OpenSeatsCount = HasColumn(reader, "OpenSeatsCount") && !reader.IsDBNull(reader.GetOrdinal("OpenSeatsCount")) ? reader.GetInt32(reader.GetOrdinal("OpenSeatsCount")) : 0;
-                page.MyRegistrationsCount = HasColumn(reader, "MyRegistrationsCount") && !reader.IsDBNull(reader.GetOrdinal("MyRegistrationsCount")) ? reader.GetInt32(reader.GetOrdinal("MyRegistrationsCount")) : 0;
+                result.TotalCount = ReadInt32(reader, "TotalCount", classes.Count);
+                result.OpenSeatsCount = ReadInt32(reader, "OpenSeatsCount", 0);
+                result.MyRegistrationsCount = ReadInt32(reader, "MyRegistrationsCount", 0);
             }
 
-            return page;
+            return result;
         }
         catch (Exception ex)
         {
-            throw new DatabaseException("An error occured in ClassDataProvider.GetAllAsync(int? studentId, int pageNumber, int pageSize)", ex);
+            throw new DatabaseException("An error occured in ClassDataProvider.GetAsync(...)", ex);
         }
         finally
         {
@@ -274,6 +63,39 @@ public static class ClassDataProvider
             command?.Dispose();
             connection?.Dispose();
         }
+    }
+
+    private static SqlCommand CreateGetCommand(
+        SqlConnection connection,
+        int? id,
+        int? courseId,
+        int? userId,
+        string? search,
+        string? statusFilter,
+        int? pageNumber,
+        int? pageSize)
+    {
+        var command = new SqlCommand("usp_GetClasses", connection)
+        {
+            CommandType = CommandType.StoredProcedure
+        };
+        command.Parameters.Add("@Id", SqlDbType.Int).Value = id.HasValue ? id.Value : DBNull.Value;
+        command.Parameters.Add("@CourseId", SqlDbType.Int).Value = courseId.HasValue ? courseId.Value : DBNull.Value;
+        command.Parameters.Add("@UserId", SqlDbType.Int).Value = userId.HasValue ? userId.Value : DBNull.Value;
+        command.Parameters.Add("@Search", SqlDbType.NVarChar, 100).Value =
+            string.IsNullOrWhiteSpace(search) ? DBNull.Value : (object)search!;
+        command.Parameters.Add("@StatusFilter", SqlDbType.NVarChar, 10).Value =
+            string.IsNullOrWhiteSpace(statusFilter) ? DBNull.Value : (object)statusFilter!;
+        command.Parameters.Add("@PageNumber", SqlDbType.Int).Value = pageNumber.HasValue ? pageNumber.Value : DBNull.Value;
+        command.Parameters.Add("@PageSize", SqlDbType.Int).Value = pageSize.HasValue ? pageSize.Value : DBNull.Value;
+        return command;
+    }
+
+    private static int ReadInt32(SqlDataReader reader, string column, int fallback)
+    {
+        return HasColumn(reader, column) && !reader.IsDBNull(reader.GetOrdinal(column))
+            ? reader.GetInt32(reader.GetOrdinal(column))
+            : fallback;
     }
 
     public static void Add(Class entity)
@@ -550,81 +372,9 @@ public static class ClassDataProvider
         }
     }
 
-    public static List<Class> Search(string regex)
-    {
-        SqlConnection? connection = null;
-        SqlCommand? command = null;
-        SqlDataReader? reader = null;
-        try
-        {
-            connection = DBConnectionFactory.CreateConnection();
-            connection.Open();
-
-            command = new SqlCommand("usp_SearchClasses", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.Add("@regex", SqlDbType.NVarChar, 100).Value = regex ?? string.Empty;
-
-            reader = command.ExecuteReader();
-            var classes = new List<Class>();
-            while (reader.Read())
-            {
-                classes.Add(MapClass(reader));
-            }
-            return classes;
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in ClassDataProvider.Search(string regex)", ex);
-        }
-        finally
-        {
-            reader?.Dispose();
-            command?.Dispose();
-            connection?.Dispose();
-        }
-    }
-
-    public static async Task<List<Class>> SearchAsync(string regex)
-    {
-        SqlConnection? connection = null;
-        SqlCommand? command = null;
-        SqlDataReader? reader = null;
-        try
-        {
-            connection = DBConnectionFactory.CreateConnection();
-            await connection.OpenAsync();
-
-            command = new SqlCommand("usp_SearchClasses", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.Add("@regex", SqlDbType.NVarChar, 100).Value = regex ?? string.Empty;
-
-            reader = await command.ExecuteReaderAsync();
-            var classes = new List<Class>();
-            while (await reader.ReadAsync())
-            {
-                classes.Add(MapClass(reader));
-            }
-            return classes;
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in ClassDataProvider.SearchAsync(string regex)", ex);
-        }
-        finally
-        {
-            reader?.Dispose();
-            command?.Dispose();
-            connection?.Dispose();
-        }
-    }
-
     private static Class MapClass(SqlDataReader reader)
     {
-        return new Class
+        var entity = new Class
         {
             Id = reader.GetInt32(reader.GetOrdinal("Id")),
             CourseId = reader.GetInt32(reader.GetOrdinal("CourseId")),
@@ -634,22 +384,22 @@ public static class ClassDataProvider
             CurrentCapacity = reader.GetInt32(reader.GetOrdinal("CurrentCapacity")),
             StartDate = reader.GetDateTime(reader.GetOrdinal("StartDate")),
             EndDate = reader.GetDateTime(reader.GetOrdinal("EndDate")),
-            // usp_GetAllClasses (paged browse) aliases the raw schedule int as
-            // ScheduleDisplay; every other procedure returns it as Schedule.
+            // usp_GetClasses returns the raw schedule int as Schedule; the
+            // legacy browse procedure aliased it as ScheduleDisplay.
             Schedule = HasColumn(reader, "Schedule") && !reader.IsDBNull(reader.GetOrdinal("Schedule"))
                 ? (DaysOfTheWeek)reader.GetInt32(reader.GetOrdinal("Schedule"))
                 : HasColumn(reader, "ScheduleDisplay") && !reader.IsDBNull(reader.GetOrdinal("ScheduleDisplay"))
                     ? (DaysOfTheWeek)reader.GetInt32(reader.GetOrdinal("ScheduleDisplay"))
                     : default,
-            // The paged browse procedure returns active classes only and omits
-            // this column; default to true for rows coming from that shape.
             IsActive = HasColumn(reader, "IsActive") && !reader.IsDBNull(reader.GetOrdinal("IsActive"))
                 ? reader.GetBoolean(reader.GetOrdinal("IsActive"))
                 : true,
             CreatedOn = HasColumn(reader, "CreatedOn") && !reader.IsDBNull(reader.GetOrdinal("CreatedOn")) ? reader.GetFieldValue<DateTimeOffset>(reader.GetOrdinal("CreatedOn")) : default,
             ModifiedOn = HasColumn(reader, "ModifiedOn") && !reader.IsDBNull(reader.GetOrdinal("ModifiedOn")) ? reader.GetFieldValue<DateTimeOffset>(reader.GetOrdinal("ModifiedOn")) : default,
             CreatedBy = HasColumn(reader, "CreatedBy") && !reader.IsDBNull(reader.GetOrdinal("CreatedBy")) ? reader.GetInt32(reader.GetOrdinal("CreatedBy")) : 0,
-            ModifiedBy = HasColumn(reader, "ModifiedBy") && !reader.IsDBNull(reader.GetOrdinal("ModifiedBy")) ? reader.GetInt32(reader.GetOrdinal("ModifiedBy")) : 0
+            ModifiedBy = HasColumn(reader, "ModifiedBy") && !reader.IsDBNull(reader.GetOrdinal("ModifiedBy")) ? reader.GetInt32(reader.GetOrdinal("ModifiedBy")) : 0,
+            CreatedByName = ReadNullableString(reader, "CreatedByName"),
+            ModifiedByName = ReadNullableString(reader, "ModifiedByName")
         };
 
         if (HasColumn(reader, "CourseName") && !reader.IsDBNull(reader.GetOrdinal("CourseName")))
@@ -657,7 +407,10 @@ public static class ClassDataProvider
             entity.Course = new Course
             {
                 Id = entity.CourseId,
-                CourseName = reader.GetString(reader.GetOrdinal("CourseName"))
+                CourseName = reader.GetString(reader.GetOrdinal("CourseName")),
+                CourseCode = HasColumn(reader, "CourseCode") && !reader.IsDBNull(reader.GetOrdinal("CourseCode"))
+                    ? reader.GetString(reader.GetOrdinal("CourseCode"))
+                    : string.Empty
             };
         }
 
@@ -667,6 +420,12 @@ public static class ClassDataProvider
         }
 
         return entity;
+    }
+
+    private static string ReadNullableString(SqlDataReader reader, string name)
+    {
+        int ordinal = reader.GetOrdinal(name);
+        return reader.IsDBNull(ordinal) ? string.Empty : reader.GetString(ordinal);
     }
 
     private static bool HasColumn(SqlDataReader reader, string name)

@@ -185,7 +185,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
         {
             try
             {
-                var students = await StudentService.GetAllAsync();
+                var students = await StudentService.GetAsync();
                 _students = students.ToList();
                 RefreshGrid();
             }
@@ -225,7 +225,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             {
                 if (!string.IsNullOrWhiteSpace(txtSearch.Text))
                 {
-                    var students = await StudentService.SearchAsync(txtSearch.Text);
+                    var students = await StudentService.GetAsync(search: txtSearch.Text);
                     _students = students.ToList();
                     RefreshGrid();
                 }

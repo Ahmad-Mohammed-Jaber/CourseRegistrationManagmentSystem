@@ -6,21 +6,17 @@ namespace Mozaic.CourseRegistrationManagementSystem.BL.Managers;
 
 internal class ClassManager
 {
+
     private readonly ClassRepository _classRepository = new ClassRepository();
+    public Task<ClassResult> GetAsync(
+        int? id = null,
+        int? courseId = null,
+        int? userId = null,
+        string? search = null,
+        string? statusFilter = null,
+        int? pageNumber = null,
+        int? pageSize = null) => _classRepository.GetAsync(id, courseId, userId, search, statusFilter, pageNumber, pageSize);
 
-    public Class? GetById(int id) => _classRepository.GetById(id);
-
-    public Task<Class?> GetByIdAsync(int id) => _classRepository.GetByIdAsync(id);
-
-    public List<Class> GetClassesByCourseId(int courseId) => _classRepository.GetClassesByCourseId(courseId);
-
-    public Task<List<Class>> GetClassesByCourseIdAsync(int courseId) => _classRepository.GetClassesByCourseIdAsync(courseId);
-
-    public List<Class> GetAll() => _classRepository.GetAll();
-
-    public Task<List<Class>> GetAllAsync() => _classRepository.GetAllAsync();
-
-    public Task<ClassBrowseResult> GetAllAsync(int? studentId, int pageNumber, int pageSize) => _classRepository.GetAllAsync(studentId, pageNumber, pageSize);
 
     public void Add(Class classEntity) => _classRepository.Add(classEntity);
 
@@ -34,7 +30,4 @@ internal class ClassManager
 
     public Task DeleteAsync(int id) => _classRepository.DeleteAsync(id);
 
-    public List<Class> Search(string regex) => _classRepository.Search(regex);
-
-    public Task<List<Class>> SearchAsync(string regex) => _classRepository.SearchAsync(regex);
 }

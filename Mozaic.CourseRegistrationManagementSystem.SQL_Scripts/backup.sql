@@ -15,29 +15,53 @@ GO
 
 -- 0.1 Drop stored procedures first (no dependencies, but keep clean)
 DROP PROCEDURE IF EXISTS [dbo].[usp_CreateClass];
+DROP PROCEDURE IF EXISTS [dbo].[usp_GetClasses];
+DROP PROCEDURE IF EXISTS [dbo].[usp_UpdateClass];
+DROP PROCEDURE IF EXISTS [dbo].[usp_DeleteClass];
+
+DROP PROCEDURE IF EXISTS [dbo].[usp_CreateCourse];
+DROP PROCEDURE IF EXISTS [dbo].[usp_GetCourses];
+DROP PROCEDURE IF EXISTS [dbo].[usp_UpdateCourse];
+DROP PROCEDURE IF EXISTS [dbo].[usp_DeleteCourse];
+
+DROP PROCEDURE IF EXISTS [dbo].[usp_CreateUser];
+DROP PROCEDURE IF EXISTS [dbo].[usp_GetUsers];
+DROP PROCEDURE IF EXISTS [dbo].[usp_UpdateUser];
+DROP PROCEDURE IF EXISTS [dbo].[usp_DeleteUser];
+
+-- Retired procedure names. They are no longer created (their logic lives in
+-- usp_GetClasses / usp_GetUsers / usp_GetCourses / usp_GetStudents /
+-- usp_GetRegistrations), but they are still dropped so re-running
+-- this script cleans up installations that predate the rename.
 DROP PROCEDURE IF EXISTS [dbo].[usp_GetAllClasses];
 DROP PROCEDURE IF EXISTS [dbo].[usp_GetClassById];
 DROP PROCEDURE IF EXISTS [dbo].[usp_GetClassByName];
 DROP PROCEDURE IF EXISTS [dbo].[usp_GetClassesByCourseId];
-DROP PROCEDURE IF EXISTS [dbo].[usp_UpdateClass];
-DROP PROCEDURE IF EXISTS [dbo].[usp_DeleteClass];
 DROP PROCEDURE IF EXISTS [dbo].[usp_SearchClasses];
-
-DROP PROCEDURE IF EXISTS [dbo].[usp_CreateCourse];
+DROP PROCEDURE IF EXISTS [dbo].[usp_GetAllUsers];
+DROP PROCEDURE IF EXISTS [dbo].[usp_GetPagedUsers];
+DROP PROCEDURE IF EXISTS [dbo].[usp_GetUserById];
+DROP PROCEDURE IF EXISTS [dbo].[usp_GetUserByUserName];
+DROP PROCEDURE IF EXISTS [dbo].[usp_SearchUsers];
 DROP PROCEDURE IF EXISTS [dbo].[usp_GetAllCourses];
 DROP PROCEDURE IF EXISTS [dbo].[usp_GetCourseById];
 DROP PROCEDURE IF EXISTS [dbo].[usp_GetCourseByCode];
-DROP PROCEDURE IF EXISTS [dbo].[usp_UpdateCourse];
-DROP PROCEDURE IF EXISTS [dbo].[usp_DeleteCourse];
 DROP PROCEDURE IF EXISTS [dbo].[usp_SearchCourses];
-
-DROP PROCEDURE IF EXISTS [dbo].[usp_CreateUser];
-DROP PROCEDURE IF EXISTS [dbo].[usp_GetAllUsers];
-DROP PROCEDURE IF EXISTS [dbo].[usp_GetUserById];
-DROP PROCEDURE IF EXISTS [dbo].[usp_GetUserByUserName];
-DROP PROCEDURE IF EXISTS [dbo].[usp_UpdateUser];
-DROP PROCEDURE IF EXISTS [dbo].[usp_DeleteUser];
-DROP PROCEDURE IF EXISTS [dbo].[usp_SearchUsers];
+DROP PROCEDURE IF EXISTS [dbo].[usp_GetAllStudents];
+DROP PROCEDURE IF EXISTS [dbo].[usp_GetStudentById];
+DROP PROCEDURE IF EXISTS [dbo].[usp_GetStudentByUserId];
+DROP PROCEDURE IF EXISTS [dbo].[usp_GetStudentProfileByUserId];
+DROP PROCEDURE IF EXISTS [dbo].[usp_SearchStudents];
+DROP PROCEDURE IF EXISTS [dbo].[usp_GetAllRegistrations];
+DROP PROCEDURE IF EXISTS [dbo].[usp_GetAllRegistrationsDetailed];
+DROP PROCEDURE IF EXISTS [dbo].[usp_GetRegistrationById];
+DROP PROCEDURE IF EXISTS [dbo].[usp_GetRegistrationByStudentAndClass];
+DROP PROCEDURE IF EXISTS [dbo].[usp_GetRegistrationsByClassId];
+DROP PROCEDURE IF EXISTS [dbo].[usp_GetRegistrationsByStudentId];
+DROP PROCEDURE IF EXISTS [dbo].[usp_GetStudentRegistrationsWithClasses];
+DROP PROCEDURE IF EXISTS [dbo].[usp_RegistrationExists];
+DROP PROCEDURE IF EXISTS [dbo].[usp_SearchRegistrations];
+DROP PROCEDURE IF EXISTS [dbo].[usp_SearchRegistrationsDetailed];
 
 DROP PROCEDURE IF EXISTS [dbo].[usp_CreateRefreshToken];
 DROP PROCEDURE IF EXISTS [dbo].[usp_GetRefreshTokenByHash];
@@ -46,27 +70,14 @@ DROP PROCEDURE IF EXISTS [dbo].[usp_RevokeRefreshTokensForUser];
 DROP PROCEDURE IF EXISTS [dbo].[usp_DeleteExpiredRefreshTokens];
 
 DROP PROCEDURE IF EXISTS [dbo].[usp_CreateStudent];
-DROP PROCEDURE IF EXISTS [dbo].[usp_GetAllStudents];
-DROP PROCEDURE IF EXISTS [dbo].[usp_GetStudentById];
-DROP PROCEDURE IF EXISTS [dbo].[usp_GetStudentByUserId];
-DROP PROCEDURE IF EXISTS [dbo].[usp_GetStudentProfileByUserId];
+DROP PROCEDURE IF EXISTS [dbo].[usp_GetStudents];
 DROP PROCEDURE IF EXISTS [dbo].[usp_UpdateStudent];
 DROP PROCEDURE IF EXISTS [dbo].[usp_DeleteStudent];
-DROP PROCEDURE IF EXISTS [dbo].[usp_SearchStudents];
 
 DROP PROCEDURE IF EXISTS [dbo].[usp_CreateRegistration];
-DROP PROCEDURE IF EXISTS [dbo].[usp_GetAllRegistrations];
-DROP PROCEDURE IF EXISTS [dbo].[usp_GetAllRegistrationsDetailed];
-DROP PROCEDURE IF EXISTS [dbo].[usp_GetRegistrationById];
-DROP PROCEDURE IF EXISTS [dbo].[usp_GetRegistrationByStudentAndClass];
-DROP PROCEDURE IF EXISTS [dbo].[usp_GetRegistrationsByClassId];
-DROP PROCEDURE IF EXISTS [dbo].[usp_GetRegistrationsByStudentId];
-DROP PROCEDURE IF EXISTS [dbo].[usp_GetStudentRegistrationsWithClasses];
+DROP PROCEDURE IF EXISTS [dbo].[usp_GetRegistrations];
 DROP PROCEDURE IF EXISTS [dbo].[usp_UpdateRegistration];
 DROP PROCEDURE IF EXISTS [dbo].[usp_DeleteRegistration];
-DROP PROCEDURE IF EXISTS [dbo].[usp_RegistrationExists];
-DROP PROCEDURE IF EXISTS [dbo].[usp_SearchRegistrations];
-DROP PROCEDURE IF EXISTS [dbo].[usp_SearchRegistrationsDetailed];
 
 DROP PROCEDURE IF EXISTS [dbo].[usp_InsertBusinessException];
 DROP PROCEDURE IF EXISTS [dbo].[usp_InsertDatabaseException];
@@ -93,24 +104,24 @@ GO
 -- 1.1 [User]
 -- ----------------------------------------------------------------------------
 CREATE TABLE [dbo].[User](
-	[Id] [int] IDENTITY(1,1) NOT NULL,
-	[UserName] [nvarchar](100) NOT NULL,
-	[PasswordHash] [nvarchar](255) NOT NULL,
-	[FullName] [nvarchar](100) NOT NULL,
-	[Role] [int] NOT NULL,
-	[IsActive] [bit] NOT NULL,
-	[CreatedOn] [datetimeoffset](7) NOT NULL,
-	[ModifiedOn] [datetimeoffset](7) NOT NULL,
-	[CreatedBy] [int] NOT NULL,
-	[ModifiedBy] [int] NOT NULL,
- CONSTRAINT [PK_User] PRIMARY KEY CLUSTERED 
-(
-	[Id] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
- CONSTRAINT [UQ_User_UserName] UNIQUE NONCLUSTERED 
-(
-	[UserName] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+                             [Id] [int] IDENTITY(1,1) NOT NULL,
+                             [UserName] [nvarchar](100) NOT NULL,
+                             [PasswordHash] [nvarchar](255) NOT NULL,
+                             [FullName] [nvarchar](100) NOT NULL,
+                             [Role] [int] NOT NULL,
+                             [IsActive] [bit] NOT NULL,
+                             [CreatedOn] [datetimeoffset](7) NOT NULL,
+                             [ModifiedOn] [datetimeoffset](7) NOT NULL,
+                             [CreatedBy] [int] NOT NULL,
+                             [ModifiedBy] [int] NOT NULL,
+                             CONSTRAINT [PK_User] PRIMARY KEY CLUSTERED
+                                 (
+                                  [Id] ASC
+                                     )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+                             CONSTRAINT [UQ_User_UserName] UNIQUE NONCLUSTERED
+                                 (
+                                  [UserName] ASC
+                                     )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
 
@@ -118,79 +129,82 @@ GO
 -- 1.1b [RefreshTokens] (opaque refresh tokens; only hashes stored)
 -- ----------------------------------------------------------------------------
 CREATE TABLE [dbo].[RefreshTokens](
-	[Id] [int] IDENTITY(1,1) NOT NULL,
-	[UserId] [int] NOT NULL,
-	[TokenHash] [char](64) NOT NULL,
-	[ExpiresAt] [datetimeoffset](7) NOT NULL,
-	[CreatedAt] [datetimeoffset](7) NOT NULL,
-	[RevokedAt] [datetimeoffset](7) NULL,
- CONSTRAINT [PK_RefreshTokens] PRIMARY KEY CLUSTERED
-(
-	[Id] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
- CONSTRAINT [UQ_RefreshTokens_TokenHash] UNIQUE NONCLUSTERED
-(
-	[TokenHash] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+                                      [Id] [int] IDENTITY(1,1) NOT NULL,
+                                      [UserId] [int] NOT NULL,
+                                      [TokenHash] [char](64) NOT NULL,
+                                      [ExpiresAt] [datetimeoffset](7) NOT NULL,
+                                      [CreatedAt] [datetimeoffset](7) NOT NULL,
+                                      [RevokedAt] [datetimeoffset](7) NULL,
+                                      CONSTRAINT [PK_RefreshTokens] PRIMARY KEY CLUSTERED
+                                          (
+                                           [Id] ASC
+                                              )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+                                      CONSTRAINT [UQ_RefreshTokens_TokenHash] UNIQUE NONCLUSTERED
+                                          (
+                                           [TokenHash] ASC
+                                              )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
 
 CREATE NONCLUSTERED INDEX [IX_RefreshTokens_UserId] ON [dbo].[RefreshTokens]
-(
-	[UserId] ASC
-) ON [PRIMARY]
+    (
+     [UserId] ASC
+        ) ON [PRIMARY]
 GO
 
 -- ----------------------------------------------------------------------------
 -- 1.2 [Course]
 -- ----------------------------------------------------------------------------
 CREATE TABLE [dbo].[Course](
-	[Id] [int] IDENTITY(1,1) NOT NULL,
-	[CourseCode] [nvarchar](20) NOT NULL,
-	[CourseName] [nvarchar](100) NOT NULL,
-	[CreditHours] [decimal](4, 2) NOT NULL,
-	[Description] [nvarchar](max) NOT NULL,
-	[IsActive] [bit] NOT NULL,
-	[CreatedOn] [datetimeoffset](7) NOT NULL,
-	[ModifiedOn] [datetimeoffset](7) NOT NULL,
-	[CreatedBy] [int] NOT NULL,
-	[ModifiedBy] [int] NOT NULL,
- CONSTRAINT [PK_Course] PRIMARY KEY CLUSTERED 
-(
-	[Id] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
- CONSTRAINT [UQ_Course_CourseCode] UNIQUE NONCLUSTERED 
-(
-	[CourseCode] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+                               [Id] [int] IDENTITY(1,1) NOT NULL,
+                               [CourseCode] [nvarchar](20) NOT NULL,
+                               [CourseName] [nvarchar](100) NOT NULL,
+                               [CreditHours] [decimal](4, 2) NOT NULL,
+                               [Description] [nvarchar](max) NOT NULL,
+                               [IsActive] [bit] NOT NULL,
+                               [CreatedOn] [datetimeoffset](7) NOT NULL,
+                               [ModifiedOn] [datetimeoffset](7) NOT NULL,
+                               [CreatedBy] [int] NOT NULL,
+                               [ModifiedBy] [int] NOT NULL,
+                               CONSTRAINT [PK_Course] PRIMARY KEY CLUSTERED
+                                   (
+                                    [Id] ASC
+                                       )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+
+-- CourseCode uniqueness is scoped to active rows (soft-deleted codes are reusable).
+-- Enforced here for race safety; the BL check in CourseService mirrors it.
+CREATE UNIQUE NONCLUSTERED INDEX [UQ_Course_CourseCode_Active]
+    ON [dbo].[Course] ([CourseCode] ASC)
+    WHERE ([IsActive] = 1);
 GO
 
 -- ----------------------------------------------------------------------------
 -- 1.3 [Student]
 -- ----------------------------------------------------------------------------
 CREATE TABLE [dbo].[Student](
-	[Id] [int] IDENTITY(1,1) NOT NULL,
-	[UserId] [int] NOT NULL,
-	[StudentNumber] [int] NOT NULL,
-	[Email] [nvarchar](100) NOT NULL,
-	[Phone] [nvarchar](20) NOT NULL,
-	[CreatedOn] [datetimeoffset](7) NOT NULL,
-	[ModifiedOn] [datetimeoffset](7) NOT NULL,
-	[CreatedBy] [int] NOT NULL,
-	[ModifiedBy] [int] NOT NULL,
- CONSTRAINT [PK_Students_1] PRIMARY KEY CLUSTERED 
-(
-	[Id] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
- CONSTRAINT [UQ_Student_StudentNumber] UNIQUE NONCLUSTERED 
-(
-	[StudentNumber] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
- CONSTRAINT [UQ_Student_UserId] UNIQUE NONCLUSTERED 
-(
-	[UserId] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+                                [Id] [int] IDENTITY(1,1) NOT NULL,
+                                [UserId] [int] NOT NULL,
+                                [StudentNumber] [int] NOT NULL,
+                                [Email] [nvarchar](100) NOT NULL,
+                                [Phone] [nvarchar](20) NOT NULL,
+                                [CreatedOn] [datetimeoffset](7) NOT NULL,
+                                [ModifiedOn] [datetimeoffset](7) NOT NULL,
+                                [CreatedBy] [int] NOT NULL,
+                                [ModifiedBy] [int] NOT NULL,
+                                CONSTRAINT [PK_Students_1] PRIMARY KEY CLUSTERED
+                                    (
+                                     [Id] ASC
+                                        )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+                                CONSTRAINT [UQ_Student_StudentNumber] UNIQUE NONCLUSTERED
+                                    (
+                                     [StudentNumber] ASC
+                                        )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+                                CONSTRAINT [UQ_Student_UserId] UNIQUE NONCLUSTERED
+                                    (
+                                     [UserId] ASC
+                                        )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
 
@@ -198,24 +212,24 @@ GO
 -- 1.4 [Class]
 -- ----------------------------------------------------------------------------
 CREATE TABLE [dbo].[Class](
-	[Id] [int] IDENTITY(1,1) NOT NULL,
-	[CourseId] [int] NOT NULL,
-	[ClassName] [nvarchar](50) NOT NULL,
-	[Instructor] [nvarchar](50) NOT NULL,
-	[MaxCapacity] [int] NOT NULL,
-	[CurrentCapacity] [int] NOT NULL,
-	[StartDate] [datetime2](7) NOT NULL,
-	[EndDate] [datetime2](7) NOT NULL,
-	[Schedule] [int] NOT NULL,
-	[IsActive] [bit] NOT NULL,
-	[CreatedOn] [datetimeoffset](7) NOT NULL,
-	[ModifiedOn] [datetimeoffset](7) NOT NULL,
-	[CreatedBy] [int] NOT NULL,
-	[ModifiedBy] [int] NOT NULL,
- CONSTRAINT [PK_Class] PRIMARY KEY CLUSTERED 
-(
-	[Id] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+                              [Id] [int] IDENTITY(1,1) NOT NULL,
+                              [CourseId] [int] NOT NULL,
+                              [ClassName] [nvarchar](50) NOT NULL,
+                              [Instructor] [nvarchar](50) NOT NULL,
+                              [MaxCapacity] [int] NOT NULL,
+                              [CurrentCapacity] [int] NOT NULL,
+                              [StartDate] [datetime2](7) NOT NULL,
+                              [EndDate] [datetime2](7) NOT NULL,
+                              [Schedule] [int] NOT NULL,
+                              [IsActive] [bit] NOT NULL,
+                              [CreatedOn] [datetimeoffset](7) NOT NULL,
+                              [ModifiedOn] [datetimeoffset](7) NOT NULL,
+                              [CreatedBy] [int] NOT NULL,
+                              [ModifiedBy] [int] NOT NULL,
+                              CONSTRAINT [PK_Class] PRIMARY KEY CLUSTERED
+                                  (
+                                   [Id] ASC
+                                      )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
 
@@ -223,43 +237,45 @@ GO
 -- 1.5 [Registrations]
 -- ----------------------------------------------------------------------------
 CREATE TABLE [dbo].[Registrations](
-	[Id] [int] IDENTITY(1,1) NOT NULL,
-	[StudentId] [int] NOT NULL,
-	[ClassId] [int] NOT NULL,
-	[RegistrationDate] [datetime2](7) NOT NULL,
-	[Status] [nvarchar](50) NOT NULL,
-	[CreatedOn] [datetimeoffset](7) NOT NULL,
-	[ModifiedOn] [datetimeoffset](7) NOT NULL,
-	[CreatedBy] [int] NOT NULL,
-	[ModifiedBy] [int] NOT NULL,
- CONSTRAINT [PK_Registrations] PRIMARY KEY CLUSTERED 
-(
-	[Id] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
- CONSTRAINT [UQ_Registrations_Student_Class] UNIQUE NONCLUSTERED 
-(
-	[StudentId] ASC,
-	[ClassId] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+                                      [Id] [int] IDENTITY(1,1) NOT NULL,
+                                      [StudentId] [int] NOT NULL,
+                                      [ClassId] [int] NOT NULL,
+                                      [RegistrationDate] [datetime2](7) NOT NULL,
+                                      [Status] [nvarchar](50) NOT NULL,
+                                      [CreatedOn] [datetimeoffset](7) NOT NULL,
+                                      [ModifiedOn] [datetimeoffset](7) NOT NULL,
+                                      [CreatedBy] [int] NOT NULL,
+                                      [ModifiedBy] [int] NOT NULL,
+                                      CONSTRAINT [PK_Registrations] PRIMARY KEY CLUSTERED
+                                          (
+                                           [Id] ASC
+                                              )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
+GO
+
+-- Registration uniqueness is scoped to non-dropped rows (dropped rows are
+-- reactivated in place instead of re-inserted; see usp_DeleteRegistration).
+CREATE UNIQUE NONCLUSTERED INDEX [UQ_Registrations_Student_Class_Active]
+ON [dbo].[Registrations] ([StudentId] ASC, [ClassId] ASC)
+WHERE ([Status] <> N'Dropped');
 GO
 
 -- ----------------------------------------------------------------------------
 -- 1.6 [BusinessExceptions]
 -- ----------------------------------------------------------------------------
 CREATE TABLE [dbo].[BusinessExceptions](
-	[Id] [int] IDENTITY(1,1) NOT NULL,
-	[TimestampUtc] [datetime2](7) NOT NULL,
-	[Level] [nvarchar](10) NOT NULL,
-	[Operation] [nvarchar](200) NOT NULL,
-	[UserId] [int] NULL,
-	[ExceptionType] [nvarchar](500) NOT NULL,
-	[Message] [nvarchar](max) NOT NULL,
-	[StackTrace] [nvarchar](max) NULL,
- CONSTRAINT [PK_BusinessExceptions] PRIMARY KEY CLUSTERED 
-(
-	[Id] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+                                           [Id] [int] IDENTITY(1,1) NOT NULL,
+                                           [TimestampUtc] [datetime2](7) NOT NULL,
+                                           [Level] [nvarchar](10) NOT NULL,
+                                           [Operation] [nvarchar](200) NOT NULL,
+                                           [UserId] [int] NULL,
+                                           [ExceptionType] [nvarchar](500) NOT NULL,
+                                           [Message] [nvarchar](max) NOT NULL,
+                                           [StackTrace] [nvarchar](max) NULL,
+                                           CONSTRAINT [PK_BusinessExceptions] PRIMARY KEY CLUSTERED
+                                               (
+                                                [Id] ASC
+                                                   )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
 
@@ -267,18 +283,18 @@ GO
 -- 1.7 [DatabaseExceptions]
 -- ----------------------------------------------------------------------------
 CREATE TABLE [dbo].[DatabaseExceptions](
-	[Id] [int] IDENTITY(1,1) NOT NULL,
-	[TimestampUtc] [datetime2](7) NOT NULL,
-	[Level] [nvarchar](10) NOT NULL,
-	[Operation] [nvarchar](200) NOT NULL,
-	[UserId] [int] NULL,
-	[ExceptionType] [nvarchar](500) NOT NULL,
-	[Message] [nvarchar](max) NOT NULL,
-	[StackTrace] [nvarchar](max) NULL,
- CONSTRAINT [PK_DatabaseExceptions] PRIMARY KEY CLUSTERED 
-(
-	[Id] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+                                           [Id] [int] IDENTITY(1,1) NOT NULL,
+                                           [TimestampUtc] [datetime2](7) NOT NULL,
+                                           [Level] [nvarchar](10) NOT NULL,
+                                           [Operation] [nvarchar](200) NOT NULL,
+                                           [UserId] [int] NULL,
+                                           [ExceptionType] [nvarchar](500) NOT NULL,
+                                           [Message] [nvarchar](max) NOT NULL,
+                                           [StackTrace] [nvarchar](max) NULL,
+                                           CONSTRAINT [PK_DatabaseExceptions] PRIMARY KEY CLUSTERED
+                                               (
+                                                [Id] ASC
+                                                   )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
 
@@ -286,18 +302,18 @@ GO
 -- 1.8 [ViewErrors]
 -- ----------------------------------------------------------------------------
 CREATE TABLE [dbo].[ViewErrors](
-	[Id] [int] IDENTITY(1,1) NOT NULL,
-	[TimestampUtc] [datetime2](7) NOT NULL,
-	[Level] [nvarchar](10) NOT NULL,
-	[Operation] [nvarchar](200) NOT NULL,
-	[UserId] [int] NULL,
-	[ExceptionType] [nvarchar](500) NOT NULL,
-	[Message] [nvarchar](max) NOT NULL,
-	[StackTrace] [nvarchar](max) NULL,
- CONSTRAINT [PK_ViewErrors] PRIMARY KEY CLUSTERED 
-(
-	[Id] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+                                   [Id] [int] IDENTITY(1,1) NOT NULL,
+                                   [TimestampUtc] [datetime2](7) NOT NULL,
+                                   [Level] [nvarchar](10) NOT NULL,
+                                   [Operation] [nvarchar](200) NOT NULL,
+                                   [UserId] [int] NULL,
+                                   [ExceptionType] [nvarchar](500) NOT NULL,
+                                   [Message] [nvarchar](max) NOT NULL,
+                                   [StackTrace] [nvarchar](max) NULL,
+                                   CONSTRAINT [PK_ViewErrors] PRIMARY KEY CLUSTERED
+                                       (
+                                        [Id] ASC
+                                           )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
 
@@ -376,36 +392,36 @@ GO
 -- ============================================================================
 
 ALTER TABLE [dbo].[Class]  WITH CHECK ADD  CONSTRAINT [FK_Course_Class] FOREIGN KEY([CourseId])
-REFERENCES [dbo].[Course] ([Id])
-ON DELETE CASCADE
+    REFERENCES [dbo].[Course] ([Id])
+    ON DELETE CASCADE
 GO
 ALTER TABLE [dbo].[Class] CHECK CONSTRAINT [FK_Course_Class]
 GO
 
 ALTER TABLE [dbo].[Registrations]  WITH CHECK ADD  CONSTRAINT [FK_Registrations_Class] FOREIGN KEY([ClassId])
-REFERENCES [dbo].[Class] ([Id])
-ON DELETE CASCADE
+    REFERENCES [dbo].[Class] ([Id])
+    ON DELETE CASCADE
 GO
 ALTER TABLE [dbo].[Registrations] CHECK CONSTRAINT [FK_Registrations_Class]
 GO
 
 ALTER TABLE [dbo].[Registrations]  WITH CHECK ADD  CONSTRAINT [FK_Registrations_Students] FOREIGN KEY([StudentId])
-REFERENCES [dbo].[Student] ([Id])
-ON DELETE CASCADE
+    REFERENCES [dbo].[Student] ([Id])
+    ON DELETE CASCADE
 GO
 ALTER TABLE [dbo].[Registrations] CHECK CONSTRAINT [FK_Registrations_Students]
 GO
 
 ALTER TABLE [dbo].[Student]  WITH CHECK ADD  CONSTRAINT [FK_Students_User] FOREIGN KEY([UserId])
-REFERENCES [dbo].[User] ([Id])
-ON DELETE CASCADE
+    REFERENCES [dbo].[User] ([Id])
+    ON DELETE CASCADE
 GO
 ALTER TABLE [dbo].[Student] CHECK CONSTRAINT [FK_Students_User]
 GO
 
 ALTER TABLE [dbo].[RefreshTokens]  WITH CHECK ADD  CONSTRAINT [FK_RefreshTokens_User] FOREIGN KEY([UserId])
-REFERENCES [dbo].[User] ([Id])
-ON DELETE CASCADE
+    REFERENCES [dbo].[User] ([Id])
+    ON DELETE CASCADE
 GO
 ALTER TABLE [dbo].[RefreshTokens] CHECK CONSTRAINT [FK_RefreshTokens_User]
 GO
@@ -438,8 +454,8 @@ BEGIN
         THROW 50001, 'CourseId does not exist.', 1;
 
     INSERT INTO [dbo].[Class]
-        ([CourseId],[ClassName],[Instructor],[MaxCapacity],[CurrentCapacity],
-         [StartDate],[EndDate],[Schedule],[IsActive],[CreatedBy],[ModifiedBy])
+    ([CourseId],[ClassName],[Instructor],[MaxCapacity],[CurrentCapacity],
+     [StartDate],[EndDate],[Schedule],[IsActive],[CreatedBy],[ModifiedBy])
     VALUES
         (@CourseId,@ClassName,@Instructor,@MaxCapacity,@CurrentCapacity,
          @StartDate,@EndDate,@Schedule,@IsActive,@CreatedBy,@CreatedBy);
@@ -448,58 +464,156 @@ BEGIN
 END
 GO
 
-CREATE PROCEDURE [dbo].[usp_GetAllClasses]
+-- Single read entry point for classes. Serves every class read shape:
+--   @Id           -> one class
+--   @CourseId     -> the classes of one course
+--   @UserId       -> adds the IsRegistered flag for that student
+--   @Search       -> literal substring over class / instructor / course
+--   @StatusFilter -> 'Active' | 'Inactive' | 'All'; NULL means no filter
+--   @PageNumber   -> NULL returns every matching row; otherwise one page
+--                    plus a second result set carrying the counters.
+--
+-- The filter is evaluated once into @Filtered (narrow key columns only);
+-- the page and the counters are then derived from it, so the predicate
+-- never has to be repeated.
+CREATE PROCEDURE [dbo].[usp_GetClasses]
+    @Id           INT = NULL,
+    @CourseId     INT = NULL,
+    @UserId       INT = NULL,
+    @Search       NVARCHAR(100) = NULL,
+    @StatusFilter NVARCHAR(10) = NULL,
+    @PageNumber   INT = NULL,
+    @PageSize     INT = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT
-        [Id],[CourseId],[ClassName],[Instructor],[MaxCapacity],[CurrentCapacity],
-        [StartDate],[EndDate],[Schedule],[IsActive],
-        [CreatedOn],[ModifiedOn],[CreatedBy],[ModifiedBy]
-    FROM [dbo].[Class];
-END
-GO
 
-CREATE PROCEDURE [dbo].[usp_GetClassById]
-    @Id INT
-AS
-BEGIN
-    SET NOCOUNT ON;
-    SELECT
-        [Id],[CourseId],[ClassName],[Instructor],[MaxCapacity],[CurrentCapacity],
-        [StartDate],[EndDate],[Schedule],[IsActive],
-        [CreatedOn],[ModifiedOn],[CreatedBy],[ModifiedBy]
-    FROM [dbo].[Class]
-    WHERE [Id] = @Id;
-END
-GO
+    -- 1. Sanitize Pagination Inputs
+    IF @PageNumber IS NOT NULL AND @PageNumber < 1 SET @PageNumber = 1;
+    IF @PageSize   IS NOT NULL AND @PageSize   < 1 SET @PageSize   = 20;
+    IF @PageSize   IS NOT NULL AND @PageSize   > 100 SET @PageSize = 100;
 
-CREATE PROCEDURE [dbo].[usp_GetClassByName]
-    @ClassName NVARCHAR(50)
-AS
-BEGIN
-    SET NOCOUNT ON;
-    SELECT
-        [Id],[CourseId],[ClassName],[Instructor],[MaxCapacity],[CurrentCapacity],
-        [StartDate],[EndDate],[Schedule],[IsActive],
-        [CreatedOn],[ModifiedOn],[CreatedBy],[ModifiedBy]
-    FROM [dbo].[Class]
-    WHERE [ClassName] = @ClassName;
-END
-GO
+    -- 2. Escape the LIKE wildcards so the search term matches literally.
+    --    The backslash is escaped first, otherwise it would double-escape.
+    DECLARE @Pattern NVARCHAR(300) = NULL;
+    IF @Search IS NOT NULL AND LEN(@Search) > 0
+    BEGIN
+        SET @Pattern = REPLACE(REPLACE(REPLACE(@Search, N'\', N'\\'), N'%', N'\%'), N'_', N'\_') + N'%';
+    END
 
-CREATE PROCEDURE [dbo].[usp_GetClassesByCourseId]
-    @CourseId INT
-AS
-BEGIN
-    SET NOCOUNT ON;
+    -------------------------------------------------------------------
+    -- STEP 1: Isolate Primary Keys ONLY (Erik Darling Paging Pattern)
+    -- Only the key columns are materialized, so sorting never scans the
+    -- wide columns and the join below touches just the current page.
+    -------------------------------------------------------------------
+    DECLARE @Filtered TABLE (
+        [Id]        INT NOT NULL PRIMARY KEY,
+        [StartDate] DATETIME2 NOT NULL
+    );
+
+    INSERT INTO @Filtered ([Id], [StartDate])
     SELECT
-        [Id],[CourseId],[ClassName],[Instructor],[MaxCapacity],[CurrentCapacity],
-        [StartDate],[EndDate],[Schedule],[IsActive],
-        [CreatedOn],[ModifiedOn],[CreatedBy],[ModifiedBy]
-    FROM [dbo].[Class]
-    WHERE [CourseId] = @CourseId;
-END
+        c.[Id],
+        c.[StartDate]
+    FROM dbo.[Class] AS c
+             LEFT JOIN dbo.[Course] AS co
+                       ON co.[Id] = c.[CourseId]
+    WHERE (@Id IS NULL OR c.[Id] = @Id)
+      AND (@CourseId IS NULL OR c.[CourseId] = @CourseId)
+      AND (@StatusFilter IS NULL
+           OR @StatusFilter = N'All'
+           OR (@StatusFilter = N'Active' AND c.[IsActive] = 1)
+           OR (@StatusFilter = N'Inactive' AND c.[IsActive] = 0))
+      AND (@Pattern IS NULL
+           OR c.[ClassName] LIKE @Pattern ESCAPE N'\'
+           OR c.[Instructor] LIKE @Pattern ESCAPE N'\'
+           OR co.[CourseName] LIKE @Pattern ESCAPE N'\'
+           OR co.[CourseCode] LIKE @Pattern ESCAPE N'\');
+
+    -------------------------------------------------------------------
+    -- STEP 2: Cut the page out of the filtered keys
+    -------------------------------------------------------------------
+    DECLARE @Keys TABLE ([Id] INT NOT NULL PRIMARY KEY);
+
+    IF @PageNumber IS NOT NULL
+    BEGIN
+        INSERT INTO @Keys ([Id])
+        SELECT [Id]
+        FROM @Filtered
+        ORDER BY [StartDate] ASC, [Id] ASC
+        OFFSET (@PageNumber - 1) * @PageSize ROWS
+            FETCH NEXT @PageSize ROWS ONLY;
+    END
+    ELSE
+    BEGIN
+        INSERT INTO @Keys ([Id]) SELECT [Id] FROM @Filtered;
+    END
+
+    -------------------------------------------------------------------
+    -- STEP 3: Join back to base tables for ONLY the current page.
+    -- The course and the audit actors are joined in so the row carries
+    -- their names without a second round trip.
+    -------------------------------------------------------------------
+    SELECT
+        c.[Id],
+        c.[CourseId],
+        co.[CourseCode],
+        co.[CourseName],
+        c.[ClassName],
+        c.[Instructor],
+        c.[Schedule],
+        c.[StartDate],
+        c.[EndDate],
+        c.[CurrentCapacity],
+        c.[MaxCapacity],
+        c.[IsActive],
+        c.[CreatedOn],
+        c.[ModifiedOn],
+        c.[CreatedBy],
+        c.[ModifiedBy],
+        cb.[UserName] AS CreatedByName,
+        mb.[UserName] AS ModifiedByName,
+        CAST(CASE WHEN sr.Id IS NOT NULL THEN 1 ELSE 0 END AS BIT) AS IsRegistered
+    FROM @Keys AS pk
+             INNER JOIN dbo.[Class] AS c
+                        ON c.[Id] = pk.[Id]
+             LEFT JOIN dbo.[Course] AS co
+                       ON co.[Id] = c.[CourseId]
+             LEFT JOIN dbo.[User] AS cb
+                       ON cb.[Id] = c.[CreatedBy]
+             LEFT JOIN dbo.[User] AS mb
+                       ON mb.[Id] = c.[ModifiedBy]
+             LEFT JOIN dbo.[Registrations] AS sr
+                       ON sr.[ClassId] = c.[Id]
+                           AND @UserId IS NOT NULL
+                           AND sr.[StudentId] = @UserId
+                           AND sr.[Status] <> N'Dropped'  -- Dropped rows don't count as registered
+    ORDER BY
+        c.[StartDate] ASC,
+        c.[Id] ASC;
+
+    -------------------------------------------------------------------
+    -- STEP 4: Counters over the same filtered set
+    -------------------------------------------------------------------
+    IF @PageNumber IS NOT NULL
+    BEGIN
+        SELECT
+            (SELECT COUNT(*) FROM @Filtered) AS TotalCount,
+            ISNULL((
+                SELECT SUM(CASE WHEN c.[MaxCapacity] - c.[CurrentCapacity] > 0
+                                    THEN c.[MaxCapacity] - c.[CurrentCapacity]
+                                ELSE 0 END)
+                FROM @Filtered AS f
+                         INNER JOIN dbo.[Class] AS c ON c.[Id] = f.[Id]), 0) AS OpenSeatsCount,
+            (
+                SELECT COUNT(*)
+                FROM dbo.[Registrations]
+                WHERE @UserId IS NOT NULL
+                  AND [StudentId] = @UserId
+                  AND [Status] <> N'Dropped'
+            ) AS MyRegistrationsCount;
+    END
+END;
 GO
 
 CREATE PROCEDURE [dbo].[usp_UpdateClass]
@@ -554,22 +668,6 @@ BEGIN
 END
 GO
 
-CREATE PROCEDURE [dbo].[usp_SearchClasses]
-    @regex NVARCHAR(100)
-AS
-BEGIN
-    SET NOCOUNT ON;
-    SELECT
-        [Id],[CourseId],[ClassName],[Instructor],[MaxCapacity],[CurrentCapacity],
-        [StartDate],[EndDate],[Schedule],[IsActive],
-        [CreatedOn],[ModifiedOn],[CreatedBy],[ModifiedBy]
-    FROM [dbo].[Class]
-    WHERE [ClassName] LIKE '%' + @regex + '%'
-       OR [Instructor] LIKE '%' + @regex + '%';
-END
-GO
-
--- ----------------------------------------------------------------------------
 -- 4.2 COURSE
 -- ----------------------------------------------------------------------------
 
@@ -585,11 +683,11 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    IF EXISTS (SELECT 1 FROM [dbo].[Course] WHERE [CourseCode] = @CourseCode)
+    IF EXISTS (SELECT 1 FROM [dbo].[Course] WHERE [CourseCode] = @CourseCode AND [IsActive] = 1)
         THROW 50002, 'CourseCode already exists.', 1;
 
     INSERT INTO [dbo].[Course]
-        ([CourseCode],[CourseName],[CreditHours],[Description],[IsActive],[CreatedBy],[ModifiedBy])
+    ([CourseCode],[CourseName],[CreditHours],[Description],[IsActive],[CreatedBy],[ModifiedBy])
     VALUES
         (@CourseCode,@CourseName,@CreditHours,@Description,@IsActive,@CreatedBy,@CreatedBy);
 
@@ -597,41 +695,105 @@ BEGIN
 END
 GO
 
-CREATE PROCEDURE [dbo].[usp_GetAllCourses]
+-- Single read entry point for courses. Serves every course read shape:
+--   @Id         -> one course
+--   @CourseCode -> one course by its exact code
+--   @Search     -> literal substring over course code / name / description
+--   @PageNumber -> NULL returns every matching row; otherwise one page
+--                  plus a second result set carrying TotalCount.
+CREATE PROCEDURE [dbo].[usp_GetCourses]
+    @Id         INT = NULL,
+    @CourseCode NVARCHAR(20) = NULL,
+    @Search     NVARCHAR(100) = NULL,
+    @PageNumber INT = NULL,
+    @PageSize   INT = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT
-        [Id],[CourseCode],[CourseName],[CreditHours],[Description],[IsActive],
-        [CreatedOn],[ModifiedOn],[CreatedBy],[ModifiedBy]
-    FROM [dbo].[Course];
-END
-GO
 
-CREATE PROCEDURE [dbo].[usp_GetCourseById]
-    @Id INT
-AS
-BEGIN
-    SET NOCOUNT ON;
-    SELECT
-        [Id],[CourseCode],[CourseName],[CreditHours],[Description],[IsActive],
-        [CreatedOn],[ModifiedOn],[CreatedBy],[ModifiedBy]
-    FROM [dbo].[Course]
-    WHERE [Id] = @Id;
-END
-GO
+    -- 1. Sanitize Pagination Inputs
+    IF @PageNumber IS NOT NULL AND @PageNumber < 1 SET @PageNumber = 1;
+    IF @PageSize   IS NOT NULL AND @PageSize   < 1 SET @PageSize   = 20;
+    IF @PageSize   IS NOT NULL AND @PageSize   > 100 SET @PageSize = 100;
 
-CREATE PROCEDURE [dbo].[usp_GetCourseByCode]
-    @CourseCode NVARCHAR(20)
-AS
-BEGIN
-    SET NOCOUNT ON;
+    -- 2. Escape the LIKE wildcards so the search term matches literally.
+    --    The backslash is escaped first, otherwise it would double-escape.
+    DECLARE @Pattern NVARCHAR(300) = NULL;
+    IF @Search IS NOT NULL AND LEN(@Search) > 0
+    BEGIN
+        SET @Pattern = REPLACE(REPLACE(REPLACE(@Search, N'\', N'\\'), N'%', N'\%'), N'_', N'\_') + N'%';
+    END
+
+    -------------------------------------------------------------------
+    -- STEP 1: Isolate Primary Keys ONLY (Erik Darling Paging Pattern)
+    -------------------------------------------------------------------
+    DECLARE @Filtered TABLE ([Id] INT NOT NULL PRIMARY KEY);
+
+    INSERT INTO @Filtered ([Id])
     SELECT
-        [Id],[CourseCode],[CourseName],[CreditHours],[Description],[IsActive],
-        [CreatedOn],[ModifiedOn],[CreatedBy],[ModifiedBy]
-    FROM [dbo].[Course]
-    WHERE [CourseCode] = @CourseCode;
-END
+        co.[Id]
+    FROM dbo.[Course] AS co
+    WHERE (@Id IS NULL OR co.[Id] = @Id)
+      AND (@CourseCode IS NULL OR co.[CourseCode] = @CourseCode)
+      AND (@Pattern IS NULL
+           OR co.[CourseCode] LIKE @Pattern ESCAPE N'\'
+           OR co.[CourseName] LIKE @Pattern ESCAPE N'\'
+           OR co.[Description] LIKE @Pattern ESCAPE N'\');
+
+    -------------------------------------------------------------------
+    -- STEP 2: Cut the page out of the filtered keys
+    -------------------------------------------------------------------
+    DECLARE @Keys TABLE ([Id] INT NOT NULL PRIMARY KEY);
+
+    IF @PageNumber IS NOT NULL
+    BEGIN
+        INSERT INTO @Keys ([Id])
+        SELECT [Id]
+        FROM @Filtered
+        ORDER BY [Id] ASC
+        OFFSET (@PageNumber - 1) * @PageSize ROWS
+            FETCH NEXT @PageSize ROWS ONLY;
+    END
+    ELSE
+    BEGIN
+        INSERT INTO @Keys ([Id]) SELECT [Id] FROM @Filtered;
+    END
+
+    -------------------------------------------------------------------
+    -- STEP 3: Join back for ONLY the current page, audit actors included
+    -------------------------------------------------------------------
+    SELECT
+        co.[Id],
+        co.[CourseCode],
+        co.[CourseName],
+        co.[CreditHours],
+        co.[Description],
+        co.[IsActive],
+        co.[CreatedOn],
+        co.[ModifiedOn],
+        co.[CreatedBy],
+        co.[ModifiedBy],
+        cb.[UserName] AS CreatedByName,
+        mb.[UserName] AS ModifiedByName
+    FROM @Keys AS pk
+             INNER JOIN dbo.[Course] AS co
+                        ON co.[Id] = pk.[Id]
+             LEFT JOIN dbo.[User] AS cb
+                       ON cb.[Id] = co.[CreatedBy]
+             LEFT JOIN dbo.[User] AS mb
+                       ON mb.[Id] = co.[ModifiedBy]
+    ORDER BY
+        co.[CourseCode] ASC,
+        co.[Id] ASC;
+
+    -------------------------------------------------------------------
+    -- STEP 4: Counter over the same filtered set
+    -------------------------------------------------------------------
+    IF @PageNumber IS NOT NULL
+    BEGIN
+        SELECT COUNT(*) AS TotalCount FROM @Filtered;
+    END
+END;
 GO
 
 CREATE PROCEDURE [dbo].[usp_UpdateCourse]
@@ -679,20 +841,6 @@ BEGIN
 END
 GO
 
-CREATE PROCEDURE [dbo].[usp_SearchCourses]
-    @regex NVARCHAR(100)
-AS
-BEGIN
-    SET NOCOUNT ON;
-    SELECT
-        [Id],[CourseCode],[CourseName],[CreditHours],[Description],[IsActive],
-        [CreatedOn],[ModifiedOn],[CreatedBy],[ModifiedBy]
-    FROM [dbo].[Course]
-    WHERE [CourseCode] LIKE '%' + @regex + '%'
-       OR [CourseName] LIKE '%' + @regex + '%';
-END
-GO
-
 -- ----------------------------------------------------------------------------
 -- 4.3 USER
 -- ----------------------------------------------------------------------------
@@ -713,7 +861,7 @@ BEGIN
         THROW 50009, 'UserName already exists.', 1;
 
     INSERT INTO [dbo].[User]
-        ([UserName],[PasswordHash],[FullName],[Role],[IsActive],[CreatedBy],[ModifiedBy])
+    ([UserName],[PasswordHash],[FullName],[Role],[IsActive],[CreatedBy],[ModifiedBy])
     VALUES
         (@UserName,@PasswordHash,@FullName,@Role,@IsActive,@CreatedBy,@CreatedBy);
 
@@ -721,41 +869,112 @@ BEGIN
 END
 GO
 
-CREATE PROCEDURE [dbo].[usp_GetAllUsers]
+-- Single read entry point for users. Serves every user read shape:
+--   @Id         -> one user
+--   @UserName   -> exact match (login, uniqueness check)
+--   @Search     -> literal substring over username / full name
+--   @PageNumber -> NULL returns every matching row; otherwise one page
+--                  plus a second result set carrying TotalCount.
+--
+-- PasswordHash is only carried when a single user is looked up by id or
+-- user name, so it never travels with a list.
+CREATE PROCEDURE [dbo].[usp_GetUsers]
+    @Id         INT = NULL,
+    @UserName   NVARCHAR(100) = NULL,
+    @Search     NVARCHAR(100) = NULL,
+    @PageNumber INT = NULL,
+    @PageSize   INT = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT
-        [Id],[UserName],[PasswordHash],[FullName],[Role],[IsActive],
-        [CreatedOn],[ModifiedOn],[CreatedBy],[ModifiedBy]
-    FROM [dbo].[User];
-END
-GO
 
-CREATE PROCEDURE [dbo].[usp_GetUserById]
-    @Id INT
-AS
-BEGIN
-    SET NOCOUNT ON;
-    SELECT
-        [Id],[UserName],[PasswordHash],[FullName],[Role],[IsActive],
-        [CreatedOn],[ModifiedOn],[CreatedBy],[ModifiedBy]
-    FROM [dbo].[User]
-    WHERE [Id] = @Id;
-END
-GO
+    -- 1. Sanitize Pagination Inputs
+    IF @PageNumber IS NOT NULL AND @PageNumber < 1 SET @PageNumber = 1;
+    IF @PageSize   IS NOT NULL AND @PageSize   < 1 SET @PageSize   = 20;
+    IF @PageSize   IS NOT NULL AND @PageSize   > 100 SET @PageSize = 100;
 
-CREATE PROCEDURE [dbo].[usp_GetUserByUserName]
-    @UserName NVARCHAR(100)
-AS
-BEGIN
-    SET NOCOUNT ON;
+    -- 2. Escape the LIKE wildcards so the search term matches literally.
+    --    The backslash is escaped first, otherwise it would double-escape.
+    DECLARE @Pattern NVARCHAR(300) = NULL;
+    IF @Search IS NOT NULL AND LEN(@Search) > 0
+    BEGIN
+        SET @Pattern = REPLACE(REPLACE(REPLACE(@Search, N'\', N'\\'), N'%', N'\%'), N'_', N'\_') + N'%';
+    END
+
+    -------------------------------------------------------------------
+    -- STEP 1: Isolate Primary Keys ONLY (Erik Darling Paging Pattern)
+    -------------------------------------------------------------------
+    DECLARE @Filtered TABLE ([Id] INT NOT NULL PRIMARY KEY);
+
+    INSERT INTO @Filtered ([Id])
     SELECT
-        [Id],[UserName],[PasswordHash],[FullName],[Role],[IsActive],
-        [CreatedOn],[ModifiedOn],[CreatedBy],[ModifiedBy]
-    FROM [dbo].[User]
-    WHERE [UserName] = @UserName;
-END
+        u.[Id]
+    FROM dbo.[User] AS u
+    WHERE (@Id IS NULL OR u.[Id] = @Id)
+      AND (@UserName IS NULL OR u.[UserName] = @UserName)
+      AND (@Pattern IS NULL
+           OR u.[UserName] LIKE @Pattern ESCAPE N'\'
+           OR u.[FullName] LIKE @Pattern ESCAPE N'\');
+
+    -------------------------------------------------------------------
+    -- STEP 2: Cut the page out of the filtered keys
+    -------------------------------------------------------------------
+    DECLARE @Keys TABLE ([Id] INT NOT NULL PRIMARY KEY);
+
+    IF @PageNumber IS NOT NULL
+    BEGIN
+        INSERT INTO @Keys ([Id])
+        SELECT [Id]
+        FROM @Filtered
+        ORDER BY [Id] ASC
+        OFFSET (@PageNumber - 1) * @PageSize ROWS
+            FETCH NEXT @PageSize ROWS ONLY;
+    END
+    ELSE
+    BEGIN
+        INSERT INTO @Keys ([Id]) SELECT [Id] FROM @Filtered;
+    END
+
+    -------------------------------------------------------------------
+    -- STEP 3: Join back to base tables for ONLY the current page.
+    -- The audit actors are joined in so the row carries their names
+    -- without a second round trip for the whole user table.
+    -------------------------------------------------------------------
+    SELECT
+        u.[Id],
+        u.[UserName],
+        u.[FullName],
+        u.[Role],
+        u.[IsActive],
+        u.[CreatedOn],
+        u.[ModifiedOn],
+        u.[CreatedBy],
+        u.[ModifiedBy],
+        cb.[UserName] AS CreatedByName,
+        mb.[UserName] AS ModifiedByName,
+        CASE WHEN @Id IS NOT NULL OR @UserName IS NOT NULL
+             THEN u.[PasswordHash]
+             ELSE NULL
+        END AS PasswordHash
+    FROM @Keys AS pk
+             INNER JOIN dbo.[User] AS u
+                        ON u.[Id] = pk.[Id]
+             LEFT JOIN dbo.[User] AS cb
+                       ON cb.[Id] = u.[CreatedBy]
+             LEFT JOIN dbo.[User] AS mb
+                       ON mb.[Id] = u.[ModifiedBy]
+    ORDER BY
+        u.[UserName] ASC,
+        u.[Id] ASC;
+
+    -------------------------------------------------------------------
+    -- STEP 4: Counter over the same filtered set
+    -------------------------------------------------------------------
+    IF @PageNumber IS NOT NULL
+    BEGIN
+        SELECT COUNT(*) AS TotalCount FROM @Filtered;
+    END
+END;
 GO
 
 CREATE PROCEDURE [dbo].[usp_UpdateUser]
@@ -803,21 +1022,6 @@ BEGIN
 END
 GO
 
-CREATE PROCEDURE [dbo].[usp_SearchUsers]
-    @regex NVARCHAR(100)
-AS
-BEGIN
-    SET NOCOUNT ON;
-    SELECT
-        [Id],[UserName],[PasswordHash],[FullName],[Role],[IsActive],
-        [CreatedOn],[ModifiedOn],[CreatedBy],[ModifiedBy]
-    FROM [dbo].[User]
-    WHERE [UserName] LIKE '%' + @regex + '%'
-       OR [FullName] LIKE '%' + @regex + '%';
-END
-GO
-
--- ----------------------------------------------------------------------------
 -- 4.3b REFRESH TOKENS
 -- ----------------------------------------------------------------------------
 
@@ -834,7 +1038,7 @@ BEGIN
         THROW 50009, 'Refresh token hash already exists.', 1;
 
     INSERT INTO [dbo].[RefreshTokens]
-        ([UserId],[TokenHash],[ExpiresAt])
+    ([UserId],[TokenHash],[ExpiresAt])
     VALUES
         (@UserId,@TokenHash,@ExpiresAt);
 
@@ -843,7 +1047,7 @@ END
 GO
 
 CREATE PROCEDURE [dbo].[usp_GetRefreshTokenByHash]
-    @TokenHash CHAR(64)
+@TokenHash CHAR(64)
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -855,7 +1059,7 @@ END
 GO
 
 CREATE PROCEDURE [dbo].[usp_RevokeRefreshToken]
-    @TokenHash CHAR(64)
+@TokenHash CHAR(64)
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -869,7 +1073,7 @@ END
 GO
 
 CREATE PROCEDURE [dbo].[usp_RevokeRefreshTokensForUser]
-    @UserId INT
+@UserId INT
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -921,7 +1125,7 @@ BEGIN
         THROW 50008, 'StudentNumber already exists.', 1;
 
     INSERT INTO [dbo].[Student]
-        ([UserId],[StudentNumber],[Email],[Phone],[CreatedBy],[ModifiedBy])
+    ([UserId],[StudentNumber],[Email],[Phone],[CreatedBy],[ModifiedBy])
     VALUES
         (@UserId,@StudentNumber,@Email,@Phone,@CreatedBy,@CreatedBy);
 
@@ -929,98 +1133,120 @@ BEGIN
 END
 GO
 
-CREATE PROCEDURE [dbo].[usp_GetAllStudents]
+-- Single read entry point for students. Serves every student read shape:
+--   @Id         -> one student
+--   @UserId     -> the student profile of one user
+--   @Search     -> literal substring over student number / email / user name
+--   @PageNumber -> NULL returns every matching row; otherwise one page
+--                  plus a second result set carrying TotalCount.
+--
+-- The user's display columns are joined in, so no caller has to fetch the
+-- user row separately. PasswordHash is only carried for a single-student
+-- lookup, where the create/update flow needs it.
+CREATE PROCEDURE [dbo].[usp_GetStudents]
+    @Id         INT = NULL,
+    @UserId     INT = NULL,
+    @Search     NVARCHAR(100) = NULL,
+    @PageNumber INT = NULL,
+    @PageSize   INT = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
+
+    -- 1. Sanitize Pagination Inputs
+    IF @PageNumber IS NOT NULL AND @PageNumber < 1 SET @PageNumber = 1;
+    IF @PageSize   IS NOT NULL AND @PageSize   < 1 SET @PageSize   = 20;
+    IF @PageSize   IS NOT NULL AND @PageSize   > 100 SET @PageSize = 100;
+
+    -- 2. Escape the LIKE wildcards so the search term matches literally.
+    --    The backslash is escaped first, otherwise it would double-escape.
+    DECLARE @Pattern NVARCHAR(300) = NULL;
+    IF @Search IS NOT NULL AND LEN(@Search) > 0
+    BEGIN
+        SET @Pattern = REPLACE(REPLACE(REPLACE(@Search, N'\', N'\\'), N'%', N'\%'), N'_', N'\_') + N'%';
+    END
+
+    -------------------------------------------------------------------
+    -- STEP 1: Isolate Primary Keys ONLY (Erik Darling Paging Pattern)
+    -------------------------------------------------------------------
+    DECLARE @Filtered TABLE ([Id] INT NOT NULL PRIMARY KEY);
+
+    INSERT INTO @Filtered ([Id])
+    SELECT
+        s.[Id]
+    FROM dbo.[Student] AS s
+             INNER JOIN dbo.[User] AS u ON u.[Id] = s.[UserId]
+    WHERE (@Id IS NULL OR s.[Id] = @Id)
+      AND (@UserId IS NULL OR s.[UserId] = @UserId)
+      AND (@Pattern IS NULL
+           OR s.[StudentNumber] LIKE @Pattern ESCAPE N'\'
+           OR s.[Email] LIKE @Pattern ESCAPE N'\'
+           OR u.[UserName] LIKE @Pattern ESCAPE N'\'
+           OR u.[FullName] LIKE @Pattern ESCAPE N'\');
+
+    -------------------------------------------------------------------
+    -- STEP 2: Cut the page out of the filtered keys
+    -------------------------------------------------------------------
+    DECLARE @Keys TABLE ([Id] INT NOT NULL PRIMARY KEY);
+
+    IF @PageNumber IS NOT NULL
+    BEGIN
+        INSERT INTO @Keys ([Id])
+        SELECT [Id]
+        FROM @Filtered
+        ORDER BY [Id] ASC
+        OFFSET (@PageNumber - 1) * @PageSize ROWS
+            FETCH NEXT @PageSize ROWS ONLY;
+    END
+    ELSE
+    BEGIN
+        INSERT INTO @Keys ([Id]) SELECT [Id] FROM @Filtered;
+    END
+
+    -------------------------------------------------------------------
+    -- STEP 3: Join back for ONLY the current page, audit actors included
+    -------------------------------------------------------------------
     SELECT
         s.[Id],
         s.[UserId],
         s.[StudentNumber],
         s.[Email],
         s.[Phone],
-        u.[UserName]  AS [UserName],
-        u.[FullName]  AS [FullName],
-        u.[Role]      AS [Role],
-        u.[IsActive]  AS [IsActive],
-        s.[CreatedOn],
-        s.[ModifiedOn],
-        s.[CreatedBy],
-        s.[ModifiedBy]
-    FROM [dbo].[Student] s
-    INNER JOIN [dbo].[User] u ON s.[UserId] = u.[Id];
-END
-GO
-
-CREATE PROCEDURE [dbo].[usp_GetStudentById]
-    @Id INT
-AS
-BEGIN
-    SET NOCOUNT ON;
-    SELECT
-        s.[Id],
-        s.[UserId],
-        s.[StudentNumber],
-        s.[Email],
-        s.[Phone],
-        u.[UserName]  AS [UserName],
-        u.[FullName]  AS [FullName],
-        u.[Role]      AS [Role],
-        u.[IsActive]  AS [IsActive],
-        s.[CreatedOn],
-        s.[ModifiedOn],
-        s.[CreatedBy],
-        s.[ModifiedBy]
-    FROM [dbo].[Student] s
-    INNER JOIN [dbo].[User] u ON s.[UserId] = u.[Id]
-    WHERE s.[Id] = @Id;
-END
-GO
-
-CREATE PROCEDURE [dbo].[usp_GetStudentByUserId]
-    @UserId INT
-AS
-BEGIN
-    SET NOCOUNT ON;
-    SELECT
-        s.[Id],
-        s.[UserId],
-        s.[StudentNumber],
-        s.[Email],
-        s.[Phone],
-        u.[UserName]  AS [UserName],
-        u.[FullName]  AS [FullName],
-        u.[Role]      AS [Role],
-        u.[IsActive]  AS [IsActive],
-        s.[CreatedOn],
-        s.[ModifiedOn],
-        s.[CreatedBy],
-        s.[ModifiedBy]
-    FROM [dbo].[Student] s
-    INNER JOIN [dbo].[User] u ON s.[UserId] = u.[Id]
-    WHERE s.[UserId] = @UserId;
-END
-GO
-
-CREATE PROCEDURE [dbo].[usp_GetStudentProfileByUserId]
-    @UserId INT
-AS
-BEGIN
-    SET NOCOUNT ON;
-    SELECT
-        s.[Id] AS [StudentId],
-        u.[Id] AS [UserId],
-        s.[Id] AS [Id],
         u.[UserName],
         u.[FullName],
         u.[Role],
-        s.[StudentNumber],
-        s.[Email],
-        s.[Phone]
-    FROM [dbo].[User] u
-    INNER JOIN [dbo].[Student] s ON s.[UserId] = u.[Id]
-    WHERE u.[Id] = @UserId;
-END
+        u.[IsActive],
+        s.[CreatedOn],
+        s.[ModifiedOn],
+        s.[CreatedBy],
+        s.[ModifiedBy],
+        cb.[UserName] AS CreatedByName,
+        mb.[UserName] AS ModifiedByName,
+        CASE WHEN @Id IS NOT NULL OR @UserId IS NOT NULL
+             THEN u.[PasswordHash]
+             ELSE NULL
+        END AS PasswordHash
+    FROM @Keys AS pk
+             INNER JOIN dbo.[Student] AS s
+                        ON s.[Id] = pk.[Id]
+             INNER JOIN dbo.[User] AS u
+                        ON u.[Id] = s.[UserId]
+             LEFT JOIN dbo.[User] AS cb
+                       ON cb.[Id] = s.[CreatedBy]
+             LEFT JOIN dbo.[User] AS mb
+                       ON mb.[Id] = s.[ModifiedBy]
+    ORDER BY
+        u.[UserName] ASC,
+        s.[Id] ASC;
+
+    -------------------------------------------------------------------
+    -- STEP 4: Counter over the same filtered set
+    -------------------------------------------------------------------
+    IF @PageNumber IS NOT NULL
+    BEGIN
+        SELECT COUNT(*) AS TotalCount FROM @Filtered;
+    END
+END;
 GO
 
 CREATE PROCEDURE [dbo].[usp_UpdateStudent]
@@ -1080,32 +1306,6 @@ BEGIN
 END
 GO
 
-CREATE PROCEDURE [dbo].[usp_SearchStudents]
-    @regex NVARCHAR(100)
-AS
-BEGIN
-    SET NOCOUNT ON;
-    SELECT
-        s.[Id],
-        s.[UserId],
-        s.[StudentNumber],
-        s.[Email],
-        s.[Phone],
-        u.[UserName]  AS [UserName],
-        u.[FullName]  AS [FullName],
-        u.[Role]      AS [Role],
-        u.[IsActive]  AS [IsActive],
-        s.[CreatedOn],
-        s.[ModifiedOn],
-        s.[CreatedBy],
-        s.[ModifiedBy]
-    FROM [dbo].[Student] s
-    INNER JOIN [dbo].[User] u ON s.[UserId] = u.[Id]
-    WHERE u.[FullName] LIKE '%' + @regex + '%'
-       OR s.[Email]    LIKE '%' + @regex + '%';
-END
-GO
-
 -- ----------------------------------------------------------------------------
 -- 4.5 REGISTRATION
 -- ----------------------------------------------------------------------------
@@ -1128,11 +1328,11 @@ BEGIN
         THROW 50004, 'ClassId does not exist.', 1;
 
     IF EXISTS (SELECT 1 FROM [dbo].[Registrations]
-               WHERE [StudentId] = @StudentId AND [ClassId] = @ClassId)
+               WHERE [StudentId] = @StudentId AND [ClassId] = @ClassId AND [Status] <> N'Dropped')
         THROW 50005, 'Student is already registered for this class.', 1;
 
     INSERT INTO [dbo].[Registrations]
-        ([StudentId],[ClassId],[RegistrationDate],[Status],[CreatedBy],[ModifiedBy])
+    ([StudentId],[ClassId],[RegistrationDate],[Status],[CreatedBy],[ModifiedBy])
     VALUES
         (@StudentId,@ClassId,@RegistrationDate,@Status,@CreatedBy,@CreatedBy);
 
@@ -1140,121 +1340,145 @@ BEGIN
 END
 GO
 
-CREATE PROCEDURE [dbo].[usp_GetAllRegistrations]
+-- Single read entry point for registrations. Serves every registration read
+-- shape:
+--   @Id         -> one registration
+--   @StudentId  -> the registrations of one student
+--   @ClassId    -> the registrations for one class
+--   @StudentId + @ClassId -> the single row for that pair (any status)
+--   @Search     -> literal substring over student / class / course
+--   @PageNumber -> NULL returns every matching row; otherwise one page
+--                  plus a second result set carrying TotalCount.
+--
+-- The class, student, user and course are joined in, so no caller has to
+-- fetch the related rows separately.
+CREATE PROCEDURE [dbo].[usp_GetRegistrations]
+    @Id         INT = NULL,
+    @StudentId  INT = NULL,
+    @ClassId    INT = NULL,
+    @Search     NVARCHAR(100) = NULL,
+    @PageNumber INT = NULL,
+    @PageSize   INT = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT
-        [Id],[StudentId],[ClassId],[RegistrationDate],[Status],
-        [CreatedOn],[ModifiedOn],[CreatedBy],[ModifiedBy]
-    FROM [dbo].[Registrations];
-END
-GO
 
-CREATE PROCEDURE [dbo].[usp_GetAllRegistrationsDetailed]
-AS
-BEGIN
-    SET NOCOUNT ON;
-    SELECT
-        r.[Id],
-        r.[StudentId],
-        u.[UserName],
-        r.[ClassId],
-        c.[ClassName],
-        co.[Id]        AS [CourseId],
-        co.[CourseName],
-        r.[RegistrationDate],
-        r.[Status],
-        r.[CreatedOn],
-        r.[ModifiedOn],
-        r.[CreatedBy],
-        r.[ModifiedBy]
-    FROM [dbo].[Registrations] r
-    INNER JOIN [dbo].[Student] s  ON r.[StudentId] = s.[Id]
-    INNER JOIN [dbo].[User]    u  ON s.[UserId]    = u.[Id]
-    INNER JOIN [dbo].[Class]   c  ON r.[ClassId]   = c.[Id]
-    INNER JOIN [dbo].[Course]  co ON c.[CourseId]  = co.[Id];
-END
-GO
+    -- 1. Sanitize Pagination Inputs
+    IF @PageNumber IS NOT NULL AND @PageNumber < 1 SET @PageNumber = 1;
+    IF @PageSize   IS NOT NULL AND @PageSize   < 1 SET @PageSize   = 20;
+    IF @PageSize   IS NOT NULL AND @PageSize   > 100 SET @PageSize = 100;
 
-CREATE PROCEDURE [dbo].[usp_GetRegistrationById]
-    @Id INT
-AS
-BEGIN
-    SET NOCOUNT ON;
-    SELECT
-        [Id],[StudentId],[ClassId],[RegistrationDate],[Status],
-        [CreatedOn],[ModifiedOn],[CreatedBy],[ModifiedBy]
-    FROM [dbo].[Registrations]
-    WHERE [Id] = @Id;
-END
-GO
+    -- 2. Escape the LIKE wildcards so the search term matches literally.
+    --    The backslash is escaped first, otherwise it would double-escape.
+    DECLARE @Pattern NVARCHAR(300) = NULL;
+    IF @Search IS NOT NULL AND LEN(@Search) > 0
+    BEGIN
+        SET @Pattern = REPLACE(REPLACE(REPLACE(@Search, N'\', N'\\'), N'%', N'\%'), N'_', N'\_') + N'%';
+    END
 
-CREATE PROCEDURE [dbo].[usp_GetRegistrationByStudentAndClass]
-    @StudentId INT,
-    @ClassId   INT
-AS
-BEGIN
-    SET NOCOUNT ON;
-    SELECT
-        [Id],[StudentId],[ClassId],[RegistrationDate],[Status],
-        [CreatedOn],[ModifiedOn],[CreatedBy],[ModifiedBy]
-    FROM [dbo].[Registrations]
-    WHERE [StudentId] = @StudentId AND [ClassId] = @ClassId;
-END
-GO
+    -------------------------------------------------------------------
+    -- STEP 1: Isolate Primary Keys ONLY (Erik Darling Paging Pattern)
+    -------------------------------------------------------------------
+    DECLARE @Filtered TABLE ([Id] INT NOT NULL PRIMARY KEY);
 
-CREATE PROCEDURE [dbo].[usp_GetRegistrationsByClassId]
-    @ClassId INT
-AS
-BEGIN
-    SET NOCOUNT ON;
+    INSERT INTO @Filtered ([Id])
     SELECT
-        [Id],[StudentId],[ClassId],[RegistrationDate],[Status],
-        [CreatedOn],[ModifiedOn],[CreatedBy],[ModifiedBy]
-    FROM [dbo].[Registrations]
-    WHERE [ClassId] = @ClassId;
-END
-GO
+        r.[Id]
+    FROM dbo.[Registrations] AS r
+             INNER JOIN dbo.[Student] AS s  ON r.[StudentId] = s.[Id]
+             INNER JOIN dbo.[User]    AS u  ON s.[UserId]    = u.[Id]
+             INNER JOIN dbo.[Class]   AS c  ON r.[ClassId]   = c.[Id]
+             INNER JOIN dbo.[Course]  AS co ON c.[CourseId]  = co.[Id]
+    WHERE (@Id IS NULL OR r.[Id] = @Id)
+      AND (@StudentId IS NULL OR r.[StudentId] = @StudentId)
+      AND (@ClassId IS NULL OR r.[ClassId] = @ClassId)
+      AND (@Pattern IS NULL
+           OR s.[StudentNumber] LIKE @Pattern ESCAPE N'\'
+           OR s.[Email] LIKE @Pattern ESCAPE N'\'
+           OR u.[UserName] LIKE @Pattern ESCAPE N'\'
+           OR u.[FullName] LIKE @Pattern ESCAPE N'\'
+           OR c.[ClassName] LIKE @Pattern ESCAPE N'\'
+           OR co.[CourseCode] LIKE @Pattern ESCAPE N'\'
+           OR co.[CourseName] LIKE @Pattern ESCAPE N'\');
 
-CREATE PROCEDURE [dbo].[usp_GetRegistrationsByStudentId]
-    @StudentId INT
-AS
-BEGIN
-    SET NOCOUNT ON;
-    SELECT
-        [Id],[StudentId],[ClassId],[RegistrationDate],[Status],
-        [CreatedOn],[ModifiedOn],[CreatedBy],[ModifiedBy]
-    FROM [dbo].[Registrations]
-    WHERE [StudentId] = @StudentId;
-END
-GO
+    -------------------------------------------------------------------
+    -- STEP 2: Cut the page out of the filtered keys
+    -------------------------------------------------------------------
+    DECLARE @Keys TABLE ([Id] INT NOT NULL PRIMARY KEY);
 
-CREATE PROCEDURE [dbo].[usp_GetStudentRegistrationsWithClasses]
-    @StudentId INT
-AS
-BEGIN
-    SET NOCOUNT ON;
+    IF @PageNumber IS NOT NULL
+    BEGIN
+        INSERT INTO @Keys ([Id])
+        SELECT [Id]
+        FROM @Filtered
+        ORDER BY [Id] ASC
+        OFFSET (@PageNumber - 1) * @PageSize ROWS
+            FETCH NEXT @PageSize ROWS ONLY;
+    END
+    ELSE
+    BEGIN
+        INSERT INTO @Keys ([Id]) SELECT [Id] FROM @Filtered;
+    END
+
+    -------------------------------------------------------------------
+    -- STEP 3: Join back for ONLY the current page.
+    -- Every column is prefixed by the entity it belongs to, so the flat
+    -- result set can be mapped back into the related objects.
+    -------------------------------------------------------------------
     SELECT
-        r.[Id],
-        r.[StudentId],
-        r.[ClassId],
-        r.[RegistrationDate],
-        r.[Status],
-        c.[Id] AS [Class_Id],
-        c.[CourseId],
-        c.[ClassName],
-        c.[Instructor],
-        c.[MaxCapacity],
-        c.[CurrentCapacity],
-        c.[StartDate],
-        c.[EndDate],
-        c.[Schedule],
-        c.[IsActive]
-    FROM [dbo].[Registrations] r
-    INNER JOIN [dbo].[Class] c ON r.[ClassId] = c.[Id]
-    WHERE r.[StudentId] = @StudentId;
-END
+        r.[Id]                AS RegistrationId,
+        r.[StudentId]         AS RegistrationStudentId,
+        r.[ClassId]           AS RegistrationClassId,
+        r.[RegistrationDate]  AS RegistrationDate,
+        r.[Status]            AS RegistrationStatus,
+        r.[CreatedOn]         AS RegistrationCreatedOn,
+        r.[ModifiedOn]        AS RegistrationModifiedOn,
+        r.[CreatedBy]         AS RegistrationCreatedBy,
+        r.[ModifiedBy]        AS RegistrationModifiedBy,
+        c.[Id]                AS ClassId,
+        c.[CourseId]          AS ClassCourseId,
+        c.[ClassName]         AS ClassName,
+        c.[Instructor]        AS ClassInstructor,
+        c.[MaxCapacity]       AS ClassMaxCapacity,
+        c.[CurrentCapacity]   AS ClassCurrentCapacity,
+        c.[StartDate]         AS ClassStartDate,
+        c.[EndDate]           AS ClassEndDate,
+        c.[Schedule]          AS ClassSchedule,
+        c.[IsActive]          AS ClassIsActive,
+        s.[Id]                AS StudentId,
+        s.[UserId]            AS StudentUserId,
+        s.[StudentNumber]     AS StudentNumber,
+        s.[Email]             AS StudentEmail,
+        s.[Phone]             AS StudentPhone,
+        u.[UserName]          AS StudentUserName,
+        u.[FullName]          AS StudentFullName,
+        u.[Role]              AS StudentRole,
+        u.[IsActive]          AS StudentIsActive,
+        co.[Id]               AS CourseId,
+        co.[CourseCode]       AS CourseCode,
+        co.[CourseName]       AS CourseName,
+        cb.[UserName]         AS CreatedByName,
+        mb.[UserName]         AS ModifiedByName
+    FROM @Keys AS pk
+             INNER JOIN dbo.[Registrations] AS r ON r.[Id] = pk.[Id]
+             INNER JOIN dbo.[Student] AS s        ON s.[Id] = r.[StudentId]
+             INNER JOIN dbo.[User] AS u           ON u.[Id] = s.[UserId]
+             INNER JOIN dbo.[Class] AS c          ON c.[Id] = r.[ClassId]
+             INNER JOIN dbo.[Course] AS co        ON co.[Id] = c.[CourseId]
+             LEFT JOIN dbo.[User] AS cb           ON cb.[Id] = r.[CreatedBy]
+             LEFT JOIN dbo.[User] AS mb           ON mb.[Id] = r.[ModifiedBy]
+    ORDER BY
+        r.[RegistrationDate] DESC,
+        r.[Id] DESC;
+
+    -------------------------------------------------------------------
+    -- STEP 4: Counter over the same filtered set
+    -------------------------------------------------------------------
+    IF @PageNumber IS NOT NULL
+    BEGIN
+        SELECT COUNT(*) AS TotalCount FROM @Filtered;
+    END
+END;
 GO
 
 CREATE PROCEDURE [dbo].[usp_UpdateRegistration]
@@ -1269,7 +1493,7 @@ BEGIN
     SET NOCOUNT ON;
 
     IF EXISTS (SELECT 1 FROM [dbo].[Registrations]
-               WHERE [StudentId] = @StudentId AND [ClassId] = @ClassId AND [Id] <> @Id)
+               WHERE [StudentId] = @StudentId AND [ClassId] = @ClassId AND [Id] <> @Id AND [Status] <> N'Dropped')
         THROW 50005, 'Another registration already exists for this student/class.', 1;
 
     UPDATE [dbo].[Registrations]
@@ -1291,71 +1515,14 @@ CREATE PROCEDURE [dbo].[usp_DeleteRegistration]
 AS
 BEGIN
     SET NOCOUNT ON;
-    -- Registrations has no IsActive column; soft delete = mark as Cancelled.
-    -- The row is kept for history instead of being physically deleted.
+    -- Registrations has no IsActive column; soft delete = mark as Dropped.
+    -- The row is kept for history and reactivated in place on re-register.
     UPDATE [dbo].[Registrations]
-    SET [Status]     = N'Cancelled',
+    SET [Status]     = N'Dropped',
         [ModifiedBy] = @ModifiedBy,
         [ModifiedOn] = SYSDATETIMEOFFSET()
     WHERE [Id] = @Id;
     SELECT @@ROWCOUNT AS [RowsAffected];
-END
-GO
-
-CREATE PROCEDURE [dbo].[usp_RegistrationExists]
-    @StudentId INT,
-    @ClassId   INT
-AS
-BEGIN
-    SET NOCOUNT ON;
-    SELECT 1 AS [Exists]
-    FROM [dbo].[Registrations]
-    WHERE [StudentId] = @StudentId AND [ClassId] = @ClassId;
-END
-GO
-
-CREATE PROCEDURE [dbo].[usp_SearchRegistrations]
-    @regex NVARCHAR(100)
-AS
-BEGIN
-    SET NOCOUNT ON;
-    SELECT
-        [Id],[StudentId],[ClassId],[RegistrationDate],[Status],
-        [CreatedOn],[ModifiedOn],[CreatedBy],[ModifiedBy]
-    FROM [dbo].[Registrations]
-    WHERE [Status] LIKE '%' + @regex + '%';
-END
-GO
-
-CREATE PROCEDURE [dbo].[usp_SearchRegistrationsDetailed]
-    @regex NVARCHAR(100)
-AS
-BEGIN
-    SET NOCOUNT ON;
-    SELECT
-        r.[Id],
-        r.[StudentId],
-        u.[UserName],
-        r.[ClassId],
-        c.[ClassName],
-        co.[Id]        AS [CourseId],
-        co.[CourseName],
-        r.[RegistrationDate],
-        r.[Status],
-        r.[CreatedOn],
-        r.[ModifiedOn],
-        r.[CreatedBy],
-        r.[ModifiedBy]
-    FROM [dbo].[Registrations] r
-    INNER JOIN [dbo].[Student] s  ON r.[StudentId] = s.[Id]
-    INNER JOIN [dbo].[User]    u  ON s.[UserId]    = u.[Id]
-    INNER JOIN [dbo].[Class]   c  ON r.[ClassId]   = c.[Id]
-    INNER JOIN [dbo].[Course]  co ON c.[CourseId]  = co.[Id]
-    WHERE u.[UserName]     LIKE '%' + @regex + '%'
-       OR u.[FullName]     LIKE '%' + @regex + '%'
-       OR c.[ClassName]    LIKE '%' + @regex + '%'
-       OR co.[CourseName]  LIKE '%' + @regex + '%'
-       OR r.[Status]       LIKE '%' + @regex + '%';
 END
 GO
 
@@ -1376,7 +1543,7 @@ BEGIN
     SET NOCOUNT ON;
 
     INSERT INTO [dbo].[BusinessExceptions]
-        ([TimestampUtc],[Level],[Operation],[UserId],[ExceptionType],[Message],[StackTrace])
+    ([TimestampUtc],[Level],[Operation],[UserId],[ExceptionType],[Message],[StackTrace])
     VALUES
         (@TimestampUtc,@Level,@Operation,@UserId,@ExceptionType,@Message,@StackTrace);
 END
@@ -1395,7 +1562,7 @@ BEGIN
     SET NOCOUNT ON;
 
     INSERT INTO [dbo].[DatabaseExceptions]
-        ([TimestampUtc],[Level],[Operation],[UserId],[ExceptionType],[Message],[StackTrace])
+    ([TimestampUtc],[Level],[Operation],[UserId],[ExceptionType],[Message],[StackTrace])
     VALUES
         (@TimestampUtc,@Level,@Operation,@UserId,@ExceptionType,@Message,@StackTrace);
 END
@@ -1414,7 +1581,7 @@ BEGIN
     SET NOCOUNT ON;
 
     INSERT INTO [dbo].[ViewErrors]
-        ([TimestampUtc],[Level],[Operation],[UserId],[ExceptionType],[Message],[StackTrace])
+    ([TimestampUtc],[Level],[Operation],[UserId],[ExceptionType],[Message],[StackTrace])
     VALUES
         (@TimestampUtc,@Level,@Operation,@UserId,@ExceptionType,@Message,@StackTrace);
 END
@@ -1465,7 +1632,7 @@ BEGIN TRY
     -- ---- 5a. Users -------------------------------------------------------
     SET IDENTITY_INSERT [dbo].[User] ON;
     INSERT INTO [dbo].[User]
-        ([Id],[UserName],[PasswordHash],[FullName],[Role],[IsActive],[CreatedBy],[ModifiedBy])
+    ([Id],[UserName],[PasswordHash],[FullName],[Role],[IsActive],[CreatedBy],[ModifiedBy])
     VALUES
         (1, N'admin',             N'$2a$11$u0tQ2TtBT2Z7AZybsVXR0eA7yJKOCPsMj6.aZcqxd1Mre.y.RZzD6', N'System Administrator', 0, 1, 0, 0),
         (2, N'sara.ahmed',        N'$2a$11$u0tQ2TtBT2Z7AZybsVXR0eA7yJKOCPsMj6.aZcqxd1Mre.y.RZzD6', N'Sara Ahmed',           1, 1, 0, 0),
@@ -1480,7 +1647,7 @@ BEGIN TRY
     -- 9-digit YYYY S NNNN: semesters 1,2,3 all represented; years 2000..YEAR(GETDATE()).
     SET IDENTITY_INSERT [dbo].[Student] ON;
     INSERT INTO [dbo].[Student]
-        ([Id],[UserId],[StudentNumber],[Email],[Phone],[CreatedBy],[ModifiedBy])
+    ([Id],[UserId],[StudentNumber],[Email],[Phone],[CreatedBy],[ModifiedBy])
     VALUES
         (1, 2, 202110001, N'sara.ahmed@university.edu',      N'+96281394557', 1, 1),
         (2, 3, 202220002, N'omar.khaled@university.edu',     N'+962791001002', 1, 1),
@@ -1493,7 +1660,7 @@ BEGIN TRY
     -- ---- 5c. Courses -----------------------------------------------------
     SET IDENTITY_INSERT [dbo].[Course] ON;
     INSERT INTO [dbo].[Course]
-        ([Id],[CourseCode],[CourseName],[CreditHours],[Description],[IsActive],[CreatedBy],[ModifiedBy])
+    ([Id],[CourseCode],[CourseName],[CreditHours],[Description],[IsActive],[CreatedBy],[ModifiedBy])
     VALUES
         (1, N'CS101',   N'Introduction to Programming', CAST(3.00 AS DECIMAL(4,2)), N'Fundamentals of programming using C#: variables, control flow, methods and OOP basics.', 1, 1, 1),
         (2, N'MATH201', N'Calculus II',                 CAST(4.00 AS DECIMAL(4,2)), N'Integration techniques, sequences, series and applications.',                              1, 1, 1),
@@ -1508,8 +1675,8 @@ BEGIN TRY
     -- so the 5f sync is idempotent and the FULL / ONE-LEFT / EMPTY states read correctly.
     SET IDENTITY_INSERT [dbo].[Class] ON;
     INSERT INTO [dbo].[Class]
-        ([Id],[CourseId],[ClassName],[Instructor],[MaxCapacity],[CurrentCapacity],
-         [StartDate],[EndDate],[Schedule],[IsActive],[CreatedBy],[ModifiedBy])
+    ([Id],[CourseId],[ClassName],[Instructor],[MaxCapacity],[CurrentCapacity],
+     [StartDate],[EndDate],[Schedule],[IsActive],[CreatedBy],[ModifiedBy])
     VALUES
         (1, 1, N'CS101-A',         N'Dr. Ahmad Jaber',   30,  2, CAST(N'2026-09-01T00:00:00' AS DATETIME2(7)), CAST(N'2026-12-20T00:00:00' AS DATETIME2(7)), 20,  1, 1, 1),
         (2, 1, N'CS101-B',         N'Eng. Rania Odeh',   25,  1, CAST(N'2026-09-01T00:00:00' AS DATETIME2(7)), CAST(N'2026-12-20T00:00:00' AS DATETIME2(7)), 40,  1, 1, 1),
@@ -1526,7 +1693,7 @@ BEGIN TRY
     -- Statuses: Registered (counts), Pending (counts, Id 4), Dropped (excluded, Id 11).
     SET IDENTITY_INSERT [dbo].[Registrations] ON;
     INSERT INTO [dbo].[Registrations]
-        ([Id],[StudentId],[ClassId],[RegistrationDate],[Status],[CreatedBy],[ModifiedBy])
+    ([Id],[StudentId],[ClassId],[RegistrationDate],[Status],[CreatedBy],[ModifiedBy])
     VALUES
         (1,  1, 1, CAST(N'2026-09-05T00:00:00' AS DATETIME2(7)), N'Registered', 1, 1),
         (2,  1, 3, CAST(N'2026-09-05T00:00:00' AS DATETIME2(7)), N'Registered', 1, 1),
@@ -1547,7 +1714,7 @@ BEGIN TRY
     SET [CurrentCapacity] = ISNULL(counts.RegCount, 0),
         [ModifiedOn]      = SYSDATETIMEOFFSET()
     FROM [dbo].[Class] c
-    LEFT JOIN (
+             LEFT JOIN (
         SELECT [ClassId], COUNT(*) AS RegCount
         FROM [dbo].[Registrations]
         WHERE [Status] <> N'Dropped'

@@ -3,48 +3,26 @@ using System.Data;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Enums;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Results;
 using Mozaic.CourseRegistrationManagementSystem.DAL.Database;
 
 namespace Mozaic.CourseRegistrationManagementSystem.DAL.Providers;
 
 public static class RegistrationDataProvider
 {
-    public static Registration? GetById(int id)
-    {
-        SqlConnection? connection = null;
-        SqlCommand? command = null;
-        SqlDataReader? reader = null;
-        try
-        {
-            connection = DBConnectionFactory.CreateConnection();
-            connection.Open();
-
-            command = new SqlCommand("usp_GetRegistrationById", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
-
-            reader = command.ExecuteReader();
-            if (reader.Read())
-            {
-                return MapRegistration(reader);
-            }
-            return null;
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in RegistrationDataProvider.GetById(int id)", ex);
-        }
-        finally
-        {
-            reader?.Dispose();
-            command?.Dispose();
-            connection?.Dispose();
-        }
-    }
-
-    public static async Task<Registration?> GetByIdAsync(int id)
+    /// <summary>
+    /// The single read path for registrations. Every filter is optional; a
+    /// null filter means "no restriction". Each row carries the joined class,
+    /// student and course. When @pageNumber is supplied the procedure returns
+    /// one page plus a second result set with the counter.
+    /// </summary>
+    public static async Task<RegistrationResult> GetAsync(
+        int? id = null,
+        int? studentId = null,
+        int? classId = null,
+        string? search = null,
+        int? pageNumber = null,
+        int? pageSize = null)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -54,253 +32,7 @@ public static class RegistrationDataProvider
             connection = DBConnectionFactory.CreateConnection();
             await connection.OpenAsync();
 
-            command = new SqlCommand("usp_GetRegistrationById", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
-
-            reader = await command.ExecuteReaderAsync();
-            if (await reader.ReadAsync())
-            {
-                return MapRegistration(reader);
-            }
-            return null;
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in RegistrationDataProvider.GetByIdAsync(int id)", ex);
-        }
-        finally
-        {
-            reader?.Dispose();
-            command?.Dispose();
-            connection?.Dispose();
-        }
-    }
-
-    public static async Task<bool> ExistsAsync(int studentId, int classId)
-    {
-        SqlConnection? connection = null;
-        SqlCommand? command = null;
-        try
-        {
-            connection = DBConnectionFactory.CreateConnection();
-            await connection.OpenAsync();
-
-            command = new SqlCommand("usp_RegistrationExists", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.Add("@StudentId", SqlDbType.Int).Value = studentId;
-            command.Parameters.Add("@ClassId", SqlDbType.Int).Value = classId;
-
-            return await command.ExecuteScalarAsync() is not null;
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in RegistrationDataProvider.ExistsAsync(int studentId, int classId)", ex);
-        }
-        finally
-        {
-            command?.Dispose();
-            connection?.Dispose();
-        }
-    }
-
-    public static List<Registration> GetRegistrationsByStudentId(int studentId)
-    {
-        SqlConnection? connection = null;
-        SqlCommand? command = null;
-        SqlDataReader? reader = null;
-        try
-        {
-            connection = DBConnectionFactory.CreateConnection();
-            connection.Open();
-
-            command = new SqlCommand("usp_GetRegistrationsByStudentId", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.Add("@StudentId", SqlDbType.Int).Value = studentId;
-
-            reader = command.ExecuteReader();
-            var list = new List<Registration>();
-            while (reader.Read())
-            {
-                list.Add(MapRegistration(reader));
-            }
-            return list;
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in RegistrationDataProvider.GetRegistrationsByStudentId(int studentId)", ex);
-        }
-        finally
-        {
-            reader?.Dispose();
-            command?.Dispose();
-            connection?.Dispose();
-        }
-    }
-
-    public static async Task<List<Registration>> GetRegistrationsByStudentIdAsync(int studentId)
-    {
-        SqlConnection? connection = null;
-        SqlCommand? command = null;
-        SqlDataReader? reader = null;
-        try
-        {
-            connection = DBConnectionFactory.CreateConnection();
-            await connection.OpenAsync();
-
-            command = new SqlCommand("usp_GetRegistrationsByStudentId", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.Add("@StudentId", SqlDbType.Int).Value = studentId;
-
-            reader = await command.ExecuteReaderAsync();
-            var list = new List<Registration>();
-            while (await reader.ReadAsync())
-            {
-                list.Add(MapRegistration(reader));
-            }
-            return list;
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in RegistrationDataProvider.GetRegistrationsByStudentIdAsync(int studentId)", ex);
-        }
-        finally
-        {
-            reader?.Dispose();
-            command?.Dispose();
-            connection?.Dispose();
-        }
-    }
-
-    public static List<Registration> GetRegistrationsByClassId(int classId)
-    {
-        SqlConnection? connection = null;
-        SqlCommand? command = null;
-        SqlDataReader? reader = null;
-        try
-        {
-            connection = DBConnectionFactory.CreateConnection();
-            connection.Open();
-
-            command = new SqlCommand("usp_GetRegistrationsByClassId", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.Add("@ClassId", SqlDbType.Int).Value = classId;
-
-            reader = command.ExecuteReader();
-            var list = new List<Registration>();
-            while (reader.Read())
-            {
-                list.Add(MapRegistration(reader));
-            }
-            return list;
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in RegistrationDataProvider.GetRegistrationsByClassId(int classId)", ex);
-        }
-        finally
-        {
-            reader?.Dispose();
-            command?.Dispose();
-            connection?.Dispose();
-        }
-    }
-
-    public static async Task<List<Registration>> GetRegistrationsByClassIdAsync(int classId)
-    {
-        SqlConnection? connection = null;
-        SqlCommand? command = null;
-        SqlDataReader? reader = null;
-        try
-        {
-            connection = DBConnectionFactory.CreateConnection();
-            await connection.OpenAsync();
-
-            command = new SqlCommand("usp_GetRegistrationsByClassId", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.Add("@ClassId", SqlDbType.Int).Value = classId;
-
-            reader = await command.ExecuteReaderAsync();
-            var list = new List<Registration>();
-            while (await reader.ReadAsync())
-            {
-                list.Add(MapRegistration(reader));
-            }
-            return list;
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in RegistrationDataProvider.GetRegistrationsByClassIdAsync(int classId)", ex);
-        }
-        finally
-        {
-            reader?.Dispose();
-            command?.Dispose();
-            connection?.Dispose();
-        }
-    }
-
-    public static List<Registration> GetAll()
-    {
-        SqlConnection? connection = null;
-        SqlCommand? command = null;
-        SqlDataReader? reader = null;
-        try
-        {
-            connection = DBConnectionFactory.CreateConnection();
-            connection.Open();
-
-            command = new SqlCommand("usp_GetAllRegistrations", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-
-            reader = command.ExecuteReader();
-            var registrations = new List<Registration>();
-            while (reader.Read())
-            {
-                registrations.Add(MapRegistration(reader));
-            }
-            return registrations;
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in RegistrationDataProvider.GetAll()", ex);
-        }
-        finally
-        {
-            reader?.Dispose();
-            command?.Dispose();
-            connection?.Dispose();
-        }
-    }
-
-    public static async Task<List<Registration>> GetAllAsync()
-    {
-        SqlConnection? connection = null;
-        SqlCommand? command = null;
-        SqlDataReader? reader = null;
-        try
-        {
-            connection = DBConnectionFactory.CreateConnection();
-            await connection.OpenAsync();
-
-            command = new SqlCommand("usp_GetAllRegistrations", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
+            command = CreateGetCommand(connection, id, studentId, classId, search, pageNumber, pageSize);
 
             reader = await command.ExecuteReaderAsync();
             var registrations = new List<Registration>();
@@ -308,11 +40,27 @@ public static class RegistrationDataProvider
             {
                 registrations.Add(MapRegistration(reader));
             }
-            return registrations;
+
+            var result = new RegistrationResult
+            {
+                Items = registrations,
+                PageNumber = pageNumber ?? 1,
+                PageSize = pageSize ?? registrations.Count,
+                TotalCount = registrations.Count,
+            };
+
+            if (await reader.NextResultAsync() && await reader.ReadAsync())
+            {
+                result.TotalCount = HasColumn(reader, "TotalCount") && !reader.IsDBNull(reader.GetOrdinal("TotalCount"))
+                    ? reader.GetInt32(reader.GetOrdinal("TotalCount"))
+                    : registrations.Count;
+            }
+
+            return result;
         }
         catch (Exception ex)
         {
-            throw new DatabaseException("An error occured in RegistrationDataProvider.GetAllAsync()", ex);
+            throw new DatabaseException("An error occured in RegistrationDataProvider.GetAsync(...)", ex);
         }
         finally
         {
@@ -320,6 +68,84 @@ public static class RegistrationDataProvider
             command?.Dispose();
             connection?.Dispose();
         }
+    }
+
+    private static SqlCommand CreateGetCommand(
+        SqlConnection connection,
+        int? id,
+        int? studentId,
+        int? classId,
+        string? search,
+        int? pageNumber,
+        int? pageSize)
+    {
+        var command = new SqlCommand("usp_GetRegistrations", connection)
+        {
+            CommandType = CommandType.StoredProcedure
+        };
+        command.Parameters.Add("@Id", SqlDbType.Int).Value = id.HasValue ? id.Value : DBNull.Value;
+        command.Parameters.Add("@StudentId", SqlDbType.Int).Value = studentId.HasValue ? studentId.Value : DBNull.Value;
+        command.Parameters.Add("@ClassId", SqlDbType.Int).Value = classId.HasValue ? classId.Value : DBNull.Value;
+        command.Parameters.Add("@Search", SqlDbType.NVarChar, 100).Value =
+            string.IsNullOrWhiteSpace(search) ? DBNull.Value : (object)search!;
+        command.Parameters.Add("@PageNumber", SqlDbType.Int).Value = pageNumber.HasValue ? pageNumber.Value : DBNull.Value;
+        command.Parameters.Add("@PageSize", SqlDbType.Int).Value = pageSize.HasValue ? pageSize.Value : DBNull.Value;
+        return command;
+    }
+
+    private static Registration MapRegistration(SqlDataReader reader)
+    {
+        return new Registration
+        {
+            Id = reader.GetInt32(reader.GetOrdinal("RegistrationId")),
+            StudentId = reader.GetInt32(reader.GetOrdinal("RegistrationStudentId")),
+            ClassId = reader.GetInt32(reader.GetOrdinal("RegistrationClassId")),
+            RegistrationDate = reader.GetDateTime(reader.GetOrdinal("RegistrationDate")),
+            Status = reader.GetString(reader.GetOrdinal("RegistrationStatus")),
+            CreatedOn = reader.GetFieldValue<DateTimeOffset>(reader.GetOrdinal("RegistrationCreatedOn")),
+            ModifiedOn = reader.GetFieldValue<DateTimeOffset>(reader.GetOrdinal("RegistrationModifiedOn")),
+            CreatedBy = reader.GetInt32(reader.GetOrdinal("RegistrationCreatedBy")),
+            ModifiedBy = reader.GetInt32(reader.GetOrdinal("RegistrationModifiedBy")),
+            CreatedByName = ReadNullableString(reader, "CreatedByName"),
+            ModifiedByName = ReadNullableString(reader, "ModifiedByName"),
+            Class = new Class
+            {
+                Id = reader.GetInt32(reader.GetOrdinal("ClassId")),
+                CourseId = reader.GetInt32(reader.GetOrdinal("ClassCourseId")),
+                ClassName = reader.GetString(reader.GetOrdinal("ClassName")),
+                Instructor = reader.GetString(reader.GetOrdinal("ClassInstructor")),
+                MaxCapacity = reader.GetInt32(reader.GetOrdinal("ClassMaxCapacity")),
+                CurrentCapacity = reader.GetInt32(reader.GetOrdinal("ClassCurrentCapacity")),
+                StartDate = reader.GetDateTime(reader.GetOrdinal("ClassStartDate")),
+                EndDate = reader.GetDateTime(reader.GetOrdinal("ClassEndDate")),
+                Schedule = (DaysOfTheWeek)reader.GetInt32(reader.GetOrdinal("ClassSchedule")),
+                IsActive = reader.GetBoolean(reader.GetOrdinal("ClassIsActive")),
+            },
+            Student = new Student
+            {
+                Id = reader.GetInt32(reader.GetOrdinal("StudentId")),
+                UserId = reader.GetInt32(reader.GetOrdinal("StudentUserId")),
+                StudentNumber = reader.GetInt32(reader.GetOrdinal("StudentNumber")),
+                Email = reader.GetString(reader.GetOrdinal("StudentEmail")),
+                Phone = reader.GetString(reader.GetOrdinal("StudentPhone")),
+                UserName = reader.GetString(reader.GetOrdinal("StudentUserName")),
+                FullName = reader.GetString(reader.GetOrdinal("StudentFullName")),
+                Role = (User.UserRoles)reader.GetInt32(reader.GetOrdinal("StudentRole")),
+                IsActive = reader.GetBoolean(reader.GetOrdinal("StudentIsActive")),
+            },
+            Course = new Course
+            {
+                Id = reader.GetInt32(reader.GetOrdinal("CourseId")),
+                CourseCode = reader.GetString(reader.GetOrdinal("CourseCode")),
+                CourseName = reader.GetString(reader.GetOrdinal("CourseName")),
+            },
+        };
+    }
+
+    private static string ReadNullableString(SqlDataReader reader, string name)
+    {
+        int ordinal = reader.GetOrdinal(name);
+        return reader.IsDBNull(ordinal) ? string.Empty : reader.GetString(ordinal);
     }
 
     public static void Add(Registration entity)
@@ -574,270 +400,6 @@ public static class RegistrationDataProvider
             command?.Dispose();
             connection?.Dispose();
         }
-    }
-
-    public static List<Registration> Search(string regex)
-    {
-        SqlConnection? connection = null;
-        SqlCommand? command = null;
-        SqlDataReader? reader = null;
-        try
-        {
-            connection = DBConnectionFactory.CreateConnection();
-            connection.Open();
-
-            command = new SqlCommand("usp_SearchRegistrations", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.Add("@regex", SqlDbType.NVarChar, 100).Value = regex ?? string.Empty;
-
-            reader = command.ExecuteReader();
-            var registrations = new List<Registration>();
-            while (reader.Read())
-            {
-                registrations.Add(MapRegistration(reader));
-            }
-            return registrations;
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in RegistrationDataProvider.Search(string regex)", ex);
-        }
-        finally
-        {
-            reader?.Dispose();
-            command?.Dispose();
-            connection?.Dispose();
-        }
-    }
-
-    public static async Task<List<Registration>> SearchAsync(string regex)
-    {
-        SqlConnection? connection = null;
-        SqlCommand? command = null;
-        SqlDataReader? reader = null;
-        try
-        {
-            connection = DBConnectionFactory.CreateConnection();
-            await connection.OpenAsync();
-
-            command = new SqlCommand("usp_SearchRegistrations", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.Add("@regex", SqlDbType.NVarChar, 100).Value = regex ?? string.Empty;
-
-            reader = await command.ExecuteReaderAsync();
-            var registrations = new List<Registration>();
-            while (await reader.ReadAsync())
-            {
-                registrations.Add(MapRegistration(reader));
-            }
-            return registrations;
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in RegistrationDataProvider.SearchAsync(string regex)", ex);
-        }
-        finally
-        {
-            reader?.Dispose();
-            command?.Dispose();
-            connection?.Dispose();
-        }
-    }
-
-    public static async Task<List<(Registration Registration, Class Class)>> GetStudentRegistrationsWithClassesAsync(int studentId)
-    {
-        SqlConnection? connection = null;
-        SqlCommand? command = null;
-        SqlDataReader? reader = null;
-        try
-        {
-            connection = DBConnectionFactory.CreateConnection();
-            await connection.OpenAsync();
-
-            command = new SqlCommand("usp_GetStudentRegistrationsWithClasses", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.Add("@StudentId", SqlDbType.Int).Value = studentId;
-
-            reader = await command.ExecuteReaderAsync();
-
-            var list = new List<(Registration Registration, Class Class)>();
-
-            while (await reader.ReadAsync())
-            {
-                var registration = new Registration
-                {
-                    Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                    StudentId = reader.GetInt32(reader.GetOrdinal("StudentId")),
-                    ClassId = reader.GetInt32(reader.GetOrdinal("ClassId")),
-                    RegistrationDate = reader.GetDateTime(reader.GetOrdinal("RegistrationDate")),
-                    Status = reader.GetString(reader.GetOrdinal("Status"))
-                };
-
-                var cls = new Class
-                {
-                    // SP aliases Class PK as Class_Id to avoid collision with Registration Id (r.Id).
-                    Id = reader.GetInt32(reader.GetOrdinal("Class_Id")),
-                    CourseId = reader.GetInt32(reader.GetOrdinal("CourseId")),
-                    ClassName = reader.GetString(reader.GetOrdinal("ClassName")),
-                    Instructor = reader.GetString(reader.GetOrdinal("Instructor")),
-                    MaxCapacity = reader.GetInt32(reader.GetOrdinal("MaxCapacity")),
-                    CurrentCapacity = reader.GetInt32(reader.GetOrdinal("CurrentCapacity")),
-                    StartDate = reader.GetDateTime(reader.GetOrdinal("StartDate")),
-                    EndDate = reader.GetDateTime(reader.GetOrdinal("EndDate")),
-                    Schedule = (DaysOfTheWeek)reader.GetInt32(reader.GetOrdinal("Schedule")),
-                    IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive"))
-                };
-
-                list.Add((registration, cls));
-            }
-
-            return list;
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in RegistrationDataProvider.GetStudentRegistrationsWithClassesAsync(int studentId)", ex);
-        }
-        finally
-        {
-            reader?.Dispose();
-            command?.Dispose();
-            connection?.Dispose();
-        }
-    }
-
-    public static async Task<List<(Registration Registration, Student Student, Class Class, Course Course)>> GetAllDetailedAsync()
-    {
-        SqlConnection? connection = null;
-        SqlCommand? command = null;
-        SqlDataReader? reader = null;
-        try
-        {
-            connection = DBConnectionFactory.CreateConnection();
-            await connection.OpenAsync();
-
-            command = new SqlCommand("usp_GetAllRegistrationsDetailed", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-
-            reader = await command.ExecuteReaderAsync();
-
-            var list = new List<(Registration, Student, Class, Course)>();
-
-            while (await reader.ReadAsync())
-            {
-                list.Add(MapDetailedRow(reader));
-            }
-
-            return list;
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in RegistrationDataProvider.GetAllDetailedAsync()", ex);
-        }
-        finally
-        {
-            reader?.Dispose();
-            command?.Dispose();
-            connection?.Dispose();
-        }
-    }
-
-    public static async Task<List<(Registration Registration, Student Student, Class Class, Course Course)>> SearchDetailedAsync(string searchTerm)
-    {
-        SqlConnection? connection = null;
-        SqlCommand? command = null;
-        SqlDataReader? reader = null;
-        try
-        {
-            connection = DBConnectionFactory.CreateConnection();
-            await connection.OpenAsync();
-
-            command = new SqlCommand("usp_SearchRegistrationsDetailed", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.Add("@regex", SqlDbType.NVarChar, 100).Value = searchTerm ?? string.Empty;
-
-            reader = await command.ExecuteReaderAsync();
-
-            var list = new List<(Registration, Student, Class, Course)>();
-
-            while (await reader.ReadAsync())
-            {
-                list.Add(MapDetailedRow(reader));
-            }
-
-            return list;
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in RegistrationDataProvider.SearchDetailedAsync(string searchTerm)", ex);
-        }
-        finally
-        {
-            reader?.Dispose();
-            command?.Dispose();
-            connection?.Dispose();
-        }
-    }
-
-    private static (Registration, Student, Class, Course) MapDetailedRow(SqlDataReader reader)
-    {
-        var registration = new Registration
-        {
-            Id = reader.GetInt32(reader.GetOrdinal("Id")),
-            StudentId = reader.GetInt32(reader.GetOrdinal("StudentId")),
-            ClassId = reader.GetInt32(reader.GetOrdinal("ClassId")),
-            RegistrationDate = reader.GetDateTime(reader.GetOrdinal("RegistrationDate")),
-            Status = reader.GetString(reader.GetOrdinal("Status")),
-            CreatedOn = HasColumn(reader, "CreatedOn") && !reader.IsDBNull(reader.GetOrdinal("CreatedOn")) ? reader.GetFieldValue<DateTimeOffset>(reader.GetOrdinal("CreatedOn")) : default,
-            ModifiedOn = HasColumn(reader, "ModifiedOn") && !reader.IsDBNull(reader.GetOrdinal("ModifiedOn")) ? reader.GetFieldValue<DateTimeOffset>(reader.GetOrdinal("ModifiedOn")) : default,
-            CreatedBy = HasColumn(reader, "CreatedBy") && !reader.IsDBNull(reader.GetOrdinal("CreatedBy")) ? reader.GetInt32(reader.GetOrdinal("CreatedBy")) : 0,
-            ModifiedBy = HasColumn(reader, "ModifiedBy") && !reader.IsDBNull(reader.GetOrdinal("ModifiedBy")) ? reader.GetInt32(reader.GetOrdinal("ModifiedBy")) : 0
-        };
-
-        var student = new Student
-        {
-            Id = reader.GetInt32(reader.GetOrdinal("StudentId")),
-            UserName = reader.IsDBNull(reader.GetOrdinal("UserName")) ? string.Empty : reader.GetString(reader.GetOrdinal("UserName"))
-        };
-
-        var cls = new Class
-        {
-            Id = reader.GetInt32(reader.GetOrdinal("ClassId")),
-            ClassName = reader.IsDBNull(reader.GetOrdinal("ClassName")) ? string.Empty : reader.GetString(reader.GetOrdinal("ClassName"))
-        };
-
-        var course = new Course
-        {
-            Id = reader.GetInt32(reader.GetOrdinal("CourseId")),
-            CourseName = reader.IsDBNull(reader.GetOrdinal("CourseName")) ? string.Empty : reader.GetString(reader.GetOrdinal("CourseName"))
-        };
-
-        return (registration, student, cls, course);
-    }
-
-    private static Registration MapRegistration(SqlDataReader reader)
-    {
-        return new Registration
-        {
-            Id = reader.GetInt32(reader.GetOrdinal("Id")),
-            StudentId = reader.GetInt32(reader.GetOrdinal("StudentId")),
-            ClassId = reader.GetInt32(reader.GetOrdinal("ClassId")),
-            RegistrationDate = reader.GetDateTime(reader.GetOrdinal("RegistrationDate")),
-            Status = reader.GetString(reader.GetOrdinal("Status")),
-            CreatedOn = HasColumn(reader, "CreatedOn") && !reader.IsDBNull(reader.GetOrdinal("CreatedOn")) ? reader.GetFieldValue<DateTimeOffset>(reader.GetOrdinal("CreatedOn")) : default,
-            ModifiedOn = HasColumn(reader, "ModifiedOn") && !reader.IsDBNull(reader.GetOrdinal("ModifiedOn")) ? reader.GetFieldValue<DateTimeOffset>(reader.GetOrdinal("ModifiedOn")) : default,
-            CreatedBy = HasColumn(reader, "CreatedBy") && !reader.IsDBNull(reader.GetOrdinal("CreatedBy")) ? reader.GetInt32(reader.GetOrdinal("CreatedBy")) : 0,
-            ModifiedBy = HasColumn(reader, "ModifiedBy") && !reader.IsDBNull(reader.GetOrdinal("ModifiedBy")) ? reader.GetInt32(reader.GetOrdinal("ModifiedBy")) : 0
-        };
     }
 
     private static bool HasColumn(SqlDataReader reader, string name)

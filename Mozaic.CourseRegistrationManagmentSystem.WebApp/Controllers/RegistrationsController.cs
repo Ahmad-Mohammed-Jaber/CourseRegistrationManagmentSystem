@@ -29,26 +29,18 @@ public class RegistrationsController : Controller
                 return View(new List<MyRegistrationViewModel>());
             }
 
-            var rows = await StudentRegistrationService.GetRegistrationsForUserAsync(userId);
+            var rows = await StudentRegistrationService.GetRegistrationsForStudentAsync(student.Id);
 
             var model = new List<MyRegistrationViewModel>(rows.Count);
-            foreach (var (registration, @class) in rows)
+            foreach (var registration in rows)
             {
-                var courseName = string.Empty;
-                try
-                {
-                    var course = await CourseService.GetByIdAsync(@class.CourseId);
-                    courseName = course?.CourseName ?? string.Empty;
-                }
-                catch (BusinessException)
-                {
-                }
+                var @class = registration.Class;
 
                 model.Add(new MyRegistrationViewModel
                 {
                     RegistrationId = registration.Id,
                     ClassId = @class.Id,
-                    CourseName = courseName,
+                    CourseName = registration.Course.CourseName,
                     ClassName = @class.ClassName,
                     Instructor = @class.Instructor,
                     Schedule = ScheduleHelper.GetScheduleString(@class.Schedule),
@@ -106,26 +98,22 @@ public class RegistrationsController : Controller
 
         try
         {
-            var rows = string.IsNullOrWhiteSpace(q)
-                ? await RegistrationService.GetAllDetailedAsync()
-                : await RegistrationService.SearchDetailedAsync(q);
-
-            var userNames = await GetUserNamesAsync();
+            var rows = await RegistrationService.GetAsync(search: q);
 
             return View(rows
-                .OrderByDescending(r => r.Registration.RegistrationDate)
+                .OrderByDescending(r => r.RegistrationDate)
                 .Select(r => new RegistrationListItemViewModel
                 {
-                    Id = r.Registration.Id,
+                    Id = r.Id,
                     StudentName = $"{r.Student.FullName} ({r.Student.UserName})",
                     CourseName = r.Course.CourseName,
                     ClassName = r.Class.ClassName,
-                    RegistrationDate = r.Registration.RegistrationDate,
-                    Status = r.Registration.Status,
-                    CreatedOn = r.Registration.CreatedOn,
-                    CreatedByName = ResolveUserName(userNames, r.Registration.CreatedBy),
-                    ModifiedOn = r.Registration.ModifiedOn,
-                    ModifiedByName = ResolveUserName(userNames, r.Registration.ModifiedBy),
+                    RegistrationDate = r.RegistrationDate,
+                    Status = r.Status,
+                    CreatedOn = r.CreatedOn,
+                    CreatedByName = ResolveUserName(r.CreatedByName, r.CreatedBy),
+                    ModifiedOn = r.ModifiedOn,
+                    ModifiedByName = ResolveUserName(r.ModifiedByName, r.ModifiedBy),
                 })
                 .ToList());
         }
@@ -189,7 +177,7 @@ public class RegistrationsController : Controller
 
         try
         {
-            var registration = await RegistrationService.GetByIdAsync(id);
+            var registration = (await RegistrationService.GetAsync(id: id)).FirstOrDefault();
             if (registration is null)
             {
                 TempData["ErrorMessage"] = $"Registration with id {id} was not found.";
@@ -232,7 +220,7 @@ public class RegistrationsController : Controller
 
         try
         {
-            var existing = await RegistrationService.GetByIdAsync(id);
+            var existing = (await RegistrationService.GetAsync(id: id)).FirstOrDefault();
             if (existing is null)
             {
                 TempData["ErrorMessage"] = $"Registration with id {id} was not found.";
@@ -287,7 +275,7 @@ public class RegistrationsController : Controller
     {
         try
         {
-            var students = await StudentService.GetAllAsync();
+            var students = await StudentService.GetAsync();
             model.Students = students
                 .OrderBy(s => s.FullName)
                 .Select(s => new SelectListItem($"{s.FullName} ({s.UserName})", s.Id.ToString()))
@@ -300,7 +288,7 @@ public class RegistrationsController : Controller
 
         try
         {
-            var classes = await ClassService.GetAllAsync();
+            var classes = await ClassService.GetAsync();
             model.Classes = classes
                 .OrderBy(c => c.ClassName)
                 .Select(c => new SelectListItem(c.ClassName, c.Id.ToString()))
@@ -312,22 +300,9 @@ public class RegistrationsController : Controller
         }
     }
 
-    private static async Task<Dictionary<int, string>> GetUserNamesAsync()
+    private static string ResolveUserName(string? name, int userId)
     {
-        try
-        {
-            var users = await UserService.GetAllAsync();
-            return users.ToDictionary(u => u.Id, u => u.UserName);
-        }
-        catch (BusinessException)
-        {
-            return new Dictionary<int, string>();
-        }
-    }
-
-    private static string ResolveUserName(Dictionary<int, string> userNames, int userId)
-    {
-        if (userNames.TryGetValue(userId, out var name) && !string.IsNullOrWhiteSpace(name))
+        if (!string.IsNullOrWhiteSpace(name))
         {
             return name;
         }

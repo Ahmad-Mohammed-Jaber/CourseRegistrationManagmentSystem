@@ -173,4 +173,4 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             this.DialogResult = DialogResult.Cancel;
         }
     }
-}2
+}

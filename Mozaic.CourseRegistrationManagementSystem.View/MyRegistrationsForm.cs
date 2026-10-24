@@ -13,7 +13,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
         private DataGridView dgvRegs;
         private Button btnDrop;
         private Panel topPanel;
-        private List<(Registration Registration, Class Class)> _data = new();
+        private List<Registration> _data = new();
 
         public MyRegistrationsForm()
         {
@@ -67,7 +67,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
         {
             try
             {
-                _data = await StudentRegistrationService.GetRegistrationsAsync();
+                _data = (await StudentRegistrationService.GetRegistrationsAsync()).ToList();
 
                 RefreshGrid();
             }
@@ -88,14 +88,14 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             dgvRegs.DataSource = _data
                 .Select(x => new
                 {
-                    RegistrationId = x.Registration.Id,
+                    RegistrationId = x.Id,
                     ClassName = x.Class.ClassName,
                     Instructor = x.Class.Instructor,
                     Schedule = ScheduleHelper.GetScheduleString(x.Class.Schedule),
                     StartDate = x.Class.StartDate,
                     EndDate = x.Class.EndDate,
-                    RegistrationDate = x.Registration.RegistrationDate,
-                    Status = x.Registration.Status
+                    RegistrationDate = x.RegistrationDate,
+                    Status = x.Status
                 })
                 .ToList();
         }
@@ -232,7 +232,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                 try
                 {
                     await StudentRegistrationService.DropRegistration(registrationId);
-                    _data.RemoveAll(r => r.Registration.Id == registrationId);
+                    _data.RemoveAll(r => r.Id == registrationId);
                     RefreshGrid();
                 }
                 catch (BusinessException ex)

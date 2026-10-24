@@ -147,7 +147,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
         {
             try
             {
-                var classes = await ClassService.GetAllAsync();
+                var classes = await ClassService.GetAsync();
                 _classes = classes.ToList();
                 RefreshGrid();
             }
@@ -228,7 +228,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
             {
                 if (!string.IsNullOrWhiteSpace(txtSearch.Text))
                 {
-                    var classes = await ClassService.SearchAsync(txtSearch.Text);
+                    var classes = await ClassService.GetAsync(search: txtSearch.Text);
                     _classes = classes.ToList();
                     RefreshGrid();
                 }

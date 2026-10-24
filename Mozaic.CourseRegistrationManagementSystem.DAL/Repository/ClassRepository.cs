@@ -7,45 +7,17 @@ namespace Mozaic.CourseRegistrationManagementSystem.DAL.Repository;
 
 public class ClassRepository : IGenericRepository<Class>
 {
-    public Class? GetById(int id)
+    public Task<ClassResult> GetAsync(
+        int? id = null,
+        int? courseId = null,
+        int? userId = null,
+        string? search = null,
+        string? statusFilter = null,
+        int? pageNumber = null,
+        int? pageSize = null)
     {
-        return ClassDataProvider.GetById(id);
+        return ClassDataProvider.GetAsync(id, courseId, userId, search, statusFilter, pageNumber, pageSize);
     }
-
-    public Task<Class?> GetByIdAsync(int id)
-    {
-        return ClassDataProvider.GetByIdAsync(id);
-    }
-
-    public List<Class> GetClassesByCourseId(int courseId)
-    {
-        return ClassDataProvider.GetClassesByCourseId(courseId);
-    }
-
-    public Task<List<Class>> GetClassesByCourseIdAsync(int courseId)
-    {
-        return ClassDataProvider.GetClassesByCourseIdAsync(courseId);
-    }
-
-    public List<Class> GetAll()
-    {
-        return ClassDataProvider.GetAll();
-    }
-
-    public Task<List<Class>> GetAllAsync()
-    {
-        return ClassDataProvider.GetAllAsync();
-    }
-
-    /// <summary>
-    /// Paged GetAll overload: the page envelope comes straight from
-    /// dbo.usp_GetAllClasses (rows plus counters second result set).
-    /// </summary>
-    public Task<ClassBrowseResult> GetAllAsync(int? studentId, int pageNumber, int pageSize)
-    {
-        return ClassDataProvider.GetAllAsync(studentId, pageNumber, pageSize);
-    }
-
     public void Add(Class entity)
     {
         ClassDataProvider.Add(entity);
@@ -76,13 +48,4 @@ public class ClassRepository : IGenericRepository<Class>
         return ClassDataProvider.DeleteAsync(id);
     }
 
-    public List<Class> Search(string regex)
-    {
-        return ClassDataProvider.Search(regex);
-    }
-
-    public Task<List<Class>> SearchAsync(string regex)
-    {
-        return ClassDataProvider.SearchAsync(regex);
-    }
 }

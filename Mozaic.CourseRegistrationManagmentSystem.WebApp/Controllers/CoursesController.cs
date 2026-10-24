@@ -17,11 +17,7 @@ public class CoursesController : Controller
 
         try
         {
-            var courses = string.IsNullOrWhiteSpace(q)
-                ? await CourseService.GetAllAsync()
-                : await CourseService.SearchAsync(q);
-
-            var userNames = await GetUserNamesAsync();
+            var courses = await CourseService.GetAsync(search: q);
 
             return View(courses
                 .OrderBy(c => c.CourseCode)
@@ -33,9 +29,9 @@ public class CoursesController : Controller
                     CreditHours = c.CreditHours,
                     IsActive = c.IsActive,
                     CreatedOn = c.CreatedOn,
-                    CreatedByName = ResolveUserName(userNames, c.CreatedBy),
+                    CreatedByName = ResolveUserName(c.CreatedByName, c.CreatedBy),
                     ModifiedOn = c.ModifiedOn,
-                    ModifiedByName = ResolveUserName(userNames, c.ModifiedBy),
+                    ModifiedByName = ResolveUserName(c.ModifiedByName, c.ModifiedBy),
                 })
                 .ToList());
         }
@@ -90,7 +86,7 @@ public class CoursesController : Controller
 
         try
         {
-            var course = await CourseService.GetByIdAsync(id);
+            var course = (await CourseService.GetAsync(id: id)).FirstOrDefault();
             if (course is null)
             {
                 TempData["ErrorMessage"] = $"Course with id {id} was not found.";
@@ -130,7 +126,7 @@ public class CoursesController : Controller
 
         try
         {
-            var existing = await CourseService.GetByIdAsync(id);
+            var existing = (await CourseService.GetAsync(id: id)).FirstOrDefault();
             if (existing is null)
             {
                 TempData["ErrorMessage"] = $"Course with id {id} was not found.";
@@ -180,22 +176,9 @@ public class CoursesController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    private static async Task<Dictionary<int, string>> GetUserNamesAsync()
+    private static string ResolveUserName(string? name, int userId)
     {
-        try
-        {
-            var users = await UserService.GetAllAsync();
-            return users.ToDictionary(u => u.Id, u => u.UserName);
-        }
-        catch (BusinessException)
-        {
-            return new Dictionary<int, string>();
-        }
-    }
-
-    private static string ResolveUserName(Dictionary<int, string> userNames, int userId)
-    {
-        if (userNames.TryGetValue(userId, out var name) && !string.IsNullOrWhiteSpace(name))
+        if (!string.IsNullOrWhiteSpace(name))
         {
             return name;
         }

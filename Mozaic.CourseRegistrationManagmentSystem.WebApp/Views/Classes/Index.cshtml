@@ -1,4 +1,4 @@
-@model List<Mozaic.CourseRegistrationManagmentSystem.WebApp.Models.ClassListItemViewModel>
+@model Mozaic.CourseRegistrationManagmentSystem.WebApp.Models.ClassListViewModel
 @{
     ViewData["Title"] = "Classes";
 }
@@ -24,9 +24,17 @@
 <div class="dashboard-card mb-3">
     <form asp-controller="Classes" asp-action="Index" method="get" class="dashboard-card-body">
         <div class="row g-2 align-items-end">
-            <div class="col-md-10">
+            <div class="col-md-8">
                 <label for="searchFilter" class="form-label small">Search</label>
-                <input type="text" class="form-control" id="searchFilter" name="q" value="@ViewData["Query"]" placeholder="Search by class, instructor, course..." />
+                <input type="text" class="form-control" id="searchFilter" name="q" value="@Model.Query" placeholder="Search by class, instructor, course..." />
+            </div>
+            <div class="col-md-2">
+                <label for="statusFilter" class="form-label small">Status</label>
+                <select class="form-select" id="statusFilter" name="status">
+                    <option value="Active" selected="@(Model.Status == "Active")">Active</option>
+                    <option value="Inactive" selected="@(Model.Status == "Inactive")">Inactive</option>
+                    <option value="All" selected="@(Model.Status == "All")">All</option>
+                </select>
             </div>
             <div class="col-md-2 d-flex gap-2">
                 <button type="submit" class="btn btn-primary">
@@ -42,10 +50,10 @@
 <div class="dashboard-card">
     <div class="dashboard-card-header d-flex justify-content-between align-items-center">
         <h5 class="dashboard-card-title mb-0">All Classes</h5>
-        <span class="badge bg-primary">@Model.Count classes</span>
+        <span class="badge bg-primary">@Model.TotalCount classes</span>
     </div>
     <div class="table-responsive">
-        @if (Model.Count == 0)
+        @if (Model.Classes.Count == 0)
         {
             <p class="text-muted px-3 py-3 mb-0">No classes found.</p>
         }
@@ -54,24 +62,24 @@
             <table class="table table-hover align-middle">
                 <thead>
                     <tr>
-                        <th scope="col">@Html.DisplayNameFor(m => m[0].CourseName)</th>
-                        <th scope="col">@Html.DisplayNameFor(m => m[0].ClassName)</th>
-                        <th scope="col">@Html.DisplayNameFor(m => m[0].Instructor)</th>
-                        <th scope="col">@Html.DisplayNameFor(m => m[0].Schedule)</th>
-                        <th scope="col">@Html.DisplayNameFor(m => m[0].Seats)</th>
-                        <th scope="col">@Html.DisplayNameFor(m => m[0].IsActive)</th>
+                        <th scope="col">@Html.DisplayNameFor(m => m.Classes[0].CourseName)</th>
+                        <th scope="col">@Html.DisplayNameFor(m => m.Classes[0].ClassName)</th>
+                        <th scope="col">@Html.DisplayNameFor(m => m.Classes[0].Instructor)</th>
+                        <th scope="col">@Html.DisplayNameFor(m => m.Classes[0].Schedule)</th>
+                        <th scope="col">@Html.DisplayNameFor(m => m.Classes[0].Seats)</th>
+                        <th scope="col">@Html.DisplayNameFor(m => m.Classes[0].IsActive)</th>
                         @if (User.IsInRole("Admin"))
                         {
-                            <th scope="col">@Html.DisplayNameFor(m => m[0].CreatedOn)</th>
-                            <th scope="col">@Html.DisplayNameFor(m => m[0].CreatedByName)</th>
-                            <th scope="col">@Html.DisplayNameFor(m => m[0].ModifiedOn)</th>
-                            <th scope="col">@Html.DisplayNameFor(m => m[0].ModifiedByName)</th>
+                            <th scope="col">@Html.DisplayNameFor(m => m.Classes[0].CreatedOn)</th>
+                            <th scope="col">@Html.DisplayNameFor(m => m.Classes[0].CreatedByName)</th>
+                            <th scope="col">@Html.DisplayNameFor(m => m.Classes[0].ModifiedOn)</th>
+                            <th scope="col">@Html.DisplayNameFor(m => m.Classes[0].ModifiedByName)</th>
                         }
                         <th scope="col">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var item in Model)
+                    @foreach (var item in Model.Classes)
                     {
                         <tr>
                             <td class="fw-semibold">@Html.DisplayFor(_ => item.CourseName)</td>
@@ -121,4 +129,20 @@
             </table>
         }
     </div>
+    @if (Model.TotalPages > 1)
+    {
+        <div class="d-flex justify-content-between align-items-center px-3 py-3">
+            <span class="text-muted">Page @(Model.Page) of @(Model.TotalPages) · @(Model.TotalCount) total</span>
+            <nav aria-label="Classes pages">
+                <ul class="pagination mb-0">
+                    <li class="page-item @(Model.HasPrevious ? "" : "disabled")">
+                        <a class="page-link" asp-action="Index" asp-route-page="@(Model.Page - 1)" asp-route-pageSize="@Model.PageSize" asp-route-q="@Model.Query" asp-route-status="@Model.Status">Previous</a>
+                    </li>
+                    <li class="page-item @(Model.HasNext ? "" : "disabled")">
+                        <a class="page-link" asp-action="Index" asp-route-page="@(Model.Page + 1)" asp-route-pageSize="@Model.PageSize" asp-route-q="@Model.Query" asp-route-status="@Model.Status">Next</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    }
 </div>

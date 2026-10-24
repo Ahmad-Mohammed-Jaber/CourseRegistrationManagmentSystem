@@ -1,98 +1,49 @@
 using Mozaic.CourseRegistrationManagementSystem.BL.Managers;
-using Mozaic.CourseRegistrationManagementSystem.BL.Validation;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
-using Mozaic.CourseRegistrationManagementSystem.Shared.Logging;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Logging;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Results;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Session;
+using Mozaic.CourseRegistrationManagementSystem.BL.Validation;
 
 namespace Mozaic.CourseRegistrationManagementSystem.BL.Services;
 
 public static class CourseService
 {
-    public static Course? GetById(int id)
+    /// <summary>
+    /// The single read path for courses. Every filter is optional; a null
+    /// filter means "no restriction". Pass a page number to get one page
+    /// plus the counter, or leave it out to get every matching row.
+    /// </summary>
+    public static async Task<CourseResult> GetAsync(
+        int? id = null,
+        string? courseCode = null,
+        string? search = null,
+        int? pageNumber = null,
+        int? pageSize = null)
     {
         try
         {
-            var courseManager = new CourseManager();
-            return courseManager.GetById(id);
-        }
-        catch (Exception ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw new BusinessException("An error occurred while retrieving course.", ex);
-        }
-    }
+            PagedResult<Course>.Normalize(ref pageNumber, ref pageSize);
 
-    public static async Task<Course?> GetByIdAsync(int id)
-    {
-        try
-        {
-            var courseManager = new CourseManager();
-            return await courseManager.GetByIdAsync(id);
-        }
-        catch (Exception ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw new BusinessException("An error occurred while retrieving course.", ex);
-        }
-    }
+            var term = string.IsNullOrWhiteSpace(search) ? null : search!.Trim();
 
-    public static List<Course> GetAll()
-    {
-        try
-        {
             var courseManager = new CourseManager();
-            return courseManager.GetAll();
+            var page = await courseManager.GetAsync(id, courseCode, term, pageNumber, pageSize);
+
+            // A page past the end of the result set comes back empty; fall back
+            // to the last page so the view never shows "Page 9 of 3".
+            if (page.Count == 0 && page.TotalPages > 0 && page.PageNumber > page.TotalPages)
+            {
+                page = await courseManager.GetAsync(id, courseCode, term, page.TotalPages, pageSize);
+            }
+
+            return page;
         }
         catch (Exception ex)
         {
             AppLogger.LogCaught(ex);
             throw new BusinessException("An error occurred while retrieving courses.", ex);
-        }
-    }
-
-    public static async Task<List<Course>> GetAllAsync()
-    {
-        try
-        {
-            var courseManager = new CourseManager();
-            return await courseManager.GetAllAsync();
-        }
-        catch (Exception ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw new BusinessException("An error occurred while retrieving courses.", ex);
-        }
-    }
-
-    public static void Add(Course course, int? actorId = null)
-    {
-        try
-        {
-            var valid = CourseValidator.ValidateCourse(course);
-            if (!valid.IsSuccess)
-            {
-                throw new BusinessException(valid.Message);
-            }
-
-            var unique = EnsureUniqueCourseCodeSync(course.CourseCode);
-            if (!unique.IsSuccess)
-            {
-                throw new BusinessException(unique.Message);
-            }
-
-            var effectiveActorId = actorId.HasValue && actorId.Value > 0
-                ? actorId.Value
-                : SessionManager.Current?.UserId ?? 0;
-            course.CreatedBy = effectiveActorId;
-            course.ModifiedBy = effectiveActorId;
-            var courseManager = new CourseManager();
-            courseManager.Add(course);
-        }
-        catch (Exception ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw new BusinessException("An error occurred while adding course.", ex);
         }
     }
 
@@ -127,49 +78,12 @@ public static class CourseService
         }
     }
 
-    public static void Update(Course course, int? actorId = null)
-    {
-        try
-        {
-            var courseManager = new CourseManager();
-            var existingCourse = courseManager.GetById(course.Id);
-            var exists = CourseValidator.RequireExists(existingCourse, course.Id);
-            if (!exists.IsSuccess)
-            {
-                throw new BusinessException(exists.Message);
-            }
-
-            var valid = CourseValidator.ValidateCourse(course);
-            if (!valid.IsSuccess)
-            {
-                throw new BusinessException(valid.Message);
-            }
-
-            var unique = EnsureUniqueCourseCodeSync(course.CourseCode, course.Id);
-            if (!unique.IsSuccess)
-            {
-                throw new BusinessException(unique.Message);
-            }
-
-            course.CreatedBy = existingCourse!.CreatedBy;
-            course.ModifiedBy = actorId.HasValue && actorId.Value > 0
-                ? actorId.Value
-                : SessionManager.Current?.UserId ?? existingCourse.ModifiedBy;
-            courseManager.Update(course);
-        }
-        catch (Exception ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw new BusinessException("An error occurred while updating course.", ex);
-        }
-    }
-
     public static async Task UpdateAsync(Course course, int? actorId = null)
     {
         try
         {
             var courseManager = new CourseManager();
-            var existingCourse = await courseManager.GetByIdAsync(course.Id);
+            var existingCourse = (await courseManager.GetAsync(id: course.Id)).FirstOrDefault();
             var exists = CourseValidator.RequireExists(existingCourse, course.Id);
             if (!exists.IsSuccess)
             {
@@ -201,33 +115,12 @@ public static class CourseService
         }
     }
 
-    public static void Delete(int id)
-    {
-        try
-        {
-            var courseManager = new CourseManager();
-            var existingCourse = courseManager.GetById(id);
-            var exists = CourseValidator.RequireExists(existingCourse, id);
-            if (!exists.IsSuccess)
-            {
-                throw new BusinessException(exists.Message);
-            }
-
-            courseManager.Delete(id);
-        }
-        catch (Exception ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw new BusinessException("An error occurred while deleting course.", ex);
-        }
-    }
-
     public static async Task DeleteAsync(int id)
     {
         try
         {
             var courseManager = new CourseManager();
-            var existingCourse = await courseManager.GetByIdAsync(id);
+            var existingCourse = (await courseManager.GetAsync(id: id)).FirstOrDefault();
             var exists = CourseValidator.RequireExists(existingCourse, id);
             if (!exists.IsSuccess)
             {
@@ -243,61 +136,17 @@ public static class CourseService
         }
     }
 
-    public static List<Course> Search(string regex)
-    {
-        try
-        {
-            var pattern = SearchValidator.ValidateSearchPattern(regex);
-            if (!pattern.IsSuccess)
-            {
-                return new List<Course>();
-            }
-
-            var courseManager = new CourseManager();
-            return courseManager.Search(regex);
-        }
-        catch (Exception ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw new BusinessException("An error occurred while searching courses.", ex);
-        }
-    }
-
-    public static async Task<List<Course>> SearchAsync(string regex)
-    {
-        try
-        {
-            var pattern = SearchValidator.ValidateSearchPattern(regex);
-            if (!pattern.IsSuccess)
-            {
-                return new List<Course>();
-            }
-
-            var courseManager = new CourseManager();
-            return await courseManager.SearchAsync(regex);
-        }
-        catch (Exception ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw new BusinessException("An error occurred while searching courses.", ex);
-        }
-    }
-
-    private static ValidationResult EnsureUniqueCourseCodeSync(string courseCode, int? excludeCourseId = null)
-    {
-        var courseManager = new CourseManager();
-        var existing = courseManager.GetAll()
-            .FirstOrDefault(c => c.CourseCode.Equals(courseCode.Trim(), StringComparison.OrdinalIgnoreCase));
-        return CourseValidator.RequireUniqueCourseCode(
-            existing != null && existing.Id != (excludeCourseId ?? 0), courseCode);
-    }
-
+    /// <summary>
+    /// Course codes are unique among the active courses, so a soft-deleted
+    /// course releases its code for reuse.
+    /// </summary>
     private static async Task<ValidationResult> EnsureUniqueCourseCodeAsync(string courseCode, int? excludeCourseId = null)
     {
         var courseManager = new CourseManager();
-        var existing = (await courseManager.GetAllAsync())
-            .FirstOrDefault(c => c.CourseCode.Equals(courseCode.Trim(), StringComparison.OrdinalIgnoreCase));
-        return CourseValidator.RequireUniqueCourseCode(
-            existing != null && existing.Id != (excludeCourseId ?? 0), courseCode);
+        var courses = await courseManager.GetAsync();
+        var exists = courses.Any(c => c.Id != (excludeCourseId ?? 0)
+            && c.IsActive
+            && c.CourseCode.Equals(courseCode.Trim(), StringComparison.OrdinalIgnoreCase));
+        return CourseValidator.RequireUniqueCourseCode(exists, courseCode);
     }
 }

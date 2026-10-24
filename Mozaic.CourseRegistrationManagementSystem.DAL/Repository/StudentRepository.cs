@@ -1,41 +1,21 @@
 using Mozaic.CourseRegistrationManagementSystem.DAL.Interfaces;
 using Mozaic.CourseRegistrationManagementSystem.DAL.Providers;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Results;
 
 namespace Mozaic.CourseRegistrationManagementSystem.DAL.Repository;
 
 public class StudentRepository : IGenericRepository<Student>
 {
-    public Student? GetById(int id)
+    public Task<StudentResult> GetAsync(
+        int? id = null,
+        int? userId = null,
+        string? search = null,
+        int? pageNumber = null,
+        int? pageSize = null)
     {
-        return StudentDataProvider.GetById(id);
+        return StudentDataProvider.GetAsync(id, userId, search, pageNumber, pageSize);
     }
-
-    public Task<Student?> GetByIdAsync(int id)
-    {
-        return StudentDataProvider.GetByIdAsync(id);
-    }
-
-    public Student? GetByUserId(int userId)
-    {
-        return StudentDataProvider.GetByUserId(userId);
-    }
-
-    public Task<Student?> GetByUserIdAsync(int userId)
-    {
-        return StudentDataProvider.GetByUserIdAsync(userId);
-    }
-
-    public List<Student> GetAll()
-    {
-        return StudentDataProvider.GetAll();
-    }
-
-    public Task<List<Student>> GetAllAsync()
-    {
-        return StudentDataProvider.GetAllAsync();
-    }
-
     public void Add(Student entity)
     {
         StudentDataProvider.Add(entity);
@@ -66,13 +46,4 @@ public class StudentRepository : IGenericRepository<Student>
         return StudentDataProvider.DeleteAsync(id);
     }
 
-    public List<Student> Search(string regex)
-    {
-        return StudentDataProvider.Search(regex);
-    }
-
-    public Task<List<Student>> SearchAsync(string regex)
-    {
-        return StudentDataProvider.SearchAsync(regex);
-    }
 }

@@ -4,6 +4,7 @@ using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Logging;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Session;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Results;
 using Mozaic.CourseRegistrationManagementSystem.BL.Services;
 using Mozaic.CourseRegistrationManagementSystem.View.Models;
 
@@ -182,7 +183,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
         {
             try
             {
-                // usp_GetAllClasses joins Registrations on StudentId, so pass
+                // usp_GetClasses joins Registrations on StudentId, so pass
                 // the Student.Id (not the User.Id) for the IsRegistered flag.
                 int? studentId = null;
                 try
@@ -198,9 +199,9 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                     // Best-effort only; the grid still renders with IsRegistered unset.
                 }
 
-                var paged = await ClassService.GetAllAsync(studentId, _model.Page <= 0 ? 1 : _model.Page, PageSize);
+                var paged = await ClassService.GetAsync(userId: studentId, statusFilter: ClassResult.StatusActive, pageNumber: _model.Page <= 0 ? 1 : _model.Page, pageSize: PageSize);
                 _model = BrowseClassesViewModel.FromResult(paged);
-                _classes = paged.Items.ToList();
+                _classes = paged.ToList();
                 RefreshGrid();
                 UpdatePager();
             }

@@ -159,14 +159,14 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
 
         private async void LoadDataAsync()
         {
-            var students = await StudentService.GetAllAsync();
+            var students = await StudentService.GetAsync();
 
             cmbStudent.DataSource = students;
             cmbStudent.DisplayMember = "FullName";
             cmbStudent.ValueMember = "Id";
 
 
-            var classes = await ClassService.GetAllAsync();
+            var classes = await ClassService.GetAsync();
 
             cmbClass.DataSource = classes;
             cmbClass.DisplayMember = "ClassName";
@@ -244,33 +244,10 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
                     await RegistrationService.AddAsync(entity);
                 }
 
-                string? studentName = (cmbStudent.SelectedItem as Student)?.UserName
-                    ?? (cmbStudent.SelectedItem as Student)?.FullName
-                    ?? _reg?.StudentUserName;
-                string? className = (cmbClass.SelectedItem as Class)?.ClassName ?? _reg?.ClassName;
-                string? courseName = _reg?.CourseName;
-                try
-                {
-                    if (cmbClass.SelectedItem is Class selectedClass)
-                    {
-                        var course = await CourseService.GetByIdAsync(selectedClass.CourseId);
-                        if (course != null)
-                        {
-                            courseName = course.CourseName;
-                        }
-                    }
-                }
-                catch
-                {
-                    // Display-name lookup is best-effort; grid still updates without it.
-                }
                 entity.StudentId = entity.StudentId;
                 entity.ClassId = entity.ClassId;
                 entity.RegistrationDate = dtRegDate.Value;
                 entity.Status = cmbStatus.SelectedItem?.ToString() ?? "Registered";
-                entity.StudentUserName = studentName;
-                entity.ClassName = className;
-                entity.CourseName = courseName;
                 if (_isEditMode && _reg != null)
                 {
                     entity.CreatedOn = _reg.CreatedOn;

@@ -2,48 +2,19 @@ using Microsoft.Data.SqlClient;
 using Mozaic.CourseRegistrationManagementSystem.DAL.Database;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Results;
 using System.Data;
 
 namespace Mozaic.CourseRegistrationManagementSystem.DAL.Providers;
 
 public static class UserDataProvider
 {
-    public static User? GetById(int id)
-    {
-        SqlConnection? connection = null;
-        SqlCommand? command = null;
-        SqlDataReader? reader = null;
-        try
-        {
-            connection = DBConnectionFactory.CreateConnection();
-            connection.Open();
-
-            command = new SqlCommand("usp_GetUserById", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
-
-            reader = command.ExecuteReader();
-            if (reader.Read())
-            {
-                return MapUser(reader);
-            }
-            return null;
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in UserDataProvider.GetById(int id)", ex);
-        }
-        finally
-        {
-            reader?.Dispose();
-            command?.Dispose();
-            connection?.Dispose();
-        }
-    }
-
-    public static async Task<User?> GetByIdAsync(int id)
+    public static async Task<UserResult> GetAsync(
+        int? id = null,
+        string? userName = null,
+        string? search = null,
+        int? pageNumber = null,
+        int? pageSize = null)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -53,115 +24,7 @@ public static class UserDataProvider
             connection = DBConnectionFactory.CreateConnection();
             await connection.OpenAsync();
 
-            command = new SqlCommand("usp_GetUserById", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
-
-            reader = await command.ExecuteReaderAsync();
-            if (await reader.ReadAsync())
-            {
-                return MapUser(reader);
-            }
-            return null;
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in UserDataProvider.GetByIdAsync(int id)", ex);
-        }
-        finally
-        {
-            reader?.Dispose();
-            command?.Dispose();
-            connection?.Dispose();
-        }
-    }
-
-    public static async Task<User?> GetByUserNameAsync(string userName)
-    {
-        SqlConnection? connection = null;
-        SqlCommand? command = null;
-        SqlDataReader? reader = null;
-        try
-        {
-            connection = DBConnectionFactory.CreateConnection();
-            await connection.OpenAsync();
-
-            command = new SqlCommand("usp_GetUserByUserName", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.Add("@UserName", SqlDbType.NVarChar, 100).Value = userName ?? string.Empty;
-
-            reader = await command.ExecuteReaderAsync();
-            if (await reader.ReadAsync())
-            {
-                return MapUser(reader);
-            }
-            return null;
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in UserDataProvider.GetByUserNameAsync(string userName)", ex);
-        }
-        finally
-        {
-            reader?.Dispose();
-            command?.Dispose();
-            connection?.Dispose();
-        }
-    }
-
-    public static List<User> GetAll()
-    {
-        SqlConnection? connection = null;
-        SqlCommand? command = null;
-        SqlDataReader? reader = null;
-        try
-        {
-            connection = DBConnectionFactory.CreateConnection();
-            connection.Open();
-
-            command = new SqlCommand("usp_GetAllUsers", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-
-            reader = command.ExecuteReader();
-            var users = new List<User>();
-            while (reader.Read())
-            {
-                users.Add(MapUser(reader));
-            }
-            return users;
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in UserDataProvider.GetAll()", ex);
-        }
-        finally
-        {
-            reader?.Dispose();
-            command?.Dispose();
-            connection?.Dispose();
-        }
-    }
-
-    public static async Task<List<User>> GetAllAsync()
-    {
-        SqlConnection? connection = null;
-        SqlCommand? command = null;
-        SqlDataReader? reader = null;
-        try
-        {
-            connection = DBConnectionFactory.CreateConnection();
-            await connection.OpenAsync();
-
-            command = new SqlCommand("usp_GetAllUsers", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
+            command = CreateGetCommand(connection, id, userName, search, pageNumber, pageSize);
 
             reader = await command.ExecuteReaderAsync();
             var users = new List<User>();
@@ -169,11 +32,27 @@ public static class UserDataProvider
             {
                 users.Add(MapUser(reader));
             }
-            return users;
+
+            var result = new UserResult
+            {
+                Items = users,
+                PageNumber = pageNumber ?? 1,
+                PageSize = pageSize ?? users.Count,
+                TotalCount = users.Count,
+            };
+
+            if (await reader.NextResultAsync() && await reader.ReadAsync())
+            {
+                result.TotalCount = HasColumn(reader, "TotalCount") && !reader.IsDBNull(reader.GetOrdinal("TotalCount"))
+                    ? reader.GetInt32(reader.GetOrdinal("TotalCount"))
+                    : users.Count;
+            }
+
+            return result;
         }
         catch (Exception ex)
         {
-            throw new DatabaseException("An error occured in UserDataProvider.GetAllAsync()", ex);
+            throw new DatabaseException("An error occured in UserDataProvider.GetAsync(...)", ex);
         }
         finally
         {
@@ -181,6 +60,28 @@ public static class UserDataProvider
             command?.Dispose();
             connection?.Dispose();
         }
+    }
+
+    private static SqlCommand CreateGetCommand(
+        SqlConnection connection,
+        int? id,
+        string? userName,
+        string? search,
+        int? pageNumber,
+        int? pageSize)
+    {
+        var command = new SqlCommand("usp_GetUsers", connection)
+        {
+            CommandType = CommandType.StoredProcedure
+        };
+        command.Parameters.Add("@Id", SqlDbType.Int).Value = id.HasValue ? id.Value : DBNull.Value;
+        command.Parameters.Add("@UserName", SqlDbType.NVarChar, 100).Value =
+            string.IsNullOrWhiteSpace(userName) ? DBNull.Value : (object)userName!;
+        command.Parameters.Add("@Search", SqlDbType.NVarChar, 100).Value =
+            string.IsNullOrWhiteSpace(search) ? DBNull.Value : (object)search!;
+        command.Parameters.Add("@PageNumber", SqlDbType.Int).Value = pageNumber.HasValue ? pageNumber.Value : DBNull.Value;
+        command.Parameters.Add("@PageSize", SqlDbType.Int).Value = pageSize.HasValue ? pageSize.Value : DBNull.Value;
+        return command;
     }
 
     public static void Add(User entity)
@@ -441,92 +342,24 @@ public static class UserDataProvider
         }
     }
 
-    public static List<User> Search(string regex)
-    {
-        SqlConnection? connection = null;
-        SqlCommand? command = null;
-        SqlDataReader? reader = null;
-        try
-        {
-            connection = DBConnectionFactory.CreateConnection();
-            connection.Open();
-
-            command = new SqlCommand("usp_SearchUsers", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.Add("@regex", SqlDbType.NVarChar, 100).Value = regex ?? string.Empty;
-
-            reader = command.ExecuteReader();
-            var users = new List<User>();
-            while (reader.Read())
-            {
-                users.Add(MapUser(reader));
-            }
-            return users;
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in UserDataProvider.Search(string regex)", ex);
-        }
-        finally
-        {
-            reader?.Dispose();
-            command?.Dispose();
-            connection?.Dispose();
-        }
-    }
-
-    public static async Task<List<User>> SearchAsync(string regex)
-    {
-        SqlConnection? connection = null;
-        SqlCommand? command = null;
-        SqlDataReader? reader = null;
-        try
-        {
-            connection = DBConnectionFactory.CreateConnection();
-            await connection.OpenAsync();
-
-            command = new SqlCommand("usp_SearchUsers", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.Add("@regex", SqlDbType.NVarChar, 100).Value = regex ?? string.Empty;
-
-            reader = await command.ExecuteReaderAsync();
-            var users = new List<User>();
-            while (await reader.ReadAsync())
-            {
-                users.Add(MapUser(reader));
-            }
-            return users;
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in UserDataProvider.SearchAsync(string regex)", ex);
-        }
-        finally
-        {
-            reader?.Dispose();
-            command?.Dispose();
-            connection?.Dispose();
-        }
-    }
-
     private static User MapUser(SqlDataReader reader)
     {
         return new User
         {
             Id = reader.GetInt32(reader.GetOrdinal("Id")),
             UserName = reader.GetString(reader.GetOrdinal("UserName")),
-            PasswordHash = reader.GetString(reader.GetOrdinal("PasswordHash")),
+            // usp_GetUsers only carries the hash for a single-user lookup
+            // (by id or user name); list calls return NULL here.
+            PasswordHash = ReadNullableString(reader, "PasswordHash"),
             FullName = reader.GetString(reader.GetOrdinal("FullName")),
             Role = (User.UserRoles)reader.GetInt32(reader.GetOrdinal("Role")),
             IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
             CreatedOn = HasColumn(reader, "CreatedOn") && !reader.IsDBNull(reader.GetOrdinal("CreatedOn")) ? reader.GetFieldValue<DateTimeOffset>(reader.GetOrdinal("CreatedOn")) : default,
             ModifiedOn = HasColumn(reader, "ModifiedOn") && !reader.IsDBNull(reader.GetOrdinal("ModifiedOn")) ? reader.GetFieldValue<DateTimeOffset>(reader.GetOrdinal("ModifiedOn")) : default,
             CreatedBy = HasColumn(reader, "CreatedBy") && !reader.IsDBNull(reader.GetOrdinal("CreatedBy")) ? reader.GetInt32(reader.GetOrdinal("CreatedBy")) : 0,
-            ModifiedBy = HasColumn(reader, "ModifiedBy") && !reader.IsDBNull(reader.GetOrdinal("ModifiedBy")) ? reader.GetInt32(reader.GetOrdinal("ModifiedBy")) : 0
+            ModifiedBy = HasColumn(reader, "ModifiedBy") && !reader.IsDBNull(reader.GetOrdinal("ModifiedBy")) ? reader.GetInt32(reader.GetOrdinal("ModifiedBy")) : 0,
+            CreatedByName = ReadNullableString(reader, "CreatedByName"),
+            ModifiedByName = ReadNullableString(reader, "ModifiedByName")
         };
     }
 
@@ -541,5 +374,12 @@ public static class UserDataProvider
         }
 
         return false;
+    }
+
+
+    private static string ReadNullableString(SqlDataReader reader, string name)
+    {
+        int ordinal = reader.GetOrdinal(name);
+        return reader.IsDBNull(ordinal) ? string.Empty : reader.GetString(ordinal);
     }
 }

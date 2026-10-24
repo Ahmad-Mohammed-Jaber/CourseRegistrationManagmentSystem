@@ -2,48 +2,19 @@ using Microsoft.Data.SqlClient;
 using System.Data;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Results;
 using Mozaic.CourseRegistrationManagementSystem.DAL.Database;
 
 namespace Mozaic.CourseRegistrationManagementSystem.DAL.Providers;
 
 public static class CourseDataProvider
 {
-    public static Course? GetById(int id)
-    {
-        SqlConnection? connection = null;
-        SqlCommand? command = null;
-        SqlDataReader? reader = null;
-        try
-        {
-            connection = DBConnectionFactory.CreateConnection();
-            connection.Open();
-
-            command = new SqlCommand("usp_GetCourseById", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
-
-            reader = command.ExecuteReader();
-            if (reader.Read())
-            {
-                return MapCourse(reader);
-            }
-            return null;
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in CourseDataProvider.GetById(int id)", ex);
-        }
-        finally
-        {
-            reader?.Dispose();
-            command?.Dispose();
-            connection?.Dispose();
-        }
-    }
-
-    public static async Task<Course?> GetByIdAsync(int id)
+    public static async Task<CourseResult> GetAsync(
+        int? id = null,
+        string? courseCode = null,
+        string? search = null,
+        int? pageNumber = null,
+        int? pageSize = null)
     {
         SqlConnection? connection = null;
         SqlCommand? command = null;
@@ -53,80 +24,7 @@ public static class CourseDataProvider
             connection = DBConnectionFactory.CreateConnection();
             await connection.OpenAsync();
 
-            command = new SqlCommand("usp_GetCourseById", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.Add("@Id", SqlDbType.Int).Value = id;
-
-            reader = await command.ExecuteReaderAsync();
-            if (await reader.ReadAsync())
-            {
-                return MapCourse(reader);
-            }
-            return null;
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in CourseDataProvider.GetByIdAsync(int id)", ex);
-        }
-        finally
-        {
-            reader?.Dispose();
-            command?.Dispose();
-            connection?.Dispose();
-        }
-    }
-
-    public static List<Course> GetAll()
-    {
-        SqlConnection? connection = null;
-        SqlCommand? command = null;
-        SqlDataReader? reader = null;
-        try
-        {
-            connection = DBConnectionFactory.CreateConnection();
-            connection.Open();
-
-            command = new SqlCommand("usp_GetAllCourses", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-
-            reader = command.ExecuteReader();
-            var courses = new List<Course>();
-            while (reader.Read())
-            {
-                courses.Add(MapCourse(reader));
-            }
-            return courses;
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in CourseDataProvider.GetAll()", ex);
-        }
-        finally
-        {
-            reader?.Dispose();
-            command?.Dispose();
-            connection?.Dispose();
-        }
-    }
-
-    public static async Task<List<Course>> GetAllAsync()
-    {
-        SqlConnection? connection = null;
-        SqlCommand? command = null;
-        SqlDataReader? reader = null;
-        try
-        {
-            connection = DBConnectionFactory.CreateConnection();
-            await connection.OpenAsync();
-
-            command = new SqlCommand("usp_GetAllCourses", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
+            command = CreateGetCommand(connection, id, courseCode, search, pageNumber, pageSize);
 
             reader = await command.ExecuteReaderAsync();
             var courses = new List<Course>();
@@ -134,11 +32,27 @@ public static class CourseDataProvider
             {
                 courses.Add(MapCourse(reader));
             }
-            return courses;
+
+            var result = new CourseResult
+            {
+                Items = courses,
+                PageNumber = pageNumber ?? 1,
+                PageSize = pageSize ?? courses.Count,
+                TotalCount = courses.Count,
+            };
+
+            if (await reader.NextResultAsync() && await reader.ReadAsync())
+            {
+                result.TotalCount = HasColumn(reader, "TotalCount") && !reader.IsDBNull(reader.GetOrdinal("TotalCount"))
+                    ? reader.GetInt32(reader.GetOrdinal("TotalCount"))
+                    : courses.Count;
+            }
+
+            return result;
         }
         catch (Exception ex)
         {
-            throw new DatabaseException("An error occured in CourseDataProvider.GetAllAsync()", ex);
+            throw new DatabaseException("An error occured in CourseDataProvider.GetAsync(...)", ex);
         }
         finally
         {
@@ -146,6 +60,28 @@ public static class CourseDataProvider
             command?.Dispose();
             connection?.Dispose();
         }
+    }
+
+    private static SqlCommand CreateGetCommand(
+        SqlConnection connection,
+        int? id,
+        string? courseCode,
+        string? search,
+        int? pageNumber,
+        int? pageSize)
+    {
+        var command = new SqlCommand("usp_GetCourses", connection)
+        {
+            CommandType = CommandType.StoredProcedure
+        };
+        command.Parameters.Add("@Id", SqlDbType.Int).Value = id.HasValue ? id.Value : DBNull.Value;
+        command.Parameters.Add("@CourseCode", SqlDbType.NVarChar, 20).Value =
+            string.IsNullOrWhiteSpace(courseCode) ? DBNull.Value : (object)courseCode!;
+        command.Parameters.Add("@Search", SqlDbType.NVarChar, 100).Value =
+            string.IsNullOrWhiteSpace(search) ? DBNull.Value : (object)search!;
+        command.Parameters.Add("@PageNumber", SqlDbType.Int).Value = pageNumber.HasValue ? pageNumber.Value : DBNull.Value;
+        command.Parameters.Add("@PageSize", SqlDbType.Int).Value = pageSize.HasValue ? pageSize.Value : DBNull.Value;
+        return command;
     }
 
     public static void Add(Course entity)
@@ -406,78 +342,6 @@ public static class CourseDataProvider
         }
     }
 
-    public static List<Course> Search(string regex)
-    {
-        SqlConnection? connection = null;
-        SqlCommand? command = null;
-        SqlDataReader? reader = null;
-        try
-        {
-            connection = DBConnectionFactory.CreateConnection();
-            connection.Open();
-
-            command = new SqlCommand("usp_SearchCourses", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.Add("@regex", SqlDbType.NVarChar, 100).Value = regex ?? string.Empty;
-
-            reader = command.ExecuteReader();
-            var courses = new List<Course>();
-            while (reader.Read())
-            {
-                courses.Add(MapCourse(reader));
-            }
-            return courses;
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in CourseDataProvider.Search(string regex)", ex);
-        }
-        finally
-        {
-            reader?.Dispose();
-            command?.Dispose();
-            connection?.Dispose();
-        }
-    }
-
-    public static async Task<List<Course>> SearchAsync(string regex)
-    {
-        SqlConnection? connection = null;
-        SqlCommand? command = null;
-        SqlDataReader? reader = null;
-        try
-        {
-            connection = DBConnectionFactory.CreateConnection();
-            await connection.OpenAsync();
-
-            command = new SqlCommand("usp_SearchCourses", connection)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-            command.Parameters.Add("@regex", SqlDbType.NVarChar, 100).Value = regex ?? string.Empty;
-
-            reader = await command.ExecuteReaderAsync();
-            var courses = new List<Course>();
-            while (await reader.ReadAsync())
-            {
-                courses.Add(MapCourse(reader));
-            }
-            return courses;
-        }
-        catch (Exception ex)
-        {
-            throw new DatabaseException("An error occured in CourseDataProvider.SearchAsync(string regex)", ex);
-        }
-        finally
-        {
-            reader?.Dispose();
-            command?.Dispose();
-            connection?.Dispose();
-        }
-    }
-
     private static Course MapCourse(SqlDataReader reader)
     {
         return new Course
@@ -491,7 +355,9 @@ public static class CourseDataProvider
             CreatedOn = HasColumn(reader, "CreatedOn") && !reader.IsDBNull(reader.GetOrdinal("CreatedOn")) ? reader.GetFieldValue<DateTimeOffset>(reader.GetOrdinal("CreatedOn")) : default,
             ModifiedOn = HasColumn(reader, "ModifiedOn") && !reader.IsDBNull(reader.GetOrdinal("ModifiedOn")) ? reader.GetFieldValue<DateTimeOffset>(reader.GetOrdinal("ModifiedOn")) : default,
             CreatedBy = HasColumn(reader, "CreatedBy") && !reader.IsDBNull(reader.GetOrdinal("CreatedBy")) ? reader.GetInt32(reader.GetOrdinal("CreatedBy")) : 0,
-            ModifiedBy = HasColumn(reader, "ModifiedBy") && !reader.IsDBNull(reader.GetOrdinal("ModifiedBy")) ? reader.GetInt32(reader.GetOrdinal("ModifiedBy")) : 0
+            ModifiedBy = HasColumn(reader, "ModifiedBy") && !reader.IsDBNull(reader.GetOrdinal("ModifiedBy")) ? reader.GetInt32(reader.GetOrdinal("ModifiedBy")) : 0,
+            CreatedByName = ReadNullableString(reader, "CreatedByName"),
+            ModifiedByName = ReadNullableString(reader, "ModifiedByName")
         };
     }
 
@@ -506,5 +372,11 @@ public static class CourseDataProvider
         }
 
         return false;
+    }
+
+    private static string ReadNullableString(SqlDataReader reader, string name)
+    {
+        int ordinal = reader.GetOrdinal(name);
+        return reader.IsDBNull(ordinal) ? string.Empty : reader.GetString(ordinal);
     }
 }

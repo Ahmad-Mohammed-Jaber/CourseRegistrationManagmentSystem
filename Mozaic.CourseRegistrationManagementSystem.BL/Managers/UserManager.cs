@@ -1,21 +1,20 @@
 using Mozaic.CourseRegistrationManagementSystem.DAL.Repository;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Results;
 
 namespace Mozaic.CourseRegistrationManagementSystem.BL.Managers;
 
 internal class UserManager
 {
+
     private readonly UserRepository _userRepository = new UserRepository();
+    public Task<UserResult> GetAsync(
+        int? id = null,
+        string? userName = null,
+        string? search = null,
+        int? pageNumber = null,
+        int? pageSize = null) => _userRepository.GetAsync(id, userName, search, pageNumber, pageSize);
 
-    public User? GetById(int id) => _userRepository.GetById(id);
-
-    public Task<User?> GetByIdAsync(int id) => _userRepository.GetByIdAsync(id);
-
-    public Task<User?> GetByUserNameAsync(string userName) => _userRepository.GetByUserNameAsync(userName);
-
-    public List<User> GetAll() => _userRepository.GetAll();
-
-    public Task<List<User>> GetAllAsync() => _userRepository.GetAllAsync();
 
     public void Add(User user) => _userRepository.Add(user);
 
@@ -29,7 +28,4 @@ internal class UserManager
 
     public Task DeleteAsync(int id) => _userRepository.DeleteAsync(id);
 
-    public List<User> Search(string regex) => _userRepository.Search(regex);
-
-    public Task<List<User>> SearchAsync(string regex) => _userRepository.SearchAsync(regex);
 }

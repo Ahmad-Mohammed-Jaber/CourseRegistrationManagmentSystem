@@ -18,38 +18,18 @@ public class UsersController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Index(string? q = null)
+    public async Task<IActionResult> Index(string? q = null, int page = 1, int pageSize = 20)
     {
-        ViewData["Query"] = q ?? string.Empty;
-
         try
         {
-            var users = string.IsNullOrWhiteSpace(q)
-                ? await UserService.GetAllAsync()
-                : await UserService.SearchAsync(q);
+            var result = await UserService.GetAsync(search: q, pageNumber: page, pageSize: pageSize);
 
-            var userNames = users.ToDictionary(u => u.Id, u => u.UserName);
-
-            return View(users
-                .OrderBy(u => u.UserName)
-                .Select(u => new UserListItemViewModel
-                {
-                    Id = u.Id,
-                    UserName = u.UserName,
-                    FullName = u.FullName,
-                    Role = u.Role.ToString(),
-                    IsActive = u.IsActive,
-                    CreatedOn = u.CreatedOn,
-                    CreatedByName = ResolveUserName(userNames, u.CreatedBy),
-                    ModifiedOn = u.ModifiedOn,
-                    ModifiedByName = ResolveUserName(userNames, u.ModifiedBy),
-                })
-                .ToList());
+            return View(UserListViewModel.FromResult(result, q));
         }
         catch (BusinessException ex)
         {
             ViewData["ErrorMessage"] = ex.Message;
-            return View(new List<UserListItemViewModel>());
+            return View(UserListViewModel.Empty(page, pageSize, q));
         }
     }
 
@@ -89,7 +69,7 @@ public class UsersController : Controller
 
         try
         {
-            var user = await UserService.GetByIdAsync(id);
+            var user = (await UserService.GetAsync(id: id)).FirstOrDefault();
             if (user is null)
             {
                 TempData["ErrorMessage"] = $"User with id {id} was not found.";
@@ -134,7 +114,7 @@ public class UsersController : Controller
 
         try
         {
-            var existing = await UserService.GetByIdAsync(id);
+            var existing = (await UserService.GetAsync(id: id)).FirstOrDefault();
             if (existing is null)
             {
                 TempData["ErrorMessage"] = $"User with id {id} was not found.";
@@ -207,15 +187,5 @@ public class UsersController : Controller
         {
             ModelState.AddModelError(string.Empty, "Could not create the user.");
         }
-    }
-
-    private static string ResolveUserName(Dictionary<int, string> userNames, int userId)
-    {
-        if (userNames.TryGetValue(userId, out var name) && !string.IsNullOrWhiteSpace(name))
-        {
-            return name;
-        }
-
-        return userId <= 0 ? "—" : $"#{userId}";
     }
 }

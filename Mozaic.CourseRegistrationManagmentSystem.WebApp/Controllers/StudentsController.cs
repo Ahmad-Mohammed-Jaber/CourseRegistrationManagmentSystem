@@ -25,9 +25,7 @@ public class StudentsController : Controller
 
         try
         {
-            var students = string.IsNullOrWhiteSpace(q)  ? await StudentService.GetAllAsync()  : await StudentService.SearchAsync(q);
-
-            var userNames = await GetUserNamesAsync();
+            var students = await StudentService.GetAsync(search: q);
 
             return View(students
                 .OrderBy(s => s.UserName)
@@ -41,9 +39,9 @@ public class StudentsController : Controller
                     Phone = s.Phone,
                     IsActive = s.IsActive,
                     CreatedOn = s.CreatedOn,
-                    CreatedByName = ResolveUserName(userNames, s.CreatedBy),
+                    CreatedByName = ResolveUserName(s.CreatedByName, s.CreatedBy),
                     ModifiedOn = s.ModifiedOn,
-                    ModifiedByName = ResolveUserName(userNames, s.ModifiedBy),
+                    ModifiedByName = ResolveUserName(s.ModifiedByName, s.ModifiedBy),
                 })
                 .ToList());
         }
@@ -91,7 +89,7 @@ public class StudentsController : Controller
 
         try
         {
-            var student = await StudentService.GetByIdAsync(id);
+            var student = (await StudentService.GetAsync(id: id)).FirstOrDefault();
             if (student is null)
             {
                 TempData["ErrorMessage"] = $"Student with id {id} was not found.";
@@ -132,7 +130,7 @@ public class StudentsController : Controller
 
         try
         {
-            var existing = await StudentService.GetByIdAsync(id);
+            var existing = (await StudentService.GetAsync(id: id)).FirstOrDefault();
             if (existing is null)
             {
                 TempData["ErrorMessage"] = $"Student with id {id} was not found.";
@@ -207,22 +205,9 @@ public class StudentsController : Controller
         }
     }
 
-    private static async Task<Dictionary<int, string>> GetUserNamesAsync()
+    private static string ResolveUserName(string? name, int userId)
     {
-        try
-        {
-            var users = await UserService.GetAllAsync();
-            return users.ToDictionary(u => u.Id, u => u.UserName);
-        }
-        catch (BusinessException)
-        {
-            return new Dictionary<int, string>();
-        }
-    }
-
-    private static string ResolveUserName(Dictionary<int, string> userNames, int userId)
-    {
-        if (userNames.TryGetValue(userId, out var name) && !string.IsNullOrWhiteSpace(name))
+        if (!string.IsNullOrWhiteSpace(name))
         {
             return name;
         }

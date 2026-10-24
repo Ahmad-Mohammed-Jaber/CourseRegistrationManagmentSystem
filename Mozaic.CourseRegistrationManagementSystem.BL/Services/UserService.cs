@@ -1,94 +1,49 @@
 using Mozaic.CourseRegistrationManagementSystem.BL.Managers;
-using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
-using System.Text.RegularExpressions;
-using Mozaic.CourseRegistrationManagementSystem.Shared.Session;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Logging;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Results;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Session;
 using Mozaic.CourseRegistrationManagementSystem.BL.Validation;
 
 namespace Mozaic.CourseRegistrationManagementSystem.BL.Services;
 
 public static class UserService
 {
-    public static User? GetById(int id)
+    /// <summary>
+    /// The single read path for users. Every filter is optional; a null
+    /// filter means "no restriction". Pass a page number to get one page
+    /// plus the counter, or leave it out to get every matching row.
+    /// </summary>
+    public static async Task<UserResult> GetAsync(
+        int? id = null,
+        string? userName = null,
+        string? search = null,
+        int? pageNumber = null,
+        int? pageSize = null)
     {
         try
         {
-            var userManager = new UserManager();
-            return userManager.GetById(id);
-        }
-        catch (Exception ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw new BusinessException("An error occurred while retrieving user.", ex);
-        }
-    }
+            PagedResult<User>.Normalize(ref pageNumber, ref pageSize);
 
-    public static async Task<User?> GetByIdAsync(int id)
-    {
-        try
-        {
-            var userManager = new UserManager();
-            return await userManager.GetByIdAsync(id);
-        }
-        catch (Exception ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw new BusinessException("An error occurred while retrieving user.", ex);
-        }
-    }
+            var term = string.IsNullOrWhiteSpace(search) ? null : search!.Trim();
 
-    public static List<User> GetAll()
-    {
-        try
-        {
             var userManager = new UserManager();
-            return userManager.GetAll();
-        }
-        catch (Exception ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw new BusinessException("An error occurred while retrieving users.", ex);
-        }
-    }
+            var page = await userManager.GetAsync(id, userName, term, pageNumber, pageSize);
 
-    public static async Task<List<User>> GetAllAsync()
-    {
-        try
-        {
-            var userManager = new UserManager();
-            return await userManager.GetAllAsync();
-        }
-        catch (Exception ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw new BusinessException("An error occurred while retrieving users.", ex);
-        }
-    }
-
-    public static void Add(User user, int? actorId = null)
-    {
-        try
-        {
-            var unique = EnsureUniqueUserNameSync(user.UserName);
-            if (!unique.IsSuccess)
+            // A page past the end of the result set comes back empty; fall back
+            // to the last page so the view never shows "Page 9 of 3".
+            if (page.Count == 0 && page.TotalPages > 0 && page.PageNumber > page.TotalPages)
             {
-                throw new BusinessException(unique.Message);
+                page = await userManager.GetAsync(id, userName, term, page.TotalPages, pageSize);
             }
 
-            var effectiveActorId = actorId.HasValue && actorId.Value > 0
-                ? actorId.Value
-                : SessionManager.Current?.UserId ?? 0;
-            user.CreatedBy = effectiveActorId;
-            user.ModifiedBy = effectiveActorId;
-
-            var userManager = new UserManager();
-            userManager.Add(user);
+            return page;
         }
         catch (Exception ex)
         {
             AppLogger.LogCaught(ex);
-            throw new BusinessException("An error occurred while adding user.", ex);
+            throw new BusinessException("An error occurred while retrieving users.", ex);
         }
     }
 
@@ -124,56 +79,12 @@ public static class UserService
         }
     }
 
-    public static void Update(User user, int? actorId = null)
-    {
-        try
-        {
-            var userManager = new UserManager();
-            var existingUser = userManager.GetById(user.Id);
-            var exists = UserValidator.RequireExists(existingUser, user.Id);
-            if (!exists.IsSuccess)
-            {
-                throw new BusinessException(exists.Message);
-            }
-
-            var valid = UserValidator.ValidateUser(user);
-            if (!valid.IsSuccess)
-            {
-                throw new BusinessException(valid.Message);
-            }
-
-            var unique = EnsureUniqueUserNameSync(user.UserName, user.Id);
-            if (!unique.IsSuccess)
-            {
-                throw new BusinessException(unique.Message);
-            }
-
-            if (string.IsNullOrEmpty(user.PasswordHash))
-            {
-                user.PasswordHash = existingUser!.PasswordHash;
-            }
-
-            user.CreatedBy = existingUser!.CreatedBy;
-            var effectiveActorId = actorId.HasValue && actorId.Value > 0
-                ? actorId.Value
-                : SessionManager.Current?.UserId ?? existingUser.ModifiedBy;
-            user.ModifiedBy = effectiveActorId;
-
-            userManager.Update(user);
-        }
-        catch (Exception ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw new BusinessException("An error occurred while updating user.", ex);
-        }
-    }
-
     public static async Task UpdateAsync(User user, int? actorId = null)
     {
         try
         {
             var userManager = new UserManager();
-            var existingUser = await userManager.GetByIdAsync(user.Id);
+            var existingUser = (await userManager.GetAsync(id: user.Id)).FirstOrDefault();
             var exists = UserValidator.RequireExists(existingUser, user.Id);
             if (!exists.IsSuccess)
             {
@@ -212,33 +123,12 @@ public static class UserService
         }
     }
 
-    public static void Delete(int id)
-    {
-        try
-        {
-            var userManager = new UserManager();
-            var existingUser = userManager.GetById(id);
-            var exists = UserValidator.RequireExists(existingUser, id);
-            if (!exists.IsSuccess)
-            {
-                throw new BusinessException(exists.Message);
-            }
-
-            userManager.Delete(id);
-        }
-        catch (Exception ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw new BusinessException("An error occurred while deleting user.", ex);
-        }
-    }
-
     public static async Task DeleteAsync(int id)
     {
         try
         {
             var userManager = new UserManager();
-            var existingUser = await userManager.GetByIdAsync(id);
+            var existingUser = (await userManager.GetAsync(id: id)).FirstOrDefault();
             var exists = UserValidator.RequireExists(existingUser, id);
             if (!exists.IsSuccess)
             {
@@ -254,67 +144,10 @@ public static class UserService
         }
     }
 
-    public static List<User> Search(string regex)
-    {
-        try
-        {
-            var pattern = SearchValidator.ValidateSearchPattern(regex);
-            if (!pattern.IsSuccess)
-            {
-                return new List<User>();
-            }
-
-            var userManager = new UserManager();
-            var users = userManager.GetAll();
-            return users
-                .Where(user => Regex.IsMatch(user.UserName, regex, RegexOptions.IgnoreCase) ||
-                               Regex.IsMatch(user.FullName, regex, RegexOptions.IgnoreCase))
-                .ToList();
-        }
-        catch (Exception ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw new BusinessException("An error occurred while searching users.", ex);
-        }
-    }
-
-    public static async Task<List<User>> SearchAsync(string regex)
-    {
-        try
-        {
-            var pattern = SearchValidator.ValidateSearchPattern(regex);
-            if (!pattern.IsSuccess)
-            {
-                return new List<User>();
-            }
-
-            var userManager = new UserManager();
-            var users = await userManager.GetAllAsync();
-            return users
-                .Where(user => Regex.IsMatch(user.UserName, regex, RegexOptions.IgnoreCase) ||
-                               Regex.IsMatch(user.FullName, regex, RegexOptions.IgnoreCase))
-                .ToList();
-        }
-        catch (Exception ex)
-        {
-            AppLogger.LogCaught(ex);
-            throw new BusinessException("An error occurred while searching users.", ex);
-        }
-    }
-
-    private static ValidationResult EnsureUniqueUserNameSync(string userName, int? excludeUserId = null)
-    {
-        var userManager = new UserManager();
-        var existing = userManager.GetAll()
-            .FirstOrDefault(u => u.UserName.Equals(userName, StringComparison.OrdinalIgnoreCase));
-        return UserValidator.RequireUniqueUserName(
-            existing != null && existing.Id != (excludeUserId ?? 0), userName);
-    }
-
     private static async Task<ValidationResult> EnsureUniqueUserNameAsync(string userName, int? excludeUserId = null)
     {
         var userManager = new UserManager();
-        var existingUser = await userManager.GetByUserNameAsync(userName);
+        var existingUser = (await userManager.GetAsync(userName: userName)).FirstOrDefault();
         return UserValidator.RequireUniqueUserName(
             existingUser != null && existingUser.Id != (excludeUserId ?? 0), userName);
     }

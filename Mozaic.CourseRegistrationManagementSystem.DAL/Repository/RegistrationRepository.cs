@@ -1,61 +1,22 @@
 using Mozaic.CourseRegistrationManagementSystem.DAL.Interfaces;
 using Mozaic.CourseRegistrationManagementSystem.DAL.Providers;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Results;
 
 namespace Mozaic.CourseRegistrationManagementSystem.DAL.Repository;
 
 public class RegistrationRepository : IGenericRepository<Registration>
 {
-    public Registration? GetById(int id)
+    public Task<RegistrationResult> GetAsync(
+        int? id = null,
+        int? studentId = null,
+        int? classId = null,
+        string? search = null,
+        int? pageNumber = null,
+        int? pageSize = null)
     {
-        return RegistrationDataProvider.GetById(id);
+        return RegistrationDataProvider.GetAsync(id, studentId, classId, search, pageNumber, pageSize);
     }
-
-    public Task<Registration?> GetByIdAsync(int id)
-    {
-        return RegistrationDataProvider.GetByIdAsync(id);
-    }
-
-    public Task<bool> ExistsAsync(int studentId, int classId)
-    {
-        return RegistrationDataProvider.ExistsAsync(studentId, classId);
-    }
-
-    public Task<Registration?> GetRegistrationByStudentAndClassAsync(int studentId, int classId)
-    {
-        return RegistrationDataProvider.GetRegistrationByStudentAndClassAsync(studentId, classId);
-    }
-
-    public List<Registration> GetRegistrationsByStudentId(int studentId)
-    {
-        return RegistrationDataProvider.GetRegistrationsByStudentId(studentId);
-    }
-
-    public Task<List<Registration>> GetRegistrationsByStudentIdAsync(int studentId)
-    {
-        return RegistrationDataProvider.GetRegistrationsByStudentIdAsync(studentId);
-    }
-
-    public List<Registration> GetRegistrationsByClassId(int classId)
-    {
-        return RegistrationDataProvider.GetRegistrationsByClassId(classId);
-    }
-
-    public Task<List<Registration>> GetRegistrationsByClassIdAsync(int classId)
-    {
-        return RegistrationDataProvider.GetRegistrationsByClassIdAsync(classId);
-    }
-
-    public List<Registration> GetAll()
-    {
-        return RegistrationDataProvider.GetAll();
-    }
-
-    public Task<List<Registration>> GetAllAsync()
-    {
-        return RegistrationDataProvider.GetAllAsync();
-    }
-
     public void Add(Registration entity)
     {
         RegistrationDataProvider.Add(entity);
@@ -86,28 +47,4 @@ public class RegistrationRepository : IGenericRepository<Registration>
         return RegistrationDataProvider.DeleteAsync(id);
     }
 
-    public List<Registration> Search(string regex)
-    {
-        return RegistrationDataProvider.Search(regex);
-    }
-
-    public Task<List<Registration>> SearchAsync(string regex)
-    {
-        return RegistrationDataProvider.SearchAsync(regex);
-    }
-
-    public Task<List<(Registration Registration, Class Class)>> GetStudentRegistrationsWithClassesAsync(int studentId)
-    {
-        return RegistrationDataProvider.GetStudentRegistrationsWithClassesAsync(studentId);
-    }
-
-    public Task<List<(Registration Registration, Student Student, Class Class, Course Course)>> GetAllDetailedAsync()
-    {
-        return RegistrationDataProvider.GetAllDetailedAsync();
-    }
-
-    public Task<List<(Registration Registration, Student Student, Class Class, Course Course)>> SearchDetailedAsync(string regex)
-    {
-        return RegistrationDataProvider.SearchDetailedAsync(regex);
-    }
 }

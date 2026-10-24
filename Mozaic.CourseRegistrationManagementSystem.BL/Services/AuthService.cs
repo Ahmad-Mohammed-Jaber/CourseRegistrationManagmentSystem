@@ -30,7 +30,7 @@ public class AuthService
                     default);
             }
 
-            User? userRes = await _userManager.GetByUserNameAsync(userName);
+            User? userRes = (await _userManager.GetAsync(userName: userName)).FirstOrDefault();
 
             if (userRes == null)
             {
@@ -76,7 +76,7 @@ public class AuthService
             return Result<User>.From(fields);
         }
 
-        if (await _userManager.GetByUserNameAsync(userName) != null)
+        if ((await _userManager.GetAsync(userName: userName)).Count > 0)
         {
             return new Result<User>(
                 ValidationStatus.Conflict,
@@ -119,7 +119,7 @@ public class AuthService
             return Result<Student>.From(fields);
         }
 
-        if (await _userManager.GetByUserNameAsync(userName) != null)
+        if ((await _userManager.GetAsync(userName: userName)).Count > 0)
         {
             return new Result<Student>(
                 ValidationStatus.Conflict,
@@ -144,8 +144,9 @@ public class AuthService
 
         await _userManager.AddAsync(user);
         var createdUser = user.Id > 0
-            ? await _userManager.GetByIdAsync(user.Id) ?? await _userManager.GetByUserNameAsync(userName)
-            : await _userManager.GetByUserNameAsync(userName);
+            ? (await _userManager.GetAsync(id: user.Id)).FirstOrDefault()
+                ?? (await _userManager.GetAsync(userName: userName)).FirstOrDefault()
+            : (await _userManager.GetAsync(userName: userName)).FirstOrDefault();
         if (createdUser == null)
         {
             throw new BusinessException("Failed to create student user.");

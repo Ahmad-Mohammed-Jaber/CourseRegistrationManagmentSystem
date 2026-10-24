@@ -1,23 +1,20 @@
 using Mozaic.CourseRegistrationManagementSystem.DAL.Repository;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Results;
 
 namespace Mozaic.CourseRegistrationManagementSystem.BL.Managers;
 
 internal class StudentManager
 {
+
     private readonly StudentRepository _studentRepository = new StudentRepository();
+    public Task<StudentResult> GetAsync(
+        int? id = null,
+        int? userId = null,
+        string? search = null,
+        int? pageNumber = null,
+        int? pageSize = null) => _studentRepository.GetAsync(id, userId, search, pageNumber, pageSize);
 
-    public Student? GetById(int id) => _studentRepository.GetById(id);
-
-    public Task<Student?> GetByIdAsync(int id) => _studentRepository.GetByIdAsync(id);
-
-    public Student? GetByUserId(int userId) => _studentRepository.GetByUserId(userId);
-
-    public Task<Student?> GetByUserIdAsync(int userId) => _studentRepository.GetByUserIdAsync(userId);
-
-    public List<Student> GetAll() => _studentRepository.GetAll();
-
-    public Task<List<Student>> GetAllAsync() => _studentRepository.GetAllAsync();
 
     public void Add(Student student) => _studentRepository.Add(student);
 
@@ -31,7 +28,4 @@ internal class StudentManager
 
     public Task DeleteAsync(int id) => _studentRepository.DeleteAsync(id);
 
-    public List<Student> Search(string regex) => _studentRepository.Search(regex);
-
-    public Task<List<Student>> SearchAsync(string regex) => _studentRepository.SearchAsync(regex);
 }

@@ -216,7 +216,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
         }
         private async void LoadCourses()
         {
-            var courses = await CourseService.GetAllAsync();
+            var courses = await CourseService.GetAsync();
             cmbCourse.DataSource = courses;
             cmbCourse.DisplayMember = "CourseName";
             cmbCourse.ValueMember = "Id";

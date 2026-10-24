@@ -5,6 +5,7 @@ using Mozaic.CourseRegistrationManagementSystem.BL.Services;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Helpers;
+using Mozaic.CourseRegistrationManagementSystem.Shared.Results;
 using Mozaic.CourseRegistrationManagmentSystem.WebApp.Models;
 
 namespace Mozaic.CourseRegistrationManagementSystem.WebApp.Controllers;
@@ -33,7 +34,7 @@ public class ClassesController : Controller
                 // Rendering empty grid when empty stuff
             }
 
-            var paged = await ClassService.GetAllAsync(studentId, page, pageSize);
+            var paged = await ClassService.GetAsync(userId: studentId, statusFilter: ClassResult.StatusActive, pageNumber: page, pageSize: pageSize);
 
             var model = BrowseClassesViewModel.FromResult(paged);
 
@@ -78,57 +79,20 @@ public class ClassesController : Controller
 
     [HttpGet]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Index(string? q = null)
+    public async Task<IActionResult> Index(string? q = null, int page = 1, int pageSize = 20, string? status = null)
     {
-        ViewData["Query"] = q ?? string.Empty;
+        var statusFilter = string.IsNullOrWhiteSpace(status) ? ClassResult.StatusActive : status!;
 
         try
         {
-            var classes = string.IsNullOrWhiteSpace(q)
-                ? await ClassService.GetAllAsync()
-                : await ClassService.SearchAsync(q);
+            var result = await ClassService.GetAsync(search: q, statusFilter: statusFilter, pageNumber: page, pageSize: pageSize);
 
-            var model = new List<ClassListItemViewModel>(classes.Count);
-            var userNames = await GetUserNamesAsync();
-            foreach (var @class in classes.OrderBy(c => c.StartDate))
-            {
-                var courseName = string.Empty;
-                try
-                {
-                    var course = await CourseService.GetByIdAsync(@class.CourseId);
-                    courseName = course is null
-                        ? string.Empty
-                        : $"{course.CourseCode} {course.CourseName}".Trim();
-                }
-                catch (BusinessException)
-                {
-                    // Best-effort enrichment only; grid still renders without it.
-                }
-
-                model.Add(new ClassListItemViewModel
-                {
-                    Id = @class.Id,
-                    CourseName = courseName,
-                    ClassName = @class.ClassName,
-                    Instructor = @class.Instructor,
-                    Schedule = ScheduleHelper.GetScheduleString(@class.Schedule),
-                    StartDate = @class.StartDate,
-                    EndDate = @class.EndDate,
-                    Seats = $"{@class.CurrentCapacity}/{@class.MaxCapacity}",
-                    IsActive = @class.IsActive,
-                    CreatedOn = @class.CreatedOn,
-                    CreatedByName = ResolveUserName(userNames, @class.CreatedBy),
-                    ModifiedOn = @class.ModifiedOn,
-                    ModifiedByName = ResolveUserName(userNames, @class.ModifiedBy),
-                });
-            }
-
-            return View(model);
+            return View(ClassListViewModel.FromResult(result, q, statusFilter));
         }
         catch (BusinessException ex)
         {
             ViewData["ErrorMessage"] = ex.Message;
-            return View(new List<ClassListItemViewModel>());
+            return View(ClassListViewModel.Empty(page, pageSize, q, statusFilter));
         }
     }
 
@@ -190,7 +154,7 @@ public class ClassesController : Controller
 
         try
         {
-            var @class = await ClassService.GetByIdAsync(id);
+            var @class = (await ClassService.GetAsync(id: id)).FirstOrDefault();
             if (@class is null)
             {
                 TempData["ErrorMessage"] = $"Class with id {id} was not found.";
@@ -237,7 +201,7 @@ public class ClassesController : Controller
 
         try
         {
-            var existing = await ClassService.GetByIdAsync(id);
+            var existing = (await ClassService.GetAsync(id: id)).FirstOrDefault();
             if (existing is null)
             {
                 TempData["ErrorMessage"] = $"Class with id {id} was not found.";
@@ -297,7 +261,7 @@ public class ClassesController : Controller
     {
         try
         {
-            var courses = await CourseService.GetAllAsync();
+            var courses = await CourseService.GetAsync();
             model.Courses = courses
                 .OrderBy(c => c.CourseCode)
                 .Select(c => new SelectListItem($"{c.CourseCode} {c.CourseName}".Trim(), c.Id.ToString()))
@@ -307,28 +271,5 @@ public class ClassesController : Controller
         {
             model.Courses = new List<SelectListItem>();
         }
-    }
-
-    private static async Task<Dictionary<int, string>> GetUserNamesAsync()
-    {
-        try
-        {
-            var users = await UserService.GetAllAsync();
-            return users.ToDictionary(u => u.Id, u => u.UserName);
-        }
-        catch (BusinessException)
-        {
-            return new Dictionary<int, string>();
-        }
-    }
-
-    private static string ResolveUserName(Dictionary<int, string> userNames, int userId)
-    {
-        if (userNames.TryGetValue(userId, out var name) && !string.IsNullOrWhiteSpace(name))
-        {
-            return name;
-        }
-
-        return userId <= 0 ? "—" : $"#{userId}";
     }
 }
