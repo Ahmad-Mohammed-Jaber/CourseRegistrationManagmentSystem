@@ -2,6 +2,7 @@ using Mozaic.CourseRegistrationManagementSystem.BL.Services;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Logging;
+using Mozaic.CourseRegistrationManagementSystem.View.Mappings;
 using Mozaic.CourseRegistrationManagementSystem.View.Models;
 using System.Drawing;
 using System.Windows.Forms;
@@ -220,21 +221,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
 
         private static List<RegistrationGridRow> MapRows(IEnumerable<Registration> registrations)
         {
-            return registrations.Select(x => new RegistrationGridRow
-            {
-                Id = x.Id,
-                StudentId = x.StudentId,
-                ClassId = x.ClassId,
-                StudentName = x.Student?.UserName ?? string.Empty,
-                ClassName = x.Class?.ClassName ?? string.Empty,
-                CourseName = x.Course?.CourseName ?? string.Empty,
-                RegistrationDate = x.RegistrationDate,
-                Status = x.Status,
-                CreatedOn = x.CreatedOn,
-                ModifiedOn = x.ModifiedOn,
-                CreatedBy = x.CreatedBy,
-                ModifiedBy = x.ModifiedBy,
-            }).ToList();
+            return ViewMapper.Instance.Map<List<RegistrationGridRow>>(registrations.ToList());
         }
 
         private void UpdatePager()

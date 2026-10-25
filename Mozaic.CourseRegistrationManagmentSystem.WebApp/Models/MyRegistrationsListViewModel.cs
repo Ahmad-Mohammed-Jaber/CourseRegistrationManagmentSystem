@@ -1,5 +1,6 @@
-using Mozaic.CourseRegistrationManagementSystem.Shared.Helpers;
+using AutoMapper;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Results;
+using Mozaic.CourseRegistrationManagementSystem.WebApp.Mappings;
 
 namespace Mozaic.CourseRegistrationManagmentSystem.WebApp.Models;
 
@@ -29,41 +30,14 @@ public sealed class MyRegistrationsListViewModel
 
     public static MyRegistrationsListViewModel FromResult(
         RegistrationResult result,
+        IMapper mapper,
         string? course,
         string? className,
         string? status,
         int pageSize)
     {
-        var normalizedStatus = string.IsNullOrWhiteSpace(status) ? "All" : status!;
-
-        return new MyRegistrationsListViewModel
-        {
-            Registrations = result.Select(r => new MyRegistrationViewModel
-            {
-                RegistrationId = r.Id,
-                ClassId = r.Class.Id,
-                CourseName = r.Course.CourseName,
-                ClassName = r.Class.ClassName,
-                Instructor = r.Class.Instructor,
-                Schedule = ScheduleHelper.GetScheduleString(r.Class.Schedule),
-                StartDate = r.Class.StartDate,
-                EndDate = r.Class.EndDate,
-                RegistrationDate = r.RegistrationDate,
-                Status = r.Status,
-            }).ToList(),
-            Page = Math.Min(result.PageNumber, Math.Max(1, result.TotalPages)),
-            PageSize = result.PageSize,
-            TotalCount = result.TotalCount,
-            TotalPages = Math.Max(1, result.TotalPages),
-            Course = course?.Trim() ?? string.Empty,
-            ClassName = className?.Trim() ?? string.Empty,
-            Status = normalizedStatus,
-            RouteValues = ListRouteValues.Create(
-                pageSize,
-                ("course", course),
-                ("className", className),
-                ("status", normalizedStatus)),
-        };
+        return mapper.Map<MyRegistrationsListViewModel>(
+            new MyRegistrationsListMappingSource(result, course, className, status, pageSize));
     }
 
     public static MyRegistrationsListViewModel Empty(

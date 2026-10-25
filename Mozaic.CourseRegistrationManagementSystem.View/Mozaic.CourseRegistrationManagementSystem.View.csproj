@@ -9,6 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="16.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Mozaic.CourseRegistrationManagementSystem.BL\Mozaic.CourseRegistrationManagementSystem.BL.csproj" />
     <ProjectReference Include="..\Mozaic.CourseRegistrationManagementSystem.DAL\Mozaic.CourseRegistrationManagementSystem.DAL.csproj" />
     <ProjectReference Include="..\Mozaic.CourseRegistrationManagementSystem.Shared\Mozaic.CourseRegistrationManagementSystem.Shared.csproj" />

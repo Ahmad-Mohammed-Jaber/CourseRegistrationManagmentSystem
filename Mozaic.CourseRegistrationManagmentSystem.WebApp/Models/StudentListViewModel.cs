@@ -1,4 +1,6 @@
+using AutoMapper;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Results;
+using Mozaic.CourseRegistrationManagementSystem.WebApp.Mappings;
 
 namespace Mozaic.CourseRegistrationManagmentSystem.WebApp.Models;
 
@@ -34,6 +36,7 @@ public sealed class StudentListViewModel
 
     public static StudentListViewModel FromResult(
         StudentResult result,
+        IMapper mapper,
         string? studentNumber,
         string? fullName,
         string? userName,
@@ -42,43 +45,9 @@ public sealed class StudentListViewModel
         string? status,
         int pageSize)
     {
-        var normalizedStatus = string.IsNullOrWhiteSpace(status) ? "All" : status!;
-
-        return new StudentListViewModel
-        {
-            Students = result.Select(s => new StudentListItemViewModel
-            {
-                Id = s.Id,
-                StudentNumber = s.StudentNumber,
-                UserName = s.UserName,
-                FullName = s.FullName,
-                Email = s.Email,
-                Phone = s.Phone,
-                IsActive = s.IsActive,
-                CreatedOn = s.CreatedOn,
-                CreatedByName = ResolveUserName(s.CreatedByName, s.CreatedBy),
-                ModifiedOn = s.ModifiedOn,
-                ModifiedByName = ResolveUserName(s.ModifiedByName, s.ModifiedBy),
-            }).ToList(),
-            Page = Math.Min(result.PageNumber, Math.Max(1, result.TotalPages)),
-            PageSize = result.PageSize,
-            TotalCount = result.TotalCount,
-            TotalPages = Math.Max(1, result.TotalPages),
-            StudentNumber = studentNumber?.Trim() ?? string.Empty,
-            FullName = fullName?.Trim() ?? string.Empty,
-            UserName = userName?.Trim() ?? string.Empty,
-            Email = email?.Trim() ?? string.Empty,
-            Phone = phone?.Trim() ?? string.Empty,
-            Status = normalizedStatus,
-            RouteValues = ListRouteValues.Create(
-                pageSize,
-                ("studentNumber", studentNumber),
-                ("fullName", fullName),
-                ("userName", userName),
-                ("email", email),
-                ("phone", phone),
-                ("status", normalizedStatus)),
-        };
+        return mapper.Map<StudentListViewModel>(
+            new StudentListMappingSource(
+                result, studentNumber, fullName, userName, email, phone, status, pageSize));
     }
 
     public static StudentListViewModel Empty(
@@ -112,15 +81,5 @@ public sealed class StudentListViewModel
                 ("phone", phone),
                 ("status", normalizedStatus)),
         };
-    }
-
-    private static string ResolveUserName(string? name, int userId)
-    {
-        if (!string.IsNullOrWhiteSpace(name))
-        {
-            return name;
-        }
-
-        return userId <= 0 ? "—" : $"#{userId}";
     }
 }

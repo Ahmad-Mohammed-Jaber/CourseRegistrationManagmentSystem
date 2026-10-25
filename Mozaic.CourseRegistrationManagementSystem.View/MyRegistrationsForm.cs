@@ -1,8 +1,9 @@
 using Mozaic.CourseRegistrationManagementSystem.BL.Services;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
-using Mozaic.CourseRegistrationManagementSystem.Shared.Helpers;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Logging;
+using Mozaic.CourseRegistrationManagementSystem.View.Mappings;
+using Mozaic.CourseRegistrationManagementSystem.View.Models;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -219,19 +220,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
         private void RefreshGrid()
         {
             dgvRegs.DataSource = null;
-            dgvRegs.DataSource = _data
-                .Select(x => new
-                {
-                    RegistrationId = x.Id,
-                    ClassName = x.Class.ClassName,
-                    Instructor = x.Class.Instructor,
-                    Schedule = ScheduleHelper.GetScheduleString(x.Class.Schedule),
-                    StartDate = x.Class.StartDate,
-                    EndDate = x.Class.EndDate,
-                    RegistrationDate = x.RegistrationDate,
-                    Status = x.Status
-                })
-                .ToList();
+            dgvRegs.DataSource = ViewMapper.Instance.Map<List<MyRegistrationGridRow>>(_data);
         }
 
 

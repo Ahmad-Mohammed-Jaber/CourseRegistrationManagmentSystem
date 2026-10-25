@@ -1,4 +1,6 @@
+using AutoMapper;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Results;
+using Mozaic.CourseRegistrationManagementSystem.WebApp.Mappings;
 
 namespace Mozaic.CourseRegistrationManagmentSystem.WebApp.Models;
 
@@ -30,44 +32,15 @@ public sealed class UserListViewModel
 
     public static UserListViewModel FromResult(
         UserResult result,
+        IMapper mapper,
         string? userName,
         string? fullName,
         string? role,
         string? status,
         int pageSize)
     {
-        var normalizedRole = string.IsNullOrWhiteSpace(role) ? "All" : role!;
-        var normalizedStatus = string.IsNullOrWhiteSpace(status) ? "All" : status!;
-
-        return new UserListViewModel
-        {
-            Users = result.Select(u => new UserListItemViewModel
-            {
-                Id = u.Id,
-                UserName = u.UserName,
-                FullName = u.FullName,
-                Role = u.Role.ToString(),
-                IsActive = u.IsActive,
-                CreatedOn = u.CreatedOn,
-                CreatedByName = ResolveUserName(u.CreatedByName, u.CreatedBy),
-                ModifiedOn = u.ModifiedOn,
-                ModifiedByName = ResolveUserName(u.ModifiedByName, u.ModifiedBy),
-            }).ToList(),
-            Page = Math.Min(result.PageNumber, Math.Max(1, result.TotalPages)),
-            PageSize = result.PageSize,
-            TotalCount = result.TotalCount,
-            TotalPages = Math.Max(1, result.TotalPages),
-            UserName = userName?.Trim() ?? string.Empty,
-            FullName = fullName?.Trim() ?? string.Empty,
-            Role = normalizedRole,
-            Status = normalizedStatus,
-            RouteValues = ListRouteValues.Create(
-                pageSize,
-                ("userName", userName),
-                ("fullName", fullName),
-                ("role", normalizedRole),
-                ("status", normalizedStatus)),
-        };
+        return mapper.Map<UserListViewModel>(
+            new UserListMappingSource(result, userName, fullName, role, status, pageSize));
     }
 
     public static UserListViewModel Empty(
@@ -96,15 +69,5 @@ public sealed class UserListViewModel
                 ("role", normalizedRole),
                 ("status", normalizedStatus)),
         };
-    }
-
-    private static string ResolveUserName(string? name, int userId)
-    {
-        if (!string.IsNullOrWhiteSpace(name))
-        {
-            return name;
-        }
-
-        return userId <= 0 ? "—" : $"#{userId}";
     }
 }

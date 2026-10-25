@@ -1,8 +1,9 @@
 using Mozaic.CourseRegistrationManagementSystem.BL.Services;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
-using Mozaic.CourseRegistrationManagementSystem.Shared.Helpers;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Logging;
+using Mozaic.CourseRegistrationManagementSystem.View.Mappings;
+using Mozaic.CourseRegistrationManagementSystem.View.Models;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -33,48 +34,6 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
         private string? _instructor;
         private string? _course;
         private string? _status = "Active";
-
-        // Grid row projected in the view: schedule text is computed here via
-        // ScheduleHelper instead of living on the entity as a non-DB column.
-        private sealed class ClassGridRow
-        {
-            public int Id { get; set; }
-            public int CourseId { get; set; }
-            public string ClassName { get; set; } = string.Empty;
-            public string Instructor { get; set; } = string.Empty;
-            public int MaxCapacity { get; set; }
-            public int CurrentCapacity { get; set; }
-            public DateTime StartDate { get; set; }
-            public DateTime EndDate { get; set; }
-            public string Schedule { get; set; } = string.Empty;
-            public bool IsActive { get; set; }
-            public bool IsRegistered { get; set; }
-            public DateTimeOffset CreatedOn { get; set; }
-            public DateTimeOffset ModifiedOn { get; set; }
-            public int CreatedBy { get; set; }
-            public int ModifiedBy { get; set; }
-
-            public ClassGridRow() { }
-
-            public ClassGridRow(Class entity)
-            {
-                Id = entity.Id;
-                CourseId = entity.CourseId;
-                ClassName = entity.ClassName;
-                Instructor = entity.Instructor;
-                MaxCapacity = entity.MaxCapacity;
-                CurrentCapacity = entity.CurrentCapacity;
-                StartDate = entity.StartDate;
-                EndDate = entity.EndDate;
-                Schedule = ScheduleHelper.GetScheduleString(entity.Schedule);
-                IsActive = entity.IsActive;
-                IsRegistered = entity.IsRegistered;
-                CreatedOn = entity.CreatedOn;
-                ModifiedOn = entity.ModifiedOn;
-                CreatedBy = entity.CreatedBy;
-                ModifiedBy = entity.ModifiedBy;
-            }
-        }
 
         public ClassListForm()
         {
@@ -268,7 +227,7 @@ namespace Mozaic.CourseRegistrationManagementSystem.View
         private void RefreshGrid()
         {
             dgvClasses.DataSource = null;
-            dgvClasses.DataSource = _classes.Select(c => new ClassGridRow(c)).ToList();
+            dgvClasses.DataSource = ViewMapper.Instance.Map<List<ClassGridRow>>(_classes);
             ConfigureColumns();
         }
 

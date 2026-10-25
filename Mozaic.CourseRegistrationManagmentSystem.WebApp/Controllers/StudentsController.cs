@@ -1,3 +1,4 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Mozaic.CourseRegistrationManagementSystem.BL.Services;
@@ -12,10 +13,12 @@ namespace Mozaic.CourseRegistrationManagementSystem.WebApp.Controllers;
 public class StudentsController : Controller
 {
     private readonly AuthService _authService;
+    private readonly IMapper _mapper;
 
-    public StudentsController(AuthService authService)
+    public StudentsController(AuthService authService, IMapper mapper)
     {
         _authService = authService;
+        _mapper = mapper;
     }
 
     [HttpGet]
@@ -42,7 +45,7 @@ public class StudentsController : Controller
                 pageSize: pageSize);
 
             return View(StudentListViewModel.FromResult(
-                result, studentNumber, fullName, userName, email, phone, status, pageSize));
+                result, _mapper, studentNumber, fullName, userName, email, phone, status, pageSize));
         }
         catch (BusinessException ex)
         {
@@ -96,16 +99,7 @@ public class StudentsController : Controller
                 return RedirectToAction(nameof(Index));
             }
 
-            return View(new EditStudentViewModel
-            {
-                Id = student.Id,
-                StudentNumber = student.StudentNumber,
-                UserName = student.UserName,
-                FullName = student.FullName,
-                Email = student.Email,
-                Phone = student.Phone,
-                IsActive = student.IsActive,
-            });
+            return View(_mapper.Map<EditStudentViewModel>(student));
         }
         catch (BusinessException ex)
         {
@@ -130,22 +124,11 @@ public class StudentsController : Controller
 
         try
         {
-            // No pre-read: UserId is a non-editable field that UpdateAsync preserves
-            // server-side, so the controller no longer loads the row just to copy
-            // UserId back into the payload. Existence is validated by UpdateAsync,
-            // which throws BusinessException when the row is missing.
-            await StudentService.UpdateAsync(new Student
-            {
-                Id = id,
-                StudentNumber = model.StudentNumber,
-                UserName = model.UserName.Trim(),
-                FullName = model.FullName.Trim(),
-                Email = model.Email.Trim(),
-                Phone = model.Phone.Trim(),
-                IsActive = model.IsActive,
-                Role = UserEntity.UserRoles.Student,
-                // UserId intentionally omitted — not editable, preserved by UpdateAsync.
-            }, User.GetUserId());
+            var entity = _mapper.Map<Student>(model);
+            entity.Id = id;
+            entity.Role = UserEntity.UserRoles.Student;
+
+            await StudentService.UpdateAsync(entity, User.GetUserId());
 
             TempData["SuccessMessage"] = $"Student '{model.UserName.Trim()}' updated successfully.";
             return RedirectToAction(nameof(Index));

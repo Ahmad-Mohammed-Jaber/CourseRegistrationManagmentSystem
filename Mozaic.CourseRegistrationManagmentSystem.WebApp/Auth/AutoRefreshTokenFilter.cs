@@ -1,3 +1,4 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Policy;
 using Mozaic.CourseRegistrationManagementSystem.BL.Services;
@@ -35,6 +36,7 @@ public sealed class AutoRefreshTokenFilter : IAuthorizationMiddlewareResultHandl
             var refreshService = services.GetRequiredService<RefreshTokenService>();
             var accessService = services.GetRequiredService<AccessTokenService>();
             var options = services.GetRequiredService<JwtOptions>();
+            var mapper = services.GetRequiredService<IMapper>();
 
             var outcome = await refreshService.ValidateAsync(presented);
             if (!outcome.Succeeded || outcome.User is null || outcome.Record is null)
@@ -44,14 +46,7 @@ public sealed class AutoRefreshTokenFilter : IAuthorizationMiddlewareResultHandl
                 return;
             }
 
-            var session = new UserSession(
-                outcome.User.Id,
-                outcome.User.UserName,
-                outcome.User.FullName,
-                outcome.User.IsActive)
-            {
-                Role = outcome.User.Role,
-            };
+            var session = mapper.Map<UserSession>(outcome.User);
 
             var now = DateTimeOffset.UtcNow;
             var accessToken = accessService.GenerateToken(session);

@@ -1,5 +1,6 @@
-using Mozaic.CourseRegistrationManagementSystem.Shared.Helpers;
+using AutoMapper;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Results;
+using Mozaic.CourseRegistrationManagementSystem.WebApp.Mappings;
 
 namespace Mozaic.CourseRegistrationManagmentSystem.WebApp.Models;
 
@@ -31,50 +32,15 @@ public sealed class ClassListViewModel
 
     public static ClassListViewModel FromResult(
         ClassResult result,
+        IMapper mapper,
         string? className,
         string? instructor,
         string? course,
         string? status,
         int pageSize)
     {
-        var normalizedStatus = string.IsNullOrWhiteSpace(status) ? ClassResult.StatusActive : status!;
-
-        var routeValues = ListRouteValues.Create(
-            pageSize,
-            ("className", className),
-            ("instructor", instructor),
-            ("course", course),
-            ("status", normalizedStatus));
-        routeValues["status"] = normalizedStatus;
-
-        return new ClassListViewModel
-        {
-            Classes = result.Select(c => new ClassListItemViewModel
-            {
-                Id = c.Id,
-                CourseName = $"{c.Course?.CourseCode} {c.Course?.CourseName}".Trim(),
-                ClassName = c.ClassName,
-                Instructor = c.Instructor,
-                Schedule = ScheduleHelper.GetScheduleString(c.Schedule),
-                StartDate = c.StartDate,
-                EndDate = c.EndDate,
-                Seats = $"{c.CurrentCapacity}/{c.MaxCapacity}",
-                IsActive = c.IsActive,
-                CreatedOn = c.CreatedOn,
-                CreatedByName = ResolveUserName(c.CreatedByName, c.CreatedBy),
-                ModifiedOn = c.ModifiedOn,
-                ModifiedByName = ResolveUserName(c.ModifiedByName, c.ModifiedBy),
-            }).ToList(),
-            Page = Math.Min(result.PageNumber, Math.Max(1, result.TotalPages)),
-            PageSize = result.PageSize,
-            TotalCount = result.TotalCount,
-            TotalPages = Math.Max(1, result.TotalPages),
-            ClassName = className?.Trim() ?? string.Empty,
-            Instructor = instructor?.Trim() ?? string.Empty,
-            Course = course?.Trim() ?? string.Empty,
-            Status = normalizedStatus,
-            RouteValues = routeValues,
-        };
+        return mapper.Map<ClassListViewModel>(
+            new ClassListMappingSource(result, className, instructor, course, status, pageSize));
     }
 
     public static ClassListViewModel Empty(
@@ -105,15 +71,5 @@ public sealed class ClassListViewModel
             Status = normalizedStatus,
             RouteValues = routeValues,
         };
-    }
-
-    private static string ResolveUserName(string? name, int userId)
-    {
-        if (!string.IsNullOrWhiteSpace(name))
-        {
-            return name;
-        }
-
-        return userId <= 0 ? "—" : $"#{userId}";
     }
 }

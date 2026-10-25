@@ -1,3 +1,4 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Mozaic.CourseRegistrationManagementSystem.BL.Services;
@@ -16,17 +17,20 @@ public class AuthController : Controller
     private readonly AccessTokenService _accessTokenService;
     private readonly RefreshTokenService _refreshTokenService;
     private readonly JwtOptions _jwtOptions;
+    private readonly IMapper _mapper;
 
     public AuthController(
         AuthService authService,
         AccessTokenService accessTokenService,
         RefreshTokenService refreshTokenService,
-        JwtOptions jwtOptions)
+        JwtOptions jwtOptions,
+        IMapper mapper)
     {
         _authService = authService;
         _accessTokenService = accessTokenService;
         _refreshTokenService = refreshTokenService;
         _jwtOptions = jwtOptions;
+        _mapper = mapper;
     }
 
     [HttpGet]
@@ -199,14 +203,7 @@ public class AuthController : Controller
         return new RefreshCookieOutcome(true, true, presented, outcome.User, outcome.Record);
     }
 
-    private static UserSession BuildSession(User user) => new(
-        user.Id,
-        user.UserName,
-        user.FullName,
-        user.IsActive)
-    {
-        Role = user.Role,
-    };
+    private UserSession BuildSession(User user) => _mapper.Map<UserSession>(user);
 
     private IActionResult RedirectToLocal(string? returnUrl)
     {

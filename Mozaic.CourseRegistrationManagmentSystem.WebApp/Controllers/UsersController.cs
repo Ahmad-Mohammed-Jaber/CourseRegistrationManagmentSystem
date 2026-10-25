@@ -1,3 +1,4 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Mozaic.CourseRegistrationManagementSystem.BL.Services;
@@ -11,10 +12,12 @@ namespace Mozaic.CourseRegistrationManagementSystem.WebApp.Controllers;
 public class UsersController : Controller
 {
     private readonly AuthService _authService;
+    private readonly IMapper _mapper;
 
-    public UsersController(AuthService authService)
+    public UsersController(AuthService authService, IMapper mapper)
     {
         _authService = authService;
+        _mapper = mapper;
     }
 
     [HttpGet]
@@ -36,7 +39,7 @@ public class UsersController : Controller
                 pageNumber: page,
                 pageSize: pageSize);
 
-            return View(UserListViewModel.FromResult(result, userName, fullName, role, status, pageSize));
+            return View(UserListViewModel.FromResult(result, _mapper, userName, fullName, role, status, pageSize));
         }
         catch (BusinessException ex)
         {
@@ -88,14 +91,7 @@ public class UsersController : Controller
                 return RedirectToAction(nameof(Index));
             }
 
-            return View(new EditUserViewModel
-            {
-                Id = user.Id,
-                UserName = user.UserName,
-                FullName = user.FullName,
-                Role = user.Role.ToString(),
-                IsActive = user.IsActive,
-            });
+            return View(_mapper.Map<EditUserViewModel>(user));
         }
         catch (BusinessException ex)
         {
@@ -126,19 +122,10 @@ public class UsersController : Controller
 
         try
         {
-            // No pre-read: Role is a non-editable field that UpdateAsync preserves
-            // server-side (like PasswordHash when empty), so the controller no longer
-            // loads the row just to copy Role back into the payload. Existence is
-            // validated by UpdateAsync, which throws BusinessException when missing.
-            await UserService.UpdateAsync(new User
-            {
-                Id = id,
-                UserName = model.UserName.Trim(),
-                FullName = model.FullName.Trim(),
-                // Role intentionally omitted — not editable, preserved by UpdateAsync.
-                IsActive = model.IsActive,
-                PasswordHash = string.Empty, // Preserved by the service when empty.
-            }, User.GetUserId());
+            var entity = _mapper.Map<User>(model);
+            entity.Id = id;
+
+            await UserService.UpdateAsync(entity, User.GetUserId());
 
             TempData["SuccessMessage"] = $"User '{model.UserName.Trim()}' updated successfully.";
             return RedirectToAction(nameof(Index));

@@ -1,4 +1,5 @@
 using Mozaic.CourseRegistrationManagementSystem.Shared.Results;
+using Mozaic.CourseRegistrationManagementSystem.View.Mappings;
 
 namespace Mozaic.CourseRegistrationManagementSystem.View.Models;
 
@@ -24,16 +25,7 @@ public sealed class BrowseClassesViewModel
 
     public static BrowseClassesViewModel FromResult(ClassResult result)
     {
-        return new BrowseClassesViewModel
-        {
-            Rows = result.Select(c => new ClassBrowseRow(c)).ToList(),
-            Page = Math.Min(result.PageNumber, Math.Max(1, result.TotalPages)),
-            PageSize = result.PageSize,
-            TotalCount = result.TotalCount,
-            TotalPages = Math.Max(1, result.TotalPages),
-            OpenSeatsCount = result.OpenSeatsCount,
-            MyRegistrationsCount = result.MyRegistrationsCount,
-        };
+        return ViewMapper.Instance.Map<BrowseClassesViewModel>(result);
     }
 
     public static BrowseClassesViewModel Empty(int page = 1, int pageSize = 20)

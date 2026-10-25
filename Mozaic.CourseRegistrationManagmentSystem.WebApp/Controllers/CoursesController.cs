@@ -1,3 +1,4 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Mozaic.CourseRegistrationManagementSystem.BL.Services;
@@ -10,6 +11,13 @@ namespace Mozaic.CourseRegistrationManagementSystem.WebApp.Controllers;
 [Authorize(Roles = "Admin")]
 public class CoursesController : Controller
 {
+    private readonly IMapper _mapper;
+
+    public CoursesController(IMapper mapper)
+    {
+        _mapper = mapper;
+    }
+
     [HttpGet]
     public async Task<IActionResult> Index(
         string? code = null,
@@ -29,7 +37,7 @@ public class CoursesController : Controller
                 pageNumber: page,
                 pageSize: pageSize);
 
-            return View(CourseListViewModel.FromResult(result, code, name, description, status, pageSize));
+            return View(CourseListViewModel.FromResult(result, _mapper, code, name, description, status, pageSize));
         }
         catch (BusinessException ex)
         {
@@ -52,14 +60,7 @@ public class CoursesController : Controller
 
         try
         {
-            await CourseService.AddAsync(new Course
-            {
-                CourseCode = model.CourseCode.Trim(),
-                CourseName = model.CourseName.Trim(),
-                CreditHours = model.CreditHours,
-                Description = model.Description?.Trim() ?? string.Empty,
-                IsActive = model.IsActive,
-            }, User.GetUserId());
+            await CourseService.AddAsync(_mapper.Map<Course>(model), User.GetUserId());
 
             TempData["SuccessMessage"] = $"Course '{model.CourseCode.Trim()}' created successfully.";
             return RedirectToAction(nameof(Index));
@@ -89,15 +90,7 @@ public class CoursesController : Controller
                 return RedirectToAction(nameof(Index));
             }
 
-            return View(new CourseFormViewModel
-            {
-                Id = course.Id,
-                CourseCode = course.CourseCode,
-                CourseName = course.CourseName,
-                CreditHours = course.CreditHours,
-                Description = course.Description,
-                IsActive = course.IsActive,
-            });
+            return View(_mapper.Map<CourseFormViewModel>(course));
         }
         catch (BusinessException ex)
         {
@@ -129,15 +122,10 @@ public class CoursesController : Controller
                 return RedirectToAction(nameof(Index));
             }
 
-            await CourseService.UpdateAsync(new Course
-            {
-                Id = id,
-                CourseCode = model.CourseCode.Trim(),
-                CourseName = model.CourseName.Trim(),
-                CreditHours = model.CreditHours,
-                Description = model.Description?.Trim() ?? string.Empty,
-                IsActive = model.IsActive,
-            }, User.GetUserId());
+            var entity = _mapper.Map<Course>(model);
+            entity.Id = id;
+
+            await CourseService.UpdateAsync(entity, User.GetUserId());
 
             TempData["SuccessMessage"] = $"Course '{model.CourseCode.Trim()}' updated successfully.";
             return RedirectToAction(nameof(Index));

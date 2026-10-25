@@ -6,10 +6,12 @@ using Mozaic.CourseRegistrationManagementSystem.BL.Services;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Auth;
 using Mozaic.CourseRegistrationManagementSystem.WebApp;
 using Mozaic.CourseRegistrationManagementSystem.WebApp.Auth;
+using Mozaic.CourseRegistrationManagementSystem.WebApp.Mappings;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddAutoMapper(cfg => cfg.AddProfile<WebAppMappingProfile>());
 
 var jwtOptions = builder.Configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>() ?? new JwtOptions();
 

@@ -1,10 +1,10 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Mozaic.CourseRegistrationManagementSystem.BL.Services;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Entities;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Exceptions;
-using Mozaic.CourseRegistrationManagementSystem.Shared.Helpers;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Results;
 using Mozaic.CourseRegistrationManagmentSystem.WebApp.Models;
 
@@ -12,6 +12,13 @@ namespace Mozaic.CourseRegistrationManagementSystem.WebApp.Controllers;
 
 public class ClassesController : Controller
 {
+    private readonly IMapper _mapper;
+
+    public ClassesController(IMapper mapper)
+    {
+        _mapper = mapper;
+    }
+
     [HttpGet]
     [Authorize(Roles = "Student")]
     public async Task<IActionResult> Browse(
@@ -48,7 +55,7 @@ public class ClassesController : Controller
                 pageNumber: page,
                 pageSize: pageSize);
 
-            var model = BrowseClassesViewModel.FromResult(paged, course, className, instructor, pageSize);
+            var model = BrowseClassesViewModel.FromResult(paged, _mapper, course, className, instructor, pageSize);
 
             return View(model);
         }
@@ -111,7 +118,7 @@ public class ClassesController : Controller
                 pageNumber: page,
                 pageSize: pageSize);
 
-            return View(ClassListViewModel.FromResult(result, className, instructor, course, statusFilter, pageSize));
+            return View(ClassListViewModel.FromResult(result, _mapper, className, instructor, course, statusFilter, pageSize));
         }
         catch (BusinessException ex)
         {
@@ -142,18 +149,7 @@ public class ClassesController : Controller
 
         try
         {
-            await ClassService.AddAsync(new Class
-            {
-                CourseId = model.CourseId,
-                ClassName = model.ClassName.Trim(),
-                Instructor = model.Instructor.Trim(),
-                MaxCapacity = model.MaxCapacity,
-                CurrentCapacity = 0,
-                Schedule = model.ToSchedule(),
-                StartDate = model.StartDate,
-                EndDate = model.EndDate,
-                IsActive = model.IsActive,
-            }, User.GetUserId());
+            await ClassService.AddAsync(_mapper.Map<Class>(model), User.GetUserId());
 
             TempData["SuccessMessage"] = $"Class '{model.ClassName.Trim()}' created successfully.";
             return RedirectToAction(nameof(Index));
@@ -185,19 +181,7 @@ public class ClassesController : Controller
                 return RedirectToAction(nameof(Index));
             }
 
-            var model = new ClassFormViewModel
-            {
-                Id = @class.Id,
-                CourseId = @class.CourseId,
-                ClassName = @class.ClassName,
-                Instructor = @class.Instructor,
-                MaxCapacity = @class.MaxCapacity,
-                CurrentCapacity = @class.CurrentCapacity,
-                StartDate = @class.StartDate,
-                EndDate = @class.EndDate,
-                IsActive = @class.IsActive,
-            };
-            model.FromSchedule(@class.Schedule);
+            var model = _mapper.Map<ClassFormViewModel>(@class);
             await PopulateCoursesAsync(model);
             return View(model);
         }
@@ -236,19 +220,11 @@ public class ClassesController : Controller
                 return View(model);
             }
 
-            await ClassService.UpdateAsync(new Class
-            {
-                Id = id,
-                CourseId = model.CourseId,
-                ClassName = model.ClassName.Trim(),
-                Instructor = model.Instructor.Trim(),
-                MaxCapacity = model.MaxCapacity,
-                CurrentCapacity = existing.CurrentCapacity,
-                Schedule = model.ToSchedule(),
-                StartDate = model.StartDate,
-                EndDate = model.EndDate,
-                IsActive = model.IsActive,
-            }, User.GetUserId());
+            var entity = _mapper.Map<Class>(model);
+            entity.Id = id;
+            entity.CurrentCapacity = existing.CurrentCapacity;
+
+            await ClassService.UpdateAsync(entity, User.GetUserId());
 
             TempData["SuccessMessage"] = $"Class '{model.ClassName.Trim()}' updated successfully.";
             return RedirectToAction(nameof(Index));
@@ -285,15 +261,14 @@ public class ClassesController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    private static async Task PopulateCoursesAsync(ClassFormViewModel model)
+    private async Task PopulateCoursesAsync(ClassFormViewModel model)
     {
         try
         {
             var courses = await CourseService.GetAsync();
-            model.Courses = courses
+            model.Courses = _mapper.Map<List<SelectListItem>>(courses
                 .OrderBy(c => c.CourseCode)
-                .Select(c => new SelectListItem($"{c.CourseCode} {c.CourseName}".Trim(), c.Id.ToString()))
-                .ToList();
+                .ToList());
         }
         catch (BusinessException)
         {

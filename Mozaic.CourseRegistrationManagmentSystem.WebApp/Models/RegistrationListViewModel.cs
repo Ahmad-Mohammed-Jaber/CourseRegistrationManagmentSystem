@@ -1,4 +1,6 @@
+using AutoMapper;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Results;
+using Mozaic.CourseRegistrationManagementSystem.WebApp.Mappings;
 
 namespace Mozaic.CourseRegistrationManagmentSystem.WebApp.Models;
 
@@ -30,44 +32,16 @@ public sealed class RegistrationListViewModel
 
     public static RegistrationListViewModel FromResult(
         RegistrationResult result,
+        IMapper mapper,
         string? student,
         string? course,
         string? className,
         string? status,
         int pageSize)
     {
-        var normalizedStatus = string.IsNullOrWhiteSpace(status) ? "All" : status!;
-
-        return new RegistrationListViewModel
-        {
-            Registrations = result.Select(r => new RegistrationListItemViewModel
-            {
-                Id = r.Id,
-                StudentName = $"{r.Student.FullName} ({r.Student.UserName})",
-                CourseName = r.Course.CourseName,
-                ClassName = r.Class.ClassName,
-                RegistrationDate = r.RegistrationDate,
-                Status = r.Status,
-                CreatedOn = r.CreatedOn,
-                CreatedByName = ResolveUserName(r.CreatedByName, r.CreatedBy),
-                ModifiedOn = r.ModifiedOn,
-                ModifiedByName = ResolveUserName(r.ModifiedByName, r.ModifiedBy),
-            }).ToList(),
-            Page = Math.Min(result.PageNumber, Math.Max(1, result.TotalPages)),
-            PageSize = result.PageSize,
-            TotalCount = result.TotalCount,
-            TotalPages = Math.Max(1, result.TotalPages),
-            Student = student?.Trim() ?? string.Empty,
-            Course = course?.Trim() ?? string.Empty,
-            ClassName = className?.Trim() ?? string.Empty,
-            Status = normalizedStatus,
-            RouteValues = ListRouteValues.Create(
-                pageSize,
-                ("student", student),
-                ("course", course),
-                ("className", className),
-                ("status", normalizedStatus)),
-        };
+        return mapper.Map<RegistrationListViewModel>(
+            new RegistrationListMappingSource(
+                result, student, course, className, status, pageSize));
     }
 
     public static RegistrationListViewModel Empty(
@@ -95,15 +69,5 @@ public sealed class RegistrationListViewModel
                 ("className", className),
                 ("status", normalizedStatus)),
         };
-    }
-
-    private static string ResolveUserName(string? name, int userId)
-    {
-        if (!string.IsNullOrWhiteSpace(name))
-        {
-            return name;
-        }
-
-        return userId <= 0 ? "—" : $"#{userId}";
     }
 }

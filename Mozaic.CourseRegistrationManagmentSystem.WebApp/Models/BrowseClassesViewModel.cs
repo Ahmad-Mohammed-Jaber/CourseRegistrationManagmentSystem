@@ -1,5 +1,6 @@
-using Mozaic.CourseRegistrationManagementSystem.Shared.Helpers;
+using AutoMapper;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Results;
+using Mozaic.CourseRegistrationManagementSystem.WebApp.Mappings;
 
 namespace Mozaic.CourseRegistrationManagmentSystem.WebApp.Models;
 
@@ -33,41 +34,14 @@ public sealed class BrowseClassesViewModel
 
     public static BrowseClassesViewModel FromResult(
         ClassResult result,
+        IMapper mapper,
         string? course,
         string? className,
         string? instructor,
         int pageSize)
     {
-        return new BrowseClassesViewModel
-        {
-            Classes = result.Select(@class => new BrowseClassViewModel
-            {
-                ClassId = @class.Id,
-                CourseName = @class.Course?.CourseName ?? string.Empty,
-                ClassName = @class.ClassName,
-                Instructor = @class.Instructor,
-                Schedule = ScheduleHelper.GetScheduleString(@class.Schedule),
-                StartDate = @class.StartDate,
-                EndDate = @class.EndDate,
-                CurrentCapacity = @class.CurrentCapacity,
-                MaxCapacity = @class.MaxCapacity,
-                IsRegistered = @class.IsRegistered,
-            }).ToList(),
-            Page = Math.Min(result.PageNumber, Math.Max(1, result.TotalPages)),
-            PageSize = result.PageSize,
-            TotalCount = result.TotalCount,
-            TotalPages = Math.Max(1, result.TotalPages),
-            OpenSeatsCount = result.OpenSeatsCount,
-            MyRegistrationsCount = result.MyRegistrationsCount,
-            Course = course?.Trim() ?? string.Empty,
-            ClassName = className?.Trim() ?? string.Empty,
-            Instructor = instructor?.Trim() ?? string.Empty,
-            RouteValues = ListRouteValues.Create(
-                pageSize,
-                ("course", course),
-                ("className", className),
-                ("instructor", instructor)),
-        };
+        return mapper.Map<BrowseClassesViewModel>(
+            new BrowseClassesMappingSource(result, course, className, instructor, pageSize));
     }
 
     public static BrowseClassesViewModel Empty(

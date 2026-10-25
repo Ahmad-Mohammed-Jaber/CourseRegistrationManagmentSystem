@@ -1,4 +1,6 @@
+using AutoMapper;
 using Mozaic.CourseRegistrationManagementSystem.Shared.Results;
+using Mozaic.CourseRegistrationManagementSystem.WebApp.Mappings;
 
 namespace Mozaic.CourseRegistrationManagmentSystem.WebApp.Models;
 
@@ -30,43 +32,15 @@ public sealed class CourseListViewModel
 
     public static CourseListViewModel FromResult(
         CourseResult result,
+        IMapper mapper,
         string? code,
         string? name,
         string? description,
         string? status,
         int pageSize)
     {
-        var normalizedStatus = string.IsNullOrWhiteSpace(status) ? "All" : status!;
-
-        return new CourseListViewModel
-        {
-            Courses = result.Select(c => new CourseListItemViewModel
-            {
-                Id = c.Id,
-                CourseCode = c.CourseCode,
-                CourseName = c.CourseName,
-                CreditHours = c.CreditHours,
-                IsActive = c.IsActive,
-                CreatedOn = c.CreatedOn,
-                CreatedByName = ResolveUserName(c.CreatedByName, c.CreatedBy),
-                ModifiedOn = c.ModifiedOn,
-                ModifiedByName = ResolveUserName(c.ModifiedByName, c.ModifiedBy),
-            }).ToList(),
-            Page = Math.Min(result.PageNumber, Math.Max(1, result.TotalPages)),
-            PageSize = result.PageSize,
-            TotalCount = result.TotalCount,
-            TotalPages = Math.Max(1, result.TotalPages),
-            Code = code?.Trim() ?? string.Empty,
-            Name = name?.Trim() ?? string.Empty,
-            Description = description?.Trim() ?? string.Empty,
-            Status = normalizedStatus,
-            RouteValues = ListRouteValues.Create(
-                pageSize,
-                ("code", code),
-                ("name", name),
-                ("description", description),
-                ("status", normalizedStatus)),
-        };
+        return mapper.Map<CourseListViewModel>(
+            new CourseListMappingSource(result, code, name, description, status, pageSize));
     }
 
     public static CourseListViewModel Empty(
@@ -94,15 +68,5 @@ public sealed class CourseListViewModel
                 ("description", description),
                 ("status", normalizedStatus)),
         };
-    }
-
-    private static string ResolveUserName(string? name, int userId)
-    {
-        if (!string.IsNullOrWhiteSpace(name))
-        {
-            return name;
-        }
-
-        return userId <= 0 ? "—" : $"#{userId}";
     }
 }
